@@ -365,7 +365,6 @@ import org.sonar.server.ui.ws.ComponentNavigationAction;
 import org.sonar.server.ui.ws.GlobalNavigationAction;
 import org.sonar.server.ui.ws.NavigationWs;
 import org.sonar.server.ui.ws.SettingsNavigationAction;
-import org.sonar.server.updatecenter.ws.UpdateCenterWs;
 import org.sonar.server.user.DefaultUserService;
 import org.sonar.server.user.DoPrivileged;
 import org.sonar.server.user.GroupMembershipFinder;
@@ -625,7 +624,6 @@ class ServerComponents {
     // update center
     pico.addSingleton(UpdateCenterClient.class);
     pico.addSingleton(UpdateCenterMatrixFactory.class);
-    pico.addSingleton(UpdateCenterWs.class);
 
     // quality profile
     pico.addSingleton(XMLProfileParser.class);
