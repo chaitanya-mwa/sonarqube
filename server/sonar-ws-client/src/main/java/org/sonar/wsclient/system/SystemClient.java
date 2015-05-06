@@ -24,17 +24,6 @@ package org.sonar.wsclient.system;
  */
 public interface SystemClient {
   /**
-   * Asynchronously start a database migration. No effect if executed
-   * several times.
-   */
-  Migration migrate();
-
-  /**
-   * Synchronously start a database migration.
-   */
-  Migration migrate(long timeoutInSeconds, long rateInSeconds);
-
-  /**
    * Restart server. Available only in development mode.
    * @since 4.3
    */

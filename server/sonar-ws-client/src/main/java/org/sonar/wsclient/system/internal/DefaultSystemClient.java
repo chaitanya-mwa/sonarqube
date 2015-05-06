@@ -36,32 +36,6 @@ public class DefaultSystemClient implements SystemClient {
   }
 
   @Override
-  public Migration migrate() {
-    String json = requestFactory.post("/api/server/setup", Collections.<String, Object>emptyMap());
-    return jsonToMigration(json);
-  }
-
-  @Override
-  public Migration migrate(long timeoutInMs, long rateInMs) {
-    if (rateInMs >= timeoutInMs) {
-      throw new IllegalArgumentException("Timeout must be greater than rate");
-    }
-    Migration migration = null;
-    boolean running = true;
-    long endAt = System.currentTimeMillis() + timeoutInMs;
-    while (running && System.currentTimeMillis() < endAt) {
-      migration = migrate();
-      if (migration.status() == Migration.Status.MIGRATION_NEEDED ||
-        migration.status() == Migration.Status.MIGRATION_RUNNING) {
-        sleepQuietly(rateInMs);
-      } else {
-        running = false;
-      }
-    }
-    return migration;
-  }
-
-  @Override
   public void restart() {
     requestFactory.post("/api/system/restart", Collections.<String, Object>emptyMap());
   }

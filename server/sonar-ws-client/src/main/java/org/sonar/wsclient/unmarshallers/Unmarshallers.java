@@ -19,6 +19,8 @@
  */
 package org.sonar.wsclient.unmarshallers;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.sonar.wsclient.services.Authentication;
 import org.sonar.wsclient.services.Event;
 import org.sonar.wsclient.services.Favourite;
@@ -31,12 +33,8 @@ import org.sonar.wsclient.services.Property;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceSearchResult;
 import org.sonar.wsclient.services.Server;
-import org.sonar.wsclient.services.ServerSetup;
 import org.sonar.wsclient.services.Source;
 import org.sonar.wsclient.services.TimeMachine;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public final class Unmarshallers {
   private Unmarshallers() {
@@ -51,7 +49,6 @@ public final class Unmarshallers {
     unmarshallers.put(Property.class, new PropertyUnmarshaller());
     unmarshallers.put(Source.class, new SourceUnmarshaller());
     unmarshallers.put(Server.class, new ServerUnmarshaller());
-    unmarshallers.put(ServerSetup.class, new ServerSetupUnmarshaller());
     unmarshallers.put(Event.class, new EventUnmarshaller());
     unmarshallers.put(Favourite.class, new FavouriteUnmarshaller());
     unmarshallers.put(Plugin.class, new PluginUnmarshaller());
