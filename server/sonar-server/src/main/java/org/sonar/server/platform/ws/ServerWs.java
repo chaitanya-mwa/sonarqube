@@ -20,9 +20,10 @@
 
 package org.sonar.server.platform.ws;
 
-import com.google.common.io.Resources;
 import org.sonar.api.server.ws.RailsHandler;
 import org.sonar.api.server.ws.WebService;
+
+import com.google.common.io.Resources;
 
 public class ServerWs implements WebService {
 
@@ -33,7 +34,6 @@ public class ServerWs implements WebService {
       .setSince("2.10");
 
     defineIndexAction(controller);
-    defineSetupAction(controller);
 
     controller.done();
   }
@@ -52,19 +52,6 @@ public class ServerWs implements WebService {
       .setResponseExample(Resources.getResource(this.getClass(), "example-index.json"));
 
     RailsHandler.addFormatParam(action);
-  }
-
-  private void defineSetupAction(NewController controller) {
-    NewAction action = controller.createAction("setup")
-      .setDescription("Upgrade the SonarQube database")
-      .setSince("2.10")
-      .setPost(true)
-      .setHandler(RailsHandler.INSTANCE)
-      .setResponseExample(Resources.getResource(this.getClass(), "example-setup.json"));
-
-    action.createParam("format")
-      .setDescription("Response format")
-      .setPossibleValues("json", "csv", "text");
   }
 
 }

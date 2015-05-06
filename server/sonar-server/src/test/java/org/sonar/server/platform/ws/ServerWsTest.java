@@ -37,7 +37,7 @@ public class ServerWsTest {
     assertThat(controller).isNotNull();
     assertThat(controller.since()).isEqualTo("2.10");
     assertThat(controller.description()).isNotEmpty();
-    assertThat(controller.actions()).hasSize(2);
+    assertThat(controller.actions()).hasSize(1);
   }
 
   @Test
@@ -45,17 +45,6 @@ public class ServerWsTest {
     WebService.Controller controller = tester.controller("api/server");
 
     WebService.Action action = controller.action("index");
-    assertThat(action).isNotNull();
-    assertThat(action.handler()).isInstanceOf(RailsHandler.class);
-    assertThat(action.responseExampleAsString()).isNotEmpty();
-    assertThat(action.params()).hasSize(1);
-  }
-
-  @Test
-  public void define_setup_action() {
-    WebService.Controller controller = tester.controller("api/server");
-
-    WebService.Action action = controller.action("setup");
     assertThat(action).isNotNull();
     assertThat(action.handler()).isInstanceOf(RailsHandler.class);
     assertThat(action.responseExampleAsString()).isNotEmpty();

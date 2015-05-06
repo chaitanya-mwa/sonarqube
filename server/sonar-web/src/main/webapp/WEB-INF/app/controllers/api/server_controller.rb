@@ -45,52 +45,6 @@ class Api::ServerController < Api::ApiController
     end
   end
 
-  def setup
-    verify_post_request
-    manager=DatabaseMigrationManager.instance
-    begin
-      # Ask the DB migration manager to start the migration
-      # => No need to check for authorizations (actually everybody can run the upgrade)
-      # nor concurrent calls (this is handled directly by DatabaseMigrationManager)
-      manager.start_migration
-
-      operational=manager.is_sonar_access_allowed?
-      current_status = operational ? "ok" : "ko"
-      hash={
-        # deprecated fields
-        :status => current_status,
-        :migration_status => manager.status,
-
-        # correct fields
-        :operational => operational,
-        :state => manager.status
-      }
-      hash[:message]=manager.message if manager.message
-      hash[:startedAt]=manager.migration_start_time if manager.migration_start_time
-
-      respond_to do |format|
-        format.json{ render :json => jsonp(hash) }
-        format.xml { render :xml => hash.to_xml(:skip_types => true, :root => 'setup') }
-        format.text { render :text => hash[:status] }
-      end
-    rescue => e
-      hash={
-        # deprecated fields
-        :status => 'ko',
-        :msg => e.message,
-
-        # correct fields
-        :message => e.message,
-        :state => manager.status
-      }
-      respond_to do |format|
-        format.json{ render :json => jsonp(hash) }
-        format.xml { render :xml => hash.to_xml(:skip_types => true, :root => 'setup') }
-        format.text { render :text => hash[:status] }
-      end
-    end
-  end
-
   def index_projects
     verify_post_request
     access_denied unless has_role?(:admin)
