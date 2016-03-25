@@ -197,6 +197,21 @@
     GROUP BY pp.profile_key
   </select>
 
+  <select id="countProjectsByProfiles" resultType="org.sonar.db.qualityprofile.QualityProfileProjectCount">
+    SELECT pp.profile_key as profileKey, count(projects.id) as projectCount
+    FROM projects projects
+    INNER JOIN project_qprofiles pp ON pp.project_uuid=projects.uuid
+    INNER JOIN rules_profiles prof ON pp.profile_key=prof.kee
+    <where>
+      projects.enabled=${_true}
+      and pp.profile_key in
+      <foreach collection="profileKeys" open="(" close=")" item="profileKey" separator=",">
+        #{profileKey}
+      </foreach>
+    </where>
+    GROUP BY pp.profile_key
+  </select>
+
   <select id="selectByProjectIdAndLanguage" parameterType="map" resultType="QualityProfile">
     SELECT
     <include refid="profilesColumns"/>

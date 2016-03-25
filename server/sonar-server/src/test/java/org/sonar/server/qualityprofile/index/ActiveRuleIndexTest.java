@@ -41,6 +41,7 @@ import org.sonar.server.rule.index.RuleIndexDefinition;
 import org.sonar.server.rule.index.RuleIndexer;
 import org.sonar.server.search.FacetValue;
 
+import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
@@ -93,6 +94,26 @@ public class ActiveRuleIndexTest {
   }
 
   @Test
+  public void count_all_by_quality_profile_key_filtered_by_profile_keys() {
+    indexRules(RuleDocTesting.newDoc(RULE_KEY_1));
+
+    indexActiveRules(
+      ActiveRuleDocTesting.newDoc(ActiveRuleKey.of(QUALITY_PROFILE_KEY1, RULE_KEY_1)),
+      ActiveRuleDocTesting.newDoc(ActiveRuleKey.of(QUALITY_PROFILE_KEY2, RULE_KEY_1)));
+
+    // 0. Test base case
+    assertThat(tester.countDocuments(INDEX, TYPE_ACTIVE_RULE)).isEqualTo(2);
+
+    // 1. Assert by term aggregation;
+    assertThat(index.countAllByQualityProfileKey(of(QUALITY_PROFILE_KEY1, QUALITY_PROFILE_KEY2)))
+      .containsOnly(entry(QUALITY_PROFILE_KEY1, 1L), entry(QUALITY_PROFILE_KEY2, 1L));
+    assertThat(index.countAllByQualityProfileKey(of(QUALITY_PROFILE_KEY1)))
+      .containsOnly(entry(QUALITY_PROFILE_KEY1, 1L));
+    assertThat(index.countAllByQualityProfileKey(of(QUALITY_PROFILE_KEY2)))
+      .containsOnly(entry(QUALITY_PROFILE_KEY2, 1L));
+  }
+
+  @Test
   public void stats_for_all() {
     indexRules(
       newDoc(RULE_KEY_1),
@@ -137,7 +158,7 @@ public class ActiveRuleIndexTest {
       docs.add(ActiveRuleDocTesting.newDoc(ActiveRuleKey.of(profileKey, RULE_KEY_1)).setSeverity(BLOCKER));
       docs.add(ActiveRuleDocTesting.newDoc(ActiveRuleKey.of(profileKey, RULE_KEY_2)).setSeverity(MAJOR));
     }
-    indexActiveRules(docs.toArray(new ActiveRuleDoc[]{}));
+    indexActiveRules(docs.toArray(new ActiveRuleDoc[] {}));
 
     Map<String, Multimap<String, FacetValue>> stats = index.getStatsByProfileKeys(profileKeys);
     assertThat(stats).hasSize(30);
@@ -158,8 +179,7 @@ public class ActiveRuleIndexTest {
     indexRules(
       RuleDocTesting.newDoc(RULE_KEY_1),
       RuleDocTesting.newDoc(RULE_KEY_2),
-      RuleDocTesting.newDoc(RuleKey.of("xoo", "removed")).setStatus(RuleStatus.REMOVED.name())
-    );
+      RuleDocTesting.newDoc(RuleKey.of("xoo", "removed")).setStatus(RuleStatus.REMOVED.name()));
 
     indexActiveRules(
       ActiveRuleDocTesting.newDoc(ActiveRuleKey.of(QUALITY_PROFILE_KEY1, RULE_KEY_1)),
@@ -168,8 +188,7 @@ public class ActiveRuleIndexTest {
       // Removed rule can still be activated for instance when removing the checkstyle plugin, active rules related on checkstyle are not
       // removed
       // because if the plugin is re-install, quality profiles using these rule are not changed.
-      ActiveRuleDocTesting.newDoc(ActiveRuleKey.of(QUALITY_PROFILE_KEY2, RuleKey.of("xoo", "removed")))
-    );
+      ActiveRuleDocTesting.newDoc(ActiveRuleKey.of(QUALITY_PROFILE_KEY2, RuleKey.of("xoo", "removed"))));
 
     // 1. find by rule key
 

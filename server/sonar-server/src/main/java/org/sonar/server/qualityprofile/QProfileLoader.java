@@ -24,6 +24,7 @@ import com.google.common.collect.Multimap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.CheckForNull;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rule.RuleStatus;
@@ -100,6 +101,10 @@ public class QProfileLoader {
 
   public Map<String, Long> countAllActiveRules() {
     return activeRuleIndex.countAllByQualityProfileKey();
+  }
+
+  public Map<String, Long> countAllActiveRules(Set<String> profileKeys) {
+    return activeRuleIndex.countAllByQualityProfileKey(profileKeys);
   }
 
   public Map<String, Multimap<String, FacetValue>> getAllProfileStats() {

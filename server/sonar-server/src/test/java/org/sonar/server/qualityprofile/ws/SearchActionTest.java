@@ -43,6 +43,7 @@ import org.sonar.server.qualityprofile.QProfileLoader;
 import org.sonar.server.qualityprofile.QProfileLookup;
 import org.sonar.server.ws.WsActionTester;
 
+import static com.google.common.collect.ImmutableSet.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,7 +52,6 @@ import static org.sonar.server.qualityprofile.ws.SearchAction.PARAM_DEFAULTS;
 import static org.sonar.server.qualityprofile.ws.SearchAction.PARAM_PROFILE_NAME;
 import static org.sonar.server.qualityprofile.ws.SearchAction.PARAM_PROJECT_KEY;
 import static org.sonar.test.JsonAssert.assertJson;
-
 
 public class SearchActionTest {
 
@@ -96,22 +96,25 @@ public class SearchActionTest {
 
   @Test
   public void search_nominal() throws Exception {
-    when(profileLoader.countAllActiveRules()).thenReturn(ImmutableMap.of(
-      "sonar-way-xoo1-12345", 11L,
-      "my-sonar-way-xoo2-34567", 33L
-      ));
+    String defaultXooProfileKey = "sonar-way-xoo1-12345";
+    String mySonarWayXoo2ProfileKey = "my-sonar-way-xoo2-34567";
+    String sonarWayXoo2ProfileKey = "sonar-way-xoo2-23456";
+
+    when(profileLoader.countAllActiveRules(of(defaultXooProfileKey, sonarWayXoo2ProfileKey, mySonarWayXoo2ProfileKey)))
+      .thenReturn(ImmutableMap.of(
+        defaultXooProfileKey, 11L,
+        mySonarWayXoo2ProfileKey, 33L));
 
     qualityProfileDao.insert(dbSession,
-      QualityProfileDto.createFor("sonar-way-xoo1-12345").setLanguage(xoo1.getKey()).setName("Sonar way").setDefault(true),
-      QualityProfileDto.createFor("sonar-way-xoo2-23456").setLanguage(xoo2.getKey()).setName("Sonar way"),
-      QualityProfileDto.createFor("my-sonar-way-xoo2-34567").setLanguage(xoo2.getKey()).setName("My Sonar way").setParentKee("sonar-way-xoo2-23456"),
-      QualityProfileDto.createFor("sonar-way-other-666").setLanguage("other").setName("Sonar way").setDefault(true)
-      );
+      QualityProfileDto.createFor(defaultXooProfileKey).setLanguage(xoo1.getKey()).setName("Sonar way").setDefault(true),
+      QualityProfileDto.createFor(sonarWayXoo2ProfileKey).setLanguage(xoo2.getKey()).setName("Sonar way"),
+      QualityProfileDto.createFor(mySonarWayXoo2ProfileKey).setLanguage(xoo2.getKey()).setName("My Sonar way").setParentKee(sonarWayXoo2ProfileKey),
+      QualityProfileDto.createFor("sonar-way-other-666").setLanguage("other").setName("Sonar way").setDefault(true));
     new ComponentDao().insert(dbSession,
       newProjectDto("project-uuid1"),
       newProjectDto("project-uuid2"));
-    qualityProfileDao.insertProjectProfileAssociation("project-uuid1", "sonar-way-xoo2-23456", dbSession);
-    qualityProfileDao.insertProjectProfileAssociation("project-uuid2", "sonar-way-xoo2-23456", dbSession);
+    qualityProfileDao.insertProjectProfileAssociation("project-uuid1", sonarWayXoo2ProfileKey, dbSession);
+    qualityProfileDao.insertProjectProfileAssociation("project-uuid2", sonarWayXoo2ProfileKey, dbSession);
     commit();
 
     String result = ws.newRequest().execute().getInput();
@@ -122,8 +125,7 @@ public class SearchActionTest {
   @Test
   public void search_for_language() throws Exception {
     qualityProfileDao.insert(dbSession,
-      QualityProfileDto.createFor("sonar-way-xoo1-12345").setLanguage(xoo1.getKey()).setName("Sonar way")
-      );
+      QualityProfileDto.createFor("sonar-way-xoo1-12345").setLanguage(xoo1.getKey()).setName("Sonar way"));
     commit();
 
     String result = ws.newRequest().setParam("language", xoo1.getKey()).execute().getInput();

@@ -72,10 +72,14 @@ public class SearchDataLoader {
   SearchData load(SearchWsRequest request) {
     validateRequest(request);
 
+    List<QProfile> profiles = findProfiles(request);
+    Set<String> profileKeys = from(profiles)
+      .transform(QProfileToKey.INSTANCE)
+      .toSet();
     return new SearchData()
-      .setProfiles(findProfiles(request))
-      .setActiveRuleCountByProfileKey(profileLoader.countAllActiveRules())
-      .setProjectCountByProfileKey(dbClient.qualityProfileDao().countProjectsByProfileKey());
+      .setProfiles(profiles)
+      .setActiveRuleCountByProfileKey(profileLoader.countAllActiveRules(profileKeys))
+      .setProjectCountByProfileKey(dbClient.qualityProfileDao().countProjectsByProfileKeys(profileKeys));
   }
 
   private List<QProfile> findProfiles(SearchWsRequest request) {
@@ -271,6 +275,16 @@ public class SearchDataLoader {
         .setRulesUpdatedAt(input.getRulesUpdatedAt());
     }
 
+  }
+
+  private enum QProfileToKey implements Function<QProfile, String> {
+    INSTANCE;
+
+    @Override
+    @Nonnull
+    public String apply(@Nonnull QProfile input) {
+      return input.key();
+    }
   }
 
   private class IsLanguageKnown implements Predicate<QProfile> {

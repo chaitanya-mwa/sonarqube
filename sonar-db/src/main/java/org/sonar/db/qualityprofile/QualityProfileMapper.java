@@ -70,6 +70,8 @@ public interface QualityProfileMapper {
 
   List<QualityProfileProjectCount> countProjectsByProfile();
 
+  List<QualityProfileProjectCount> countProjectsByProfiles(@Param("profileKeys") List<String> profileKeys);
+
   QualityProfileDto selectByProjectIdAndLanguage(@Param("projectId") Long projectId, @Param("language") String language);
 
   QualityProfileDto selectByProjectAndLanguage(@Param("projectKey") String projectKey, @Param("language") String language);

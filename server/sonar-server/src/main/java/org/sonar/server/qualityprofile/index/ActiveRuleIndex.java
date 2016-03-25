@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.elasticsearch.action.get.GetRequestBuilder;
@@ -37,6 +38,7 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.Aggregation;
@@ -105,8 +107,7 @@ public class ActiveRuleIndex extends BaseIndex {
       .setQuery(QueryBuilders
         .hasParentQuery(RuleIndexDefinition.TYPE_RULE,
           QueryBuilders.idsQuery(RuleIndexDefinition.TYPE_RULE)
-            .addIds(key.toString())
-        ))
+            .addIds(key.toString())))
       .setRouting(key.repository())
       .setSize(Integer.MAX_VALUE);
 
@@ -140,19 +141,26 @@ public class ActiveRuleIndex extends BaseIndex {
 
   public Map<String, Long> countAllByQualityProfileKey() {
     return countByField(FIELD_ACTIVE_RULE_PROFILE_KEY,
+      QueryBuilders.matchAllQuery(),
       FilterBuilders.hasParentFilter(TYPE_RULE,
         FilterBuilders.notFilter(
           FilterBuilders.termFilter(FIELD_RULE_STATUS, "REMOVED"))));
   }
 
-  private Map<String, Long> countByField(String indexField, FilterBuilder filter) {
+  public Map<String, Long> countAllByQualityProfileKey(Set<String> keys) {
+    return countByField(FIELD_ACTIVE_RULE_PROFILE_KEY,
+      QueryBuilders.termsQuery(FIELD_ACTIVE_RULE_PROFILE_KEY, keys),
+      FilterBuilders.hasParentFilter(TYPE_RULE,
+        FilterBuilders.notFilter(
+          FilterBuilders.termFilter(FIELD_RULE_STATUS, "REMOVED"))));
+  }
+
+  private Map<String, Long> countByField(String indexField, QueryBuilder query, FilterBuilder filter) {
     Map<String, Long> counts = new HashMap<>();
 
     SearchRequestBuilder request = getClient().prepareSearch(INDEX)
       .setTypes(TYPE_ACTIVE_RULE)
-      .setQuery(QueryBuilders.filteredQuery(
-        QueryBuilders.matchAllQuery(),
-        filter))
+      .setQuery(QueryBuilders.filteredQuery(query, filter))
       .setSize(0)
       .addAggregation(AggregationBuilders
         .terms(indexField)
@@ -163,8 +171,7 @@ public class ActiveRuleIndex extends BaseIndex {
 
     SearchResponse response = request.get();
 
-    Terms values =
-      response.getAggregations().get(indexField);
+    Terms values = response.getAggregations().get(indexField);
 
     for (Terms.Bucket value : values.getBuckets()) {
       counts.put(value.getKey(), value.getDocCount());

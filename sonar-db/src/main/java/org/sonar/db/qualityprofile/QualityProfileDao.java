@@ -24,7 +24,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.CheckForNull;
@@ -341,6 +343,23 @@ public class QualityProfileDao implements Dao {
       return countByKey;
     } finally {
       MyBatis.closeQuietly(session);
+    }
+  }
+
+  public Map<String, Long> countProjectsByProfileKeys(Collection<String> profileKeys) {
+    try (DbSession session = mybatis.openSession(false)) {
+      final Map<String, Long> countByKey = new HashMap<>(profileKeys.size());
+      DatabaseUtils.executeLargeInputs(profileKeys, new Function<List<String>, List<QualityProfileDto>>() {
+        @Override
+        @Nonnull
+        public List<QualityProfileDto> apply(@Nonnull List<String> input) {
+          for (QualityProfileProjectCount count : mapper(session).countProjectsByProfiles(input)) {
+            countByKey.put(count.getProfileKey(), count.getProjectCount());
+          }
+          return Collections.emptyList();
+        }
+      });
+      return countByKey;
     }
   }
 
