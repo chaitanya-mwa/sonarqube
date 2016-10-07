@@ -21,6 +21,7 @@ package org.sonar.api.server.ws.internal;
 
 import com.google.common.collect.Maps;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -47,6 +48,11 @@ public class SimpleGetRequest extends Request {
   @Override
   public String method() {
     return "GET";
+  }
+
+  @Override
+  public Reader getBody() {
+    throw new UnsupportedOperationException();
   }
 
   @Override

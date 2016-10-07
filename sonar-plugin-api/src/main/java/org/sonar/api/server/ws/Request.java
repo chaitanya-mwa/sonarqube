@@ -23,6 +23,7 @@ import com.google.common.annotations.Beta;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,6 +48,8 @@ public abstract class Request {
    * values are GET and POST. Others are not supported.
    */
   public abstract String method();
+
+  public abstract Reader getBody();
 
   /**
    * Returns the requested MIME type, or {@code "application/octet-stream"} if not specified.

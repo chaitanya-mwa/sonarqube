@@ -85,6 +85,7 @@ import org.sonar.server.email.ws.EmailsWsModule;
 import org.sonar.server.es.IndexCreator;
 import org.sonar.server.es.IndexDefinitions;
 import org.sonar.server.event.NewAlerts;
+import org.sonar.server.graphql.GraphqlWebService;
 import org.sonar.server.issue.ActionService;
 import org.sonar.server.issue.AddTagsAction;
 import org.sonar.server.issue.AssignAction;
@@ -285,6 +286,7 @@ public class PlatformLevel4 extends PlatformLevel {
       BackendCleanup.class,
       IndexDefinitions.class,
 
+      GraphqlWebService.class,
       // batch
       BatchWsModule.class,
 

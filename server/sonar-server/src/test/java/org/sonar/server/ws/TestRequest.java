@@ -24,6 +24,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,11 @@ public class TestRequest extends ValidatingRequest {
   @Override
   public String method() {
     return method;
+  }
+
+  @Override
+  public Reader getBody() {
+    throw new UnsupportedOperationException();
   }
 
   @Override

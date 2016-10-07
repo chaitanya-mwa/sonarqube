@@ -22,7 +22,9 @@ package org.sonar.server.ws;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HttpHeaders;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.CheckForNull;
@@ -53,6 +55,15 @@ public class ServletRequest extends ValidatingRequest {
   @Override
   public String method() {
     return source.getMethod();
+  }
+
+  @Override
+  public Reader getBody() {
+    try {
+      return source.getReader();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   @Override

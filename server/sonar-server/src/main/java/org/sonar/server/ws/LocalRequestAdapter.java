@@ -21,6 +21,7 @@ package org.sonar.server.ws;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.sonar.api.server.ws.LocalConnector;
@@ -71,6 +72,11 @@ public class LocalRequestAdapter extends ValidatingRequest {
   @Override
   public String method() {
     return localRequest.getMethod();
+  }
+
+  @Override
+  public Reader getBody() {
+    throw new UnsupportedOperationException();
   }
 
   @Override

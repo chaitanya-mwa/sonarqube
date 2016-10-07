@@ -25,6 +25,7 @@ import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -335,6 +336,11 @@ public class RequestTest {
     @Override
     public String method() {
       return "GET";
+    }
+
+    @Override
+    public Reader getBody() {
+      throw new UnsupportedOperationException();
     }
 
     @Override

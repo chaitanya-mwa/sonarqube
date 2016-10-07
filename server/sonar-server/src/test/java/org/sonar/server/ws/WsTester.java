@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -68,6 +69,11 @@ public class WsTester {
     @Override
     public String method() {
       return method;
+    }
+
+    @Override
+    public Reader getBody() {
+      throw new UnsupportedOperationException();
     }
 
     @Override
