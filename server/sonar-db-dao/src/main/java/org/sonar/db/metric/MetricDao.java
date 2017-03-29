@@ -59,6 +59,9 @@ public class MetricDao implements Dao {
     return metric;
   }
 
+  /**
+   * Select all metrics, including the metrics with enabled=false
+   */
   public List<MetricDto> selectAll(DbSession session) {
     return mapper(session).selectAll();
   }

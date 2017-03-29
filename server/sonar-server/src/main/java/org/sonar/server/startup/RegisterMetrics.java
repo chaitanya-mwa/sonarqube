@@ -20,11 +20,11 @@
 package org.sonar.server.startup;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.measures.Metric;
@@ -32,11 +32,11 @@ import org.sonar.api.measures.Metrics;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 import org.sonar.api.utils.log.Profiler;
+import org.sonar.core.util.stream.Collectors;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.metric.MetricDto;
 
-import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -77,37 +77,39 @@ public class RegisterMetrics {
     dbClient.gateConditionDao().deleteConditionsWithInvalidMetrics(session);
   }
 
-  private void save(DbSession session, Iterable<Metric> metrics) {
-    Map<String, MetricDto> basesByKey = new HashMap<>();
-    for (MetricDto base : from(dbClient.metricDao().selectAll(session)).toList()) {
-      basesByKey.put(base.getKey(), base);
-    }
+  private void save(DbSession dbSession, Iterable<Metric> metrics) {
+    Map<String, MetricDto> basesByKey = dbClient.metricDao().selectAll(dbSession).stream()
+      .collect(Collectors.uniqueIndex(MetricDto::getKey, Function.identity()));
+    Map<String, Metric> defsByKey = StreamSupport.stream(metrics.spliterator(), false)
+      .collect(Collectors.uniqueIndex(Metric::getKey, Function.identity()));
 
-    for (Metric metric : metrics) {
+    defsByKey.values().forEach(metric -> {
       MetricDto dto = MetricToDto.INSTANCE.apply(metric);
       MetricDto base = basesByKey.get(metric.getKey());
       if (base == null) {
         // new metric, never installed
-        dbClient.metricDao().insert(session, dto);
+        dbClient.metricDao().insert(dbSession, dto);
       } else if (!base.isUserManaged()) {
         // existing metric, update changes. Existing custom metrics are kept without applying changes.
         dto.setId(base.getId());
-        dbClient.metricDao().update(session, dto);
+        dbClient.metricDao().update(dbSession, dto);
       }
-      basesByKey.remove(metric.getKey());
-    }
+    });
 
-    for (MetricDto nonUpdatedBase : basesByKey.values()) {
-      if (!nonUpdatedBase.isUserManaged() && dbClient.metricDao().disableCustomByKey(session, nonUpdatedBase.getKey())) {
-        LOG.info("Disable metric {} [{}]", nonUpdatedBase.getShortName(), nonUpdatedBase.getKey());
-      }
-    }
+    basesByKey.values().stream()
+      .filter(dto -> !defsByKey.containsKey(dto.getKey()))
+      .filter(dto -> !dto.isUserManaged())
+      .forEach(dto -> {
+        if (!dbClient.metricDao().disableCustomByKey(dbSession, dto.getKey())) {
+          LOG.info("Disable metric {} [{}]", dto.getShortName(), dto.getKey());
+        }
+      });
   }
 
   @VisibleForTesting
   List<Metric> getPluginMetrics() {
     List<Metric> metricsToRegister = newArrayList();
-    Map<String, Metrics> metricsByRepository = Maps.newHashMap();
+    Map<String, Metrics> metricsByRepository = new HashMap<>();
     for (Metrics metrics : metricsRepositories) {
       checkMetrics(metricsByRepository, metrics);
       metricsToRegister.addAll(metrics.getMetrics());
