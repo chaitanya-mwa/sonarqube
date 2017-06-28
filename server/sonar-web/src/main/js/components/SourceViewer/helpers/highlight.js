@@ -26,23 +26,25 @@ export type Tokens = Array<Token>;
 
 const ISSUE_LOCATION_CLASS = 'source-line-code-issue';
 
-export const splitByTokens = (code: string, rootClassName: string = ''): Tokens => {
-  const container = document.createElement('div');
+const recurseSplitTokens = (nodes, rootClassName) => {
   let tokens = [];
-  container.innerHTML = code;
-  [].forEach.call(container.childNodes, node => {
+  [].forEach.call(nodes, node => {
     if (node.nodeType === 1) {
       // ELEMENT NODE
       const fullClassName = rootClassName ? rootClassName + ' ' + node.className : node.className;
-      const innerTokens = splitByTokens(node.innerHTML, fullClassName);
-      tokens = tokens.concat(innerTokens);
-    }
-    if (node.nodeType === 3) {
+      tokens = tokens.concat(recurseSplitTokens(node.childNodes, fullClassName));
+    } else if (node.nodeType === 3) {
       // TEXT NODE
       tokens.push({ className: rootClassName, markers: [], text: node.nodeValue });
     }
   });
   return tokens;
+};
+
+export const splitByTokens = (code: string, rootClassName: string = ''): Tokens => {
+  const container = document.createElement('div');
+  container.innerHTML = code;
+  return recurseSplitTokens(container.childNodes, rootClassName);
 };
 
 export const highlightSymbol = (tokens: Tokens, symbol: string): Tokens => {
