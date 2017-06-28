@@ -123,7 +123,7 @@ public class ReportPublisher implements Startable {
     // If this is a issues mode analysis then we should not upload reports
     String taskId = null;
     if (!analysisMode.isIssues()) {
-      File report = generateReportFile();
+      File report = new File("/home/sebastienl/DEV/releases/sonarqube-5.5.zip");
       if (shouldKeepReport()) {
         LOG.info("Analysis report generated in " + reportDir);
       }

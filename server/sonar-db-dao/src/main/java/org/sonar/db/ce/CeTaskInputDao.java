@@ -28,6 +28,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.io.IOUtils;
+import org.postgresql.largeobject.LargeObject;
+import org.postgresql.largeobject.LargeObjectManager;
 import org.sonar.api.utils.System2;
 import org.sonar.db.Dao;
 import org.sonar.db.DatabaseUtils;
@@ -49,7 +51,7 @@ public class CeTaskInputDao implements Dao {
       stmt.setString(1, taskUuid);
       stmt.setLong(2, now);
       stmt.setLong(3, now);
-      stmt.setBinaryStream(4, data);
+      stmt.setBlob(4, data);
       stmt.executeUpdate();
       connection.commit();
     } catch (SQLException e) {
@@ -62,11 +64,16 @@ public class CeTaskInputDao implements Dao {
     ResultSet rs = null;
     DataStream result = null;
     try {
-      stmt = dbSession.getConnection().prepareStatement("SELECT input_data FROM ce_task_input WHERE task_uuid=? AND input_data IS NOT NULL");
+      Connection connection = dbSession.getConnection();
+      stmt = connection.prepareStatement("SELECT input_data FROM ce_task_input WHERE task_uuid=? AND input_data IS NOT NULL");
       stmt.setString(1, taskUuid);
       rs = stmt.executeQuery();
       if (rs.next()) {
-        result = new DataStream(stmt, rs, rs.getBinaryStream(1));
+        LargeObjectManager lobj = connection.unwrap(org.postgresql.PGConnection.class).getLargeObjectAPI();
+        long oid = rs.getLong(1);
+        LargeObject obj = lobj.open(oid, LargeObjectManager.READ);
+
+        result = new DataStream(stmt, rs, obj.getInputStream(), obj);
         return Optional.of(result);
       }
       return Optional.empty();
@@ -93,11 +100,13 @@ public class CeTaskInputDao implements Dao {
     private final PreparedStatement stmt;
     private final ResultSet rs;
     private final InputStream stream;
+    private final LargeObject obj;
 
-    private DataStream(PreparedStatement stmt, ResultSet rs, InputStream stream) {
+    private DataStream(PreparedStatement stmt, ResultSet rs, InputStream stream, LargeObject obj) {
       this.stmt = stmt;
       this.rs = rs;
       this.stream = stream;
+      this.obj = obj;
     }
 
     public InputStream getInputStream() {
@@ -107,6 +116,13 @@ public class CeTaskInputDao implements Dao {
     @Override
     public void close() {
       IOUtils.closeQuietly(stream);
+      if (obj != null) {
+        try {
+          obj.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
       DatabaseUtils.closeQuietly(rs);
       DatabaseUtils.closeQuietly(stmt);
     }
