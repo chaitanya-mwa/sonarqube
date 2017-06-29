@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.io.IOUtils;
+import org.postgresql.largeobject.BlobInputStream;
 import org.postgresql.largeobject.LargeObject;
 import org.postgresql.largeobject.LargeObjectManager;
 import org.sonar.api.utils.System2;
@@ -73,7 +74,10 @@ public class CeTaskInputDao implements Dao {
         long oid = rs.getLong(1);
         LargeObject obj = lobj.open(oid, LargeObjectManager.READ);
 
-        result = new DataStream(stmt, rs, obj.getInputStream(), obj);
+        // FIXME: fork, optimize and simplify BlobInputStream by
+        //        1. removing mark support
+        //        2. re-using an internal byte array and use LargeObject.read(byte, int, int)
+        result = new DataStream(stmt, rs, new BlobInputStream(obj, 1024 * 1000 /* 1Mb */), obj);
         return Optional.of(result);
       }
       return Optional.empty();

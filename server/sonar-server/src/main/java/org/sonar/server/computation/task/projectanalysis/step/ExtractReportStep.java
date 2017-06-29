@@ -19,7 +19,6 @@
  */
 package org.sonar.server.computation.task.projectanalysis.step;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,7 +59,7 @@ public class ExtractReportStep implements ComputationStep {
       if (opt.isPresent()) {
         File unzippedDir = tempFolder.newDir();
         try (CeTaskInputDao.DataStream reportStream = opt.get();
-             InputStream zipStream = new BufferedInputStream(reportStream.getInputStream())) {
+             InputStream zipStream = reportStream.getInputStream()) {
           ZipUtils.unzip(zipStream, unzippedDir);
         } catch (IOException e) {
           throw new IllegalStateException("Fail to extract report " + task.getUuid() + " from database", e);
@@ -70,7 +69,80 @@ public class ExtractReportStep implements ComputationStep {
         throw MessageException.of("Analysis report " + task.getUuid() + " is missing in database");
       }
     }
+//    try (DbSession dbSession = dbClient.openSession(false)) {
+//      String taskUuid = task.getUuid();
+//      PreparedStatement stmt = null;
+//      ResultSet rs = null;
+//      Connection connection = dbSession.getConnection();
+//      try {
+//        stmt = connection.prepareStatement("SELECT input_data FROM ce_task_input WHERE task_uuid=? AND input_data IS NOT NULL");
+//        stmt.setString(1, taskUuid);
+//        rs = stmt.executeQuery();
+//        if (rs.next()) {
+//          LargeObjectManager lobj = connection.unwrap(org.postgresql.PGConnection.class).getLargeObjectAPI();
+//          long oid = rs.getLong(1);
+//          LargeObject obj = lobj.open(oid, LargeObjectManager.READ);
+//          System.err.println("OIB size=" + obj.size());
+//          File unzippedDir = tempFolder.newDir();
+//          try (InputStream zipStream = new BlobInputStream(obj, 1024 * 500 /* 500Kb */)) {
+//            ZipUtils.unzip(zipStream, unzippedDir);
+//          } catch (IOException e) {
+//            throw new IllegalStateException("Fail to extract report " + taskUuid + " from database", e);
+//          }
+//          reportDirectoryHolder.setDirectory(unzippedDir);
+//        } else {
+//          throw MessageException.of("Analysis report " + taskUuid + " is missing in database");
+//        }
+//      } catch (SQLException e) {
+//        throw new IllegalStateException("Fail to select data of CE task " + taskUuid, e);
+//      } finally {
+//        DatabaseUtils.closeQuietly(rs);
+//        DatabaseUtils.closeQuietly(stmt);
+//      }
+//    }
   }
+
+//  private static class LargeObjectInputStream extends InputStream implements AutoCloseable {
+//    private static final int BUFFER_SIZE = 1024 * 1000 * 5; // 5 Mb
+//    private final byte[] buffer = new byte[BUFFER_SIZE];
+//    private final LargeObject obj;
+//    private final int objSize;
+//    private int sizeRead = 0;
+//    private int bpos = 0
+//
+//    private LargeObjectInputStream(LargeObject obj) throws SQLException {
+//      this.obj = obj;
+//      this.objSize = obj.size();
+//    }
+//
+//    @Override
+//    public int read() throws IOException {
+//      if (sizeRead <= objSize) {
+//        int toRead = Math.min(BUFFER_SIZE, objSize - sizeRead);
+//        sizeRead += obj.read(buffer, 0, toRead);
+//        if (read == 0) {
+//          return -1;
+//        }
+//      } else {
+//        return -1;
+//      }
+//
+//      if (bpos >= buffer.length) {
+//        buffer = obj.read(buffer, 0, Math.min());
+//        bpos = 0;
+//      }
+//      return 0;
+//    }
+//
+//    @Override
+//    public void close() throws IOException {
+//      try {
+//        obj.close();
+//      } catch (SQLException e) {
+//        throw new IOException("Failed to close LargeObject", e);
+//      }
+//    }
+//  }
 
   @Override
   public String getDescription() {
