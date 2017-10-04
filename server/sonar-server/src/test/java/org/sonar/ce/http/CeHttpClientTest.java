@@ -30,11 +30,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.log.LoggerLevel;
-import org.sonar.process.sharedmemoryfile.DefaultProcessCommands;
 import org.sonar.process.ProcessEntryPoint;
 import org.sonar.process.ProcessId;
+import org.sonar.process.sharedmemoryfile.DefaultProcessCommands;
 import org.sonar.process.systeminfo.protobuf.ProtobufSystemInfo;
 
 import static java.lang.String.format;

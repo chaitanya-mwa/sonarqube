@@ -31,7 +31,7 @@ import static org.sonar.server.rule.CommonRuleKeys.commonRepositoryForLang;
  * Declare the few rules that are automatically created by core for all languages. These rules
  * check measure values against thresholds defined in Quality profiles.
  */
-// this class must not be mixed with other RulesDefinition so it does implement the interface RulesDefinitions.
+// this class must not be mixed with other RulesDefinitionImpl so it does implement the interface RulesDefinitions.
 // It replaces the common-rules that are still embedded within plugins.
 public class CommonRuleDefinitionsImpl implements CommonRuleDefinitions {
 

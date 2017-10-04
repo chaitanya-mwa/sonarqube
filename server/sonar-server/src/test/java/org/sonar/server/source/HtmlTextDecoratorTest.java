@@ -19,9 +19,8 @@
  */
 package org.sonar.server.source;
 
-import org.junit.Test;
-
 import java.util.List;
+import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.sonar.server.source.HtmlTextDecorator.CR_END_OF_LINE;

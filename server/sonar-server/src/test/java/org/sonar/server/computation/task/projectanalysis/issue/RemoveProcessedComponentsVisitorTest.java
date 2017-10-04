@@ -19,19 +19,18 @@
  */
 package org.sonar.server.computation.task.projectanalysis.issue;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
+import com.google.common.base.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonar.server.computation.task.projectanalysis.component.Component;
 import org.sonar.server.computation.task.projectanalysis.filemove.MovedFilesRepository;
 import org.sonar.server.computation.task.projectanalysis.filemove.MovedFilesRepository.OriginalFile;
 
-import com.google.common.base.Optional;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 public class RemoveProcessedComponentsVisitorTest {
   private static final String UUID = "uuid";

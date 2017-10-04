@@ -63,7 +63,7 @@ public class RuleIndexDefinition implements IndexDefinition {
     FIELD_RULE_CREATED_AT,
     FIELD_RULE_KEY);
 
-  // Rule extension fields
+  // RuleImpl extension fields
   public static final IndexType INDEX_TYPE_RULE_EXTENSION = new IndexType(INDEX, "ruleExtension");
   /** The uuid of a {@link RuleExtensionScope} */
   public static final String FIELD_RULE_EXTENSION_SCOPE = "scope";
@@ -124,7 +124,7 @@ public class RuleIndexDefinition implements IndexDefinition {
     activeRuleMapping.keywordFieldBuilder(FIELD_ACTIVE_RULE_INHERITANCE).disableNorms().build();
     activeRuleMapping.keywordFieldBuilder(FIELD_ACTIVE_RULE_SEVERITY).disableNorms().build();
 
-    // Rule extension type
+    // RuleImpl extension type
     NewIndex.NewIndexType ruleExtensionType = index.createType(INDEX_TYPE_RULE_EXTENSION.getType());
     ruleExtensionType.setEnableSource(enableSource);
     ruleExtensionType.setAttribute("_parent", ImmutableMap.of("type", INDEX_TYPE_RULE.getType()));
@@ -133,7 +133,7 @@ public class RuleIndexDefinition implements IndexDefinition {
     ruleExtensionType.keywordFieldBuilder(FIELD_RULE_EXTENSION_RULE_KEY).disableNorms().build();
     ruleExtensionType.keywordFieldBuilder(FIELD_RULE_EXTENSION_TAGS).build();
 
-    // Rule type
+    // RuleImpl type
     NewIndex.NewIndexType ruleMapping = index.createType(INDEX_TYPE_RULE.getType());
     ruleMapping.setEnableSource(enableSource);
 

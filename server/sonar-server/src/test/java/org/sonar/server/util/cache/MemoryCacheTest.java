@@ -20,17 +20,20 @@
 package org.sonar.server.util.cache;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.sonar.server.exceptions.NotFoundException;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.Test;
+import org.sonar.server.exceptions.NotFoundException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.anyCollection;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class MemoryCacheTest {
 

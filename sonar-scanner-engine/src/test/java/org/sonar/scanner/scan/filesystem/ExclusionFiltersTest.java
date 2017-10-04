@@ -31,8 +31,8 @@ import org.sonar.api.CoreProperties;
 import org.sonar.api.batch.fs.IndexedFile;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.internal.DefaultIndexedFile;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.scan.filesystem.FileExclusions;
+import org.sonar.api.test.config.MapSettings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

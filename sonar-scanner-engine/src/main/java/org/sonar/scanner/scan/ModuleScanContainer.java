@@ -96,7 +96,7 @@ public class ModuleScanContainer extends ComponentContainer {
     add(
       module.definition(),
       // still injected by some plugins
-      new Project(module),
+      new Project(module.definition()),
       module,
       MutableModuleSettings.class,
       new ModuleSettingsProvider());

@@ -19,10 +19,9 @@
  */
 package org.sonar.server.es;
 
-import org.junit.Test;
-
 import java.util.Arrays;
-import org.sonar.api.config.internal.MapSettings;
+import org.junit.Test;
+import org.sonar.api.test.config.MapSettings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.sonar.server.es.NewIndex.SettingsConfiguration.newBuilder;

@@ -28,9 +28,9 @@ import org.sonar.api.batch.fs.internal.DefaultInputFile;
 import org.sonar.api.batch.fs.internal.TestInputFileBuilder;
 import org.sonar.api.batch.rule.Severity;
 import org.sonar.api.batch.sensor.internal.DefaultSensorDescriptor;
-import org.sonar.api.batch.sensor.internal.SensorContextTester;
 import org.sonar.api.batch.sensor.issue.Issue;
 import org.sonar.api.internal.SonarRuntimeImpl;
+import org.sonar.api.test.sensor.SensorContextTester;
 import org.sonar.api.utils.Version;
 import org.sonar.xoo.Xoo;
 

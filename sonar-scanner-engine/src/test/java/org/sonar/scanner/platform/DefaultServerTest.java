@@ -23,8 +23,8 @@ import org.junit.Test;
 import org.sonar.api.CoreProperties;
 import org.sonar.api.SonarQubeSide;
 import org.sonar.api.config.Settings;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.internal.SonarRuntimeImpl;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.Version;
 import org.sonar.scanner.bootstrap.ScannerWsClient;
 

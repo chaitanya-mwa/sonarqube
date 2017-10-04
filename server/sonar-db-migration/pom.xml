@@ -15,11 +15,11 @@
   
   <dependencies>
     <dependency>
-      <groupId>org.sonarsource.sonarqube</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>sonar-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.sonarsource.sonarqube</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>sonar-db-core</artifactId>
     </dependency>
     <dependency>
@@ -52,6 +52,11 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>sonar-testing-harness</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>sonar-plugin-api-testing-common</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

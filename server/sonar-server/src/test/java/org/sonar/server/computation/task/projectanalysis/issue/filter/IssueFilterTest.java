@@ -27,8 +27,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.api.config.Settings;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.rule.RuleKey;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.core.issue.DefaultIssue;
 import org.sonar.server.computation.task.projectanalysis.component.Component;
 import org.sonar.server.computation.task.projectanalysis.component.ConfigurationRepository;
@@ -175,7 +175,7 @@ public class IssueFilterTest {
   @Test
   public void fail_when_only_path_parameter() throws Exception {
     expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage("Rule key pattern cannot be empty. Please check 'sonar.issue.enforce.multicriteria' settings");
+    expectedException.expectMessage("RuleImpl key pattern cannot be empty. Please check 'sonar.issue.enforce.multicriteria' settings");
 
     newIssueFilter(newSettings(Collections.emptyList(), asList("", "**")));
   }

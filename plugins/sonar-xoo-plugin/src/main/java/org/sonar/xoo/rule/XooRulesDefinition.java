@@ -70,8 +70,8 @@ public class XooRulesDefinition implements RulesDefinition {
       .setDefaultValue("xoo")
       .setDescription("The tag to search for");
 
-    NewRule ruleWithParameters = repo.createRule("RuleWithParameters").setName("Rule with parameters")
-      .setHtmlDescription("Rule containing parameter of different types : boolean, integer, etc. For information, no issue will be linked to this rule.");
+    NewRule ruleWithParameters = repo.createRule("RuleWithParameters").setName("RuleImpl with parameters")
+      .setHtmlDescription("RuleImpl containing parameter of different types : boolean, integer, etc. For information, no issue will be linked to this rule.");
     ruleWithParameters.createParam("string").setType(RuleParamType.STRING);
     ruleWithParameters.createParam("text").setType(RuleParamType.TEXT);
     ruleWithParameters.createParam("boolean").setType(RuleParamType.BOOLEAN);

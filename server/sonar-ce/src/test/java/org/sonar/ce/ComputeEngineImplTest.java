@@ -23,8 +23,8 @@ import java.util.Properties;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.sonar.ce.container.ComputeEngineStatus;
 import org.sonar.ce.container.ComputeEngineContainer;
+import org.sonar.ce.container.ComputeEngineStatus;
 import org.sonar.process.Props;
 
 public class ComputeEngineImplTest {

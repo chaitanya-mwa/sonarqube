@@ -35,9 +35,9 @@ import org.sonar.ce.queue.CeTask;
 import org.sonar.core.platform.ComponentContainer;
 import org.sonar.plugin.ce.ReportAnalysisComponentProvider;
 import org.sonar.server.computation.task.container.TaskContainer;
-import org.sonar.server.computation.task.step.StepsExplorer;
 import org.sonar.server.computation.task.projectanalysis.step.PersistComponentsStep;
 import org.sonar.server.computation.task.step.ComputationStep;
+import org.sonar.server.computation.task.step.StepsExplorer;
 
 import static com.google.common.base.Predicates.notNull;
 import static com.google.common.collect.FluentIterable.from;

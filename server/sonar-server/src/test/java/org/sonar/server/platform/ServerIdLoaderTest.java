@@ -22,7 +22,7 @@ package org.sonar.server.platform;
 import java.util.Optional;
 import org.junit.Test;
 import org.sonar.api.CoreProperties;
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.test.config.MapSettings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

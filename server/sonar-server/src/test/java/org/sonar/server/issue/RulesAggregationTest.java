@@ -38,14 +38,14 @@ public class RulesAggregationTest {
   public void count_rules() {
     RulesAggregation rulesAggregation = new RulesAggregation();
     RuleKey ruleKey = RuleKey.of("xoo", "S001");
-    RuleDefinitionDto ruleDto = RuleTesting.newRule(ruleKey).setName("Rule name");
+    RuleDefinitionDto ruleDto = RuleTesting.newRule(ruleKey).setName("RuleImpl name");
     rulesAggregation.add(ruleDto);
     rulesAggregation.add(ruleDto);
 
-    RulesAggregation.Rule rule = new RulesAggregation.Rule(ruleKey, "Rule name");
+    RulesAggregation.Rule rule = new RulesAggregation.Rule(ruleKey, "RuleImpl name");
 
     assertThat(rulesAggregation.rules()).hasSize(1);
-    assertThat(rulesAggregation.rules().iterator().next().name()).isEqualTo("Rule name");
+    assertThat(rulesAggregation.rules().iterator().next().name()).isEqualTo("RuleImpl name");
     assertThat(rulesAggregation.countRule(rule)).isEqualTo(2);
   }
 
@@ -53,10 +53,10 @@ public class RulesAggregationTest {
   public void count_rules_with_different_rules() {
     RulesAggregation rulesAggregation = new RulesAggregation();
 
-    RuleDefinitionDto ruleDto = RuleTesting.newRule(RuleKey.of("xoo", "S001")).setName("Rule name 1");
+    RuleDefinitionDto ruleDto = RuleTesting.newRule(RuleKey.of("xoo", "S001")).setName("RuleImpl name 1");
     rulesAggregation.add(ruleDto);
     rulesAggregation.add(ruleDto);
-    rulesAggregation.add(RuleTesting.newRule(RuleKey.of("xoo", "S002")).setName("Rule name 2"));
+    rulesAggregation.add(RuleTesting.newRule(RuleKey.of("xoo", "S002")).setName("RuleImpl name 2"));
 
     assertThat(rulesAggregation.rules()).hasSize(2);
   }

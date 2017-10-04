@@ -19,10 +19,9 @@
  */
 package org.sonar.server.source;
 
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

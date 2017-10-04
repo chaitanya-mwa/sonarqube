@@ -30,12 +30,12 @@ import javax.annotation.Nonnull;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.rule.Severity;
 import org.sonar.api.server.debt.DebtRemediationFunction;
 import org.sonar.api.server.debt.internal.DefaultDebtRemediationFunction;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.System2;
 import org.sonar.db.DbSession;
 import org.sonar.db.DbTester;
@@ -98,7 +98,7 @@ public class RuleUpdaterTest {
       underTest.update(dbSession, update, db.getDefaultOrganization(), userSessionRule);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessage("Rule with REMOVED status cannot be updated: squid:S001");
+      assertThat(e).hasMessage("RuleImpl with REMOVED status cannot be updated: squid:S001");
     }
   }
 

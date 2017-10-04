@@ -30,12 +30,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.api.PropertyType;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.rule.Severity;
+import org.sonar.api.test.config.MapSettings;
+import org.sonar.api.test.utils.AlwaysIncreasingSystem2;
 import org.sonar.api.utils.System2;
-import org.sonar.api.utils.internal.AlwaysIncreasingSystem2;
 import org.sonar.db.DbTester;
 import org.sonar.db.qualityprofile.ActiveRuleParamDto;
 import org.sonar.db.qualityprofile.OrgActiveRuleDto;
@@ -334,7 +334,7 @@ public class RuleActivatorTest {
     RuleKey ruleKey = RuleKey.parse("unknown:xxx");
     RuleActivation activation = RuleActivation.create(ruleKey);
 
-    expectFailure("Rule not found: " + ruleKey, () -> activate(profile, activation));
+    expectFailure("RuleImpl not found: " + ruleKey, () -> activate(profile, activation));
   }
 
   @Test
@@ -343,7 +343,7 @@ public class RuleActivatorTest {
     QProfileDto profile = db.qualityProfiles().insert(db.getDefaultOrganization(), p -> p.setLanguage("js"));
     RuleActivation activation = RuleActivation.create(rule.getKey());
 
-    expectFailure("Rule " + rule.getKey() + " and profile " + profile.getKee() + " have different languages", () -> activate(profile, activation));
+    expectFailure("RuleImpl " + rule.getKey() + " and profile " + profile.getKee() + " have different languages", () -> activate(profile, activation));
   }
 
   @Test
@@ -352,7 +352,7 @@ public class RuleActivatorTest {
     QProfileDto profile = createProfile(rule);
     RuleActivation activation = RuleActivation.create(rule.getKey());
 
-    expectFailure("Rule was removed: " + rule.getKey(), () -> activate(profile, activation));
+    expectFailure("RuleImpl was removed: " + rule.getKey(), () -> activate(profile, activation));
   }
 
   @Test
@@ -361,7 +361,7 @@ public class RuleActivatorTest {
     QProfileDto profile = createProfile(rule);
     RuleActivation activation = RuleActivation.create(rule.getKey());
 
-    expectFailure("Rule template can't be activated on a Quality profile: " + rule.getKey(), () -> activate(profile, activation));
+    expectFailure("RuleImpl template can't be activated on a Quality profile: " + rule.getKey(), () -> activate(profile, activation));
   }
 
   @Test
@@ -444,7 +444,7 @@ public class RuleActivatorTest {
     QProfileDto profile = createProfile(rule);
     RuleKey ruleKey = RuleKey.parse("unknown:xxx");
 
-    expectFailure("Rule not found: " + ruleKey, () -> underTest.deactivate(db.getSession(), profile, ruleKey));
+    expectFailure("RuleImpl not found: " + ruleKey, () -> underTest.deactivate(db.getSession(), profile, ruleKey));
   }
 
   @Test

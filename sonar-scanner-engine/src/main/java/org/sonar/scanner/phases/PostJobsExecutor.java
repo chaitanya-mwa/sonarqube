@@ -21,7 +21,6 @@ package org.sonar.scanner.phases;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
 import org.apache.commons.lang.StringUtils;
 import org.sonar.api.batch.PostJob;
 import org.sonar.api.batch.ScannerSide;
@@ -59,7 +58,7 @@ public class PostJobsExecutor {
   private void execute(SensorContext context, Collection<PostJob> postJobs) {
     logPostJobs(postJobs);
 
-    Project project = new Project(module);
+    Project project = new Project(module.definition());
     for (PostJob postJob : postJobs) {
       LOG.info("Executing post-job {}", ScannerUtils.describe(postJob));
       eventBus.fireEvent(new PostJobExecutionEvent(postJob, true));

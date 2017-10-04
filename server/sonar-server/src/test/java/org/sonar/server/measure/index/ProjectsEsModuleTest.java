@@ -21,7 +21,6 @@ package org.sonar.server.measure.index;
 
 import org.junit.Test;
 import org.sonar.core.platform.ComponentContainer;
-import org.sonar.server.measure.index.ProjectsEsModule;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -196,7 +196,7 @@ public class SearchAction implements RulesWsAction {
       .setSince("4.4")
       .setHandler(this);
 
-    // Rule-specific search parameters
+    // RuleImpl-specific search parameters
     defineRuleSearchParameters(action);
   }
 

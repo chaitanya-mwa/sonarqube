@@ -19,10 +19,7 @@
  */
 package org.sonar.server.computation.task.projectanalysis.issue;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Collection;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -30,6 +27,8 @@ import org.mockito.MockitoAnnotations;
 import org.sonar.core.issue.DefaultIssue;
 import org.sonar.core.issue.tracking.BlockHashSequence;
 import org.sonar.core.issue.tracking.LineHashSequence;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DefaultTrackingInputTest {
   @Mock

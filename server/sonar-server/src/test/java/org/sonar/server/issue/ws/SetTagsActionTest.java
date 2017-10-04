@@ -27,11 +27,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.server.ws.Request;
 import org.sonar.api.server.ws.Response;
 import org.sonar.api.server.ws.WebService.Action;
 import org.sonar.api.server.ws.WebService.Param;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.System2;
 import org.sonar.core.issue.FieldDiffs;
 import org.sonar.db.DbClient;
@@ -181,7 +181,7 @@ public class SetTagsActionTest {
     logIn(issueDto);
 
     expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage("Tag 'pol op' is invalid. Rule tags accept only the characters: a-z, 0-9, '+', '-', '#', '.'");
+    expectedException.expectMessage("Tag 'pol op' is invalid. RuleImpl tags accept only the characters: a-z, 0-9, '+', '-', '#', '.'");
 
     call(issueDto.getKey(), "pol op");
   }

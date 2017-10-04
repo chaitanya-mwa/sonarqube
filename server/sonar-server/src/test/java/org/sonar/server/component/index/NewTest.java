@@ -22,7 +22,7 @@ package org.sonar.server.component.index;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.junit.Rule;
 import org.junit.Test;
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.server.es.EsTester;
 
 public class NewTest {

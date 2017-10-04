@@ -22,9 +22,9 @@ package org.sonar.server.user;
 import java.util.Collection;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import org.sonar.db.permission.OrganizationPermission;
 import org.sonar.db.user.GroupDto;
 import org.sonar.db.user.UserDto;
-import org.sonar.db.permission.OrganizationPermission;
 
 import static java.util.Objects.requireNonNull;
 

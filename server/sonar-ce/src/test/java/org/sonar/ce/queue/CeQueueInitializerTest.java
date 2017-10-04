@@ -22,8 +22,8 @@ package org.sonar.ce.queue;
 import java.io.IOException;
 import org.junit.Test;
 import org.sonar.api.platform.Server;
-import org.sonar.ce.cleaning.CeCleaningScheduler;
 import org.sonar.ce.CeDistributedInformation;
+import org.sonar.ce.cleaning.CeCleaningScheduler;
 import org.sonar.ce.taskprocessor.CeProcessingScheduler;
 
 import static org.mockito.Mockito.mock;

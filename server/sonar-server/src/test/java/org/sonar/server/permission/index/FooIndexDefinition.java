@@ -19,7 +19,7 @@
  */
 package org.sonar.server.permission.index;
 
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.server.es.IndexDefinition;
 import org.sonar.server.es.IndexType;
 import org.sonar.server.es.NewIndex;

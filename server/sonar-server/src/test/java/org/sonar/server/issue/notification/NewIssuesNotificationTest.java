@@ -139,7 +139,7 @@ public class NewIssuesNotificationTest {
     RuleKey rule2 = RuleKey.of("SonarQube", "rule-the-universe");
     when(ruleDao.selectDefinitionByKeys(dbSession, ImmutableSet.of(rule1, rule2)))
       .thenReturn(
-        ImmutableList.of(newRule(rule1, "Rule the World", "Java"), newRule(rule2, "Rule the Universe", "Clojure")));
+        ImmutableList.of(newRule(rule1, "RuleImpl the World", "Java"), newRule(rule2, "RuleImpl the Universe", "Clojure")));
 
     underTest.setStatistics("project-long-name", stats);
 
@@ -157,9 +157,9 @@ public class NewIssuesNotificationTest {
     assertThat(underTest.getFieldValue(COMPONENT + ".1.count")).isEqualTo("5");
     assertThat(underTest.getFieldValue(COMPONENT + ".2.label")).isEqualTo("directory-name");
     assertThat(underTest.getFieldValue(COMPONENT + ".2.count")).isEqualTo("3");
-    assertThat(underTest.getFieldValue(RULE + ".1.label")).isEqualTo("Rule the World (Java)");
+    assertThat(underTest.getFieldValue(RULE + ".1.label")).isEqualTo("RuleImpl the World (Java)");
     assertThat(underTest.getFieldValue(RULE + ".1.count")).isEqualTo("5");
-    assertThat(underTest.getFieldValue(RULE + ".2.label")).isEqualTo("Rule the Universe (Clojure)");
+    assertThat(underTest.getFieldValue(RULE + ".2.label")).isEqualTo("RuleImpl the Universe (Clojure)");
     assertThat(underTest.getFieldValue(RULE + ".2.count")).isEqualTo("3");
     assertThat(underTest.getDefaultMessage()).startsWith("8 new issues on project-long-name");
   }

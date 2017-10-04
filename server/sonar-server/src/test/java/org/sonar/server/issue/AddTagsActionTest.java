@@ -72,7 +72,7 @@ public class AddTagsActionTest {
   @Test
   public void should_fail_if_tag_is_not_valid() {
     throwable.expect(IllegalArgumentException.class);
-    throwable.expectMessage("Tag 'th ag' is invalid. Rule tags accept only the characters: a-z, 0-9, '+', '-', '#', '.'");
+    throwable.expectMessage("Tag 'th ag' is invalid. RuleImpl tags accept only the characters: a-z, 0-9, '+', '-', '#', '.'");
 
     Map<String, Object> properties = newHashMap();
     properties.put("tags", "th ag");

@@ -33,9 +33,9 @@ import org.sonar.api.batch.measure.MetricFinder;
 import org.sonar.api.batch.rule.ActiveRules;
 import org.sonar.api.batch.rule.internal.ActiveRulesBuilder;
 import org.sonar.api.batch.sensor.internal.SensorStorage;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.internal.SonarRuntimeImpl;
 import org.sonar.api.measures.CoreMetrics;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.Version;
 import org.sonar.scanner.scan.branch.BranchConfiguration;
 

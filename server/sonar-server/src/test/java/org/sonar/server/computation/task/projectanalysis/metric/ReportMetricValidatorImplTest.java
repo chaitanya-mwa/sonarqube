@@ -24,6 +24,8 @@ import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.sonar.api.measures.Metric;
+import org.sonar.api.measures.Metric.Builder;
+import org.sonar.api.measures.Metric.ValueType;
 import org.sonar.api.utils.log.LogTester;
 import org.sonar.api.utils.log.LoggerLevel;
 import org.sonar.core.metric.ScannerMetrics;
@@ -31,8 +33,6 @@ import org.sonar.core.metric.ScannerMetrics;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.sonar.api.measures.Metric.Builder;
-import static org.sonar.api.measures.Metric.ValueType;
 
 public class ReportMetricValidatorImplTest {
 

@@ -32,7 +32,7 @@ import org.sonar.api.batch.bootstrap.ProjectDefinition;
 import org.sonar.api.batch.fs.internal.DefaultInputModule;
 import org.sonar.api.batch.fs.internal.InputModuleHierarchy;
 import org.sonar.api.batch.fs.internal.TestInputFileBuilder;
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.core.config.ScannerProperties;
 import org.sonar.scanner.ProjectAnalysisInfo;
 import org.sonar.scanner.analysis.DefaultAnalysisMode;

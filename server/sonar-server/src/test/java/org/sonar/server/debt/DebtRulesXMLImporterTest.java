@@ -26,10 +26,10 @@ import org.junit.Test;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.server.debt.DebtRemediationFunction;
 import org.sonar.api.utils.ValidationMessages;
+import org.sonar.server.debt.DebtModelXMLExporter.RuleDebt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
-import static org.sonar.server.debt.DebtModelXMLExporter.RuleDebt;
 
 public class DebtRulesXMLImporterTest {
 

@@ -47,7 +47,7 @@ import static com.google.common.base.Preconditions.checkState;
  * <p>
  * One can define user session behavior which should apply on all tests directly on the property, eg.:
  * <pre>
- * {@literal @}Rule
+ * {@literal @}RuleImpl
  * public UserSessionRule userSession = UserSessionRule.standalone().login("admin").setOrganizationPermissions(OrganizationPermissions.SYSTEM_ADMIN);
  * </pre>
  * </p>

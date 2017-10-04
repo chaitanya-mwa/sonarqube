@@ -38,6 +38,7 @@ import org.sonar.api.server.ServerSide;
 import org.sonar.api.server.debt.DebtRemediationFunction;
 import org.sonar.api.server.rule.RuleParamType;
 import org.sonar.api.server.rule.RulesDefinition;
+import org.sonar.api.server.rule.RulesDefinitionContext;
 import org.sonar.api.utils.ValidationMessages;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
@@ -51,7 +52,7 @@ import org.sonar.server.plugins.ServerPluginRepository;
 import static com.google.common.collect.Lists.newArrayList;
 
 /**
- * Inject deprecated RuleRepository into {@link org.sonar.api.server.rule.RulesDefinition} for backward-compatibility.
+ * Inject deprecated RuleRepository into {@link org.sonar.api.server.rule.RulesDefinitionImpl} for backward-compatibility.
  */
 @ServerSide
 @ComputeEngineSide
@@ -83,7 +84,7 @@ public class DeprecatedRulesDefinitionLoader {
     this(i18n, languageModelFinder, importer, serverPluginRepository, new RuleRepository[0]);
   }
 
-  void complete(RulesDefinition.Context context) {
+  void complete(RulesDefinitionContext context) {
     // Load rule debt definitions from xml files provided by plugin
     List<RuleDebt> ruleDebts = loadRuleDebtList();
 

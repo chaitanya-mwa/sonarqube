@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.stream.IntStream;
 import org.junit.Before;
 import org.junit.Test;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.resources.Language;
 import org.sonar.api.resources.Languages;
 import org.sonar.api.rule.RuleKey;
@@ -32,6 +31,7 @@ import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.debt.DebtRemediationFunction;
 import org.sonar.api.server.rule.RulesDefinition;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.DateUtils;
 import org.sonar.api.utils.System2;
 import org.sonar.api.utils.log.LogTester;
@@ -300,8 +300,8 @@ public class RegisterRulesTest {
       public void define(RulesDefinition.Context context) {
         RulesDefinition.NewRepository repo = context.createRepository("fake", "java");
         repo.createRule("rule1")
-          .setName("Rule One")
-          .setHtmlDescription("Description of Rule One")
+          .setName("RuleImpl One")
+          .setHtmlDescription("Description of RuleImpl One")
           .setTags("tag1");
         repo.done();
       }
@@ -316,8 +316,8 @@ public class RegisterRulesTest {
       public void define(RulesDefinition.Context context) {
         RulesDefinition.NewRepository repo = context.createRepository("fake", "java");
         repo.createRule("rule1")
-          .setName("Rule One")
-          .setHtmlDescription("Description of Rule One")
+          .setName("RuleImpl One")
+          .setHtmlDescription("Description of RuleImpl One")
           .setTags("tag1", "tag2");
         repo.done();
       }
@@ -489,12 +489,12 @@ public class RegisterRulesTest {
 
   @Test
   public void remove_system_tags_when_plugin_does_not_provide_any() {
-    // Rule already exists in DB, with some system tags
+    // RuleImpl already exists in DB, with some system tags
     dbClient.ruleDao().insert(dbTester.getSession(), new RuleDefinitionDto()
       .setRuleKey("rule1")
       .setRepositoryKey("findbugs")
-      .setName("Rule One")
-      .setDescription("Rule one description")
+      .setName("RuleImpl One")
+      .setDescription("RuleImpl one description")
       .setDescriptionFormat(RuleDto.Format.HTML)
       .setSystemTags(newHashSet("tag1", "tag2")));
     dbTester.getSession().commit();
@@ -603,7 +603,7 @@ public class RegisterRulesTest {
       // rule2 is dropped, rule3 is new
       repo.createRule("rule3")
         .setName("Three")
-        .setHtmlDescription("Rule Three");
+        .setHtmlDescription("RuleImpl Three");
       repo.done();
     }
   }
@@ -632,8 +632,8 @@ public class RegisterRulesTest {
     public void define(Context context) {
       NewRepository repo = context.createRepository("findbugs", "java");
       repo.createRule("rule1")
-        .setName("Rule One")
-        .setHtmlDescription("Description of Rule One");
+        .setName("RuleImpl One")
+        .setHtmlDescription("Description of RuleImpl One");
       repo.done();
     }
   }
@@ -644,8 +644,8 @@ public class RegisterRulesTest {
     public void define(Context context) {
       NewExtendedRepository repo = context.extendRepository("findbugs", "java");
       repo.createRule("rule2")
-        .setName("Rule Two")
-        .setHtmlDescription("Description of Rule Two");
+        .setName("RuleImpl Two")
+        .setHtmlDescription("Description of RuleImpl Two");
       repo.done();
     }
   }
@@ -655,8 +655,8 @@ public class RegisterRulesTest {
     public void define(Context context) {
       RulesDefinition.NewRepository repo = context.createRepository("test", "java");
       repo.createRule("rule1")
-        .setName("Rule One")
-        .setHtmlDescription("Description of Rule One")
+        .setName("RuleImpl One")
+        .setHtmlDescription("Description of RuleImpl One")
         .setTemplate(true);
       repo.done();
     }

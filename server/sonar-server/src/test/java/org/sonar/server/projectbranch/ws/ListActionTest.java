@@ -23,9 +23,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.resources.ResourceTypes;
 import org.sonar.api.server.ws.WebService;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.DateUtils;
 import org.sonar.api.utils.System2;
 import org.sonar.api.web.UserRole;
@@ -54,6 +54,7 @@ import org.sonarqube.ws.Common;
 import org.sonarqube.ws.MediaTypes;
 import org.sonarqube.ws.WsBranches;
 import org.sonarqube.ws.WsBranches.Branch;
+import org.sonarqube.ws.WsBranches.Branch.Status;
 import org.sonarqube.ws.WsBranches.ListWsResponse;
 
 import static java.lang.String.format;
@@ -70,7 +71,6 @@ import static org.sonar.api.rules.RuleType.VULNERABILITY;
 import static org.sonar.api.utils.DateUtils.dateToLong;
 import static org.sonar.api.utils.DateUtils.parseDateTime;
 import static org.sonar.test.JsonAssert.assertJson;
-import static org.sonarqube.ws.WsBranches.Branch.Status;
 
 public class ListActionTest {
 

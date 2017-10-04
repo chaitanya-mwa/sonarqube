@@ -19,16 +19,11 @@
  */
 package org.sonar.server.computation.task.projectanalysis.issue;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-import static org.sonar.server.computation.task.projectanalysis.component.ReportComponent.builder;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -42,6 +37,10 @@ import org.sonar.core.issue.tracking.Tracker;
 import org.sonar.core.issue.tracking.Tracking;
 import org.sonar.db.rule.RuleTesting;
 import org.sonar.server.computation.task.projectanalysis.component.Component;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import static org.sonar.server.computation.task.projectanalysis.component.ReportComponent.builder;
 
 public class ShortBranchTrackerExecutionTest {
   static final String FILE_UUID = "FILE_UUID";

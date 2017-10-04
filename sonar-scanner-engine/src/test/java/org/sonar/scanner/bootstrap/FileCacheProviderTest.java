@@ -24,7 +24,7 @@ import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.home.cache.FileCache;
 
 import static org.assertj.core.api.Assertions.assertThat;

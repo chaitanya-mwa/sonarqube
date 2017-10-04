@@ -29,15 +29,15 @@ import org.assertj.core.api.iterable.Extractor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.resources.Languages;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.debt.DebtRemediationFunction;
 import org.sonar.api.server.ws.WebService;
+import org.sonar.api.test.config.MapSettings;
+import org.sonar.api.test.utils.AlwaysIncreasingSystem2;
 import org.sonar.api.utils.System2;
-import org.sonar.api.utils.internal.AlwaysIncreasingSystem2;
 import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbTester;
 import org.sonar.db.organization.OrganizationDto;
@@ -660,7 +660,7 @@ public class SearchActionTest {
     RuleParamDto ruleParam3 = db.rules().insertRuleParam(rule, p ->
       p.setDefaultValue(null)
         .setType("STRING")
-        .setDescription("Empty Param")
+        .setDescription("Empty ParamImpl")
         .setName("empty_var"));
 
     RuleActivation activation = RuleActivation.create(rule.getKey());

@@ -103,24 +103,24 @@ public class CreateAction implements RulesWsAction {
 
     action
       .createParam(PARAM_NAME)
-      .setDescription("Rule name")
+      .setDescription("RuleImpl name")
       .setRequired(true)
       .setExampleValue("My custom rule");
 
     action
       .createParam(PARAM_DESCRIPTION)
-      .setDescription("Rule description")
+      .setDescription("RuleImpl description")
       .setRequired(true)
       .setExampleValue("Description of my custom rule");
 
     action
       .createParam(PARAM_SEVERITY)
-      .setDescription("Rule severity")
+      .setDescription("RuleImpl severity")
       .setPossibleValues(Severity.ALL);
 
     action
       .createParam(PARAM_STATUS)
-      .setDescription("Rule status")
+      .setDescription("RuleImpl status")
       .setDefaultValue(RuleStatus.READY)
       .setPossibleValues(RuleStatus.values());
 

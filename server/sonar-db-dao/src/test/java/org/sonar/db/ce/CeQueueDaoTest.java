@@ -33,9 +33,9 @@ import javax.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.sonar.api.test.utils.AlwaysIncreasingSystem2;
+import org.sonar.api.test.utils.TestSystem2;
 import org.sonar.api.utils.System2;
-import org.sonar.api.utils.internal.AlwaysIncreasingSystem2;
-import org.sonar.api.utils.internal.TestSystem2;
 import org.sonar.db.DbTester;
 
 import static com.google.common.collect.FluentIterable.from;

@@ -42,7 +42,6 @@ import org.sonar.server.qualitygate.QualityGateConditionsUpdater;
 import org.sonar.server.tester.UserSessionRule;
 import org.sonar.server.ws.TestRequest;
 import org.sonar.server.ws.WsActionTester;
-import org.sonarqube.ws.MediaTypes;
 import org.sonarqube.ws.WsQualityGates.CreateConditionWsResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;

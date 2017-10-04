@@ -63,7 +63,7 @@ public class DeleteAction implements RulesWsAction {
 
     action
       .createParam(PARAM_KEY)
-      .setDescription("Rule key")
+      .setDescription("RuleImpl key")
       .setRequired(true)
       .setExampleValue("squid:XPath_1402065390816");
   }
@@ -78,7 +78,7 @@ public class DeleteAction implements RulesWsAction {
   public void delete(RuleKey ruleKey) {
     try (DbSession dbSession = dbClient.openSession(false)) {
       RuleDefinitionDto rule = dbClient.ruleDao().selectOrFailDefinitionByKey(dbSession, ruleKey);
-      checkArgument(rule.isCustomRule(), "Rule '%s' cannot be deleted because it is not a custom rule", rule.getKey().toString());
+      checkArgument(rule.isCustomRule(), "RuleImpl '%s' cannot be deleted because it is not a custom rule", rule.getKey().toString());
 
       // For custom rule, first deactivate the rule on all profiles
       if (rule.isCustomRule()) {

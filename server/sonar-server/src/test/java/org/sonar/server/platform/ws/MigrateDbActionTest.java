@@ -37,9 +37,9 @@ import org.sonar.api.utils.DateUtils;
 import org.sonar.db.Database;
 import org.sonar.db.dialect.Dialect;
 import org.sonar.server.platform.db.migration.DatabaseMigration;
+import org.sonar.server.platform.db.migration.DatabaseMigrationState;
 import org.sonar.server.platform.db.migration.DatabaseMigrationState.Status;
 import org.sonar.server.platform.db.migration.version.DatabaseVersion;
-import org.sonar.server.platform.db.migration.DatabaseMigrationState;
 import org.sonar.server.ws.WsTester;
 
 import static com.google.common.base.Predicates.in;

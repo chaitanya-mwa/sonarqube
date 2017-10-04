@@ -25,11 +25,11 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.rule.Severity;
 import org.sonar.api.server.ws.WebService.Param;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.System2;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
@@ -114,10 +114,10 @@ public class QProfilesWsMediumTest {
     ruleIndexer.commitAndIndex(dbSession, rule.getKey());
     activeRuleIndexer.indexOnStartup(activeRuleIndexer.getIndexTypes());
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).hasSize(1);
 
-    // 1. Deactivate Rule
+    // 1. Deactivate RuleImpl
     wsDeactivateRule.newRequest().setMethod("POST")
       .setParam(PARAM_KEY, profile.getKee())
       .setParam(PARAM_RULE, rule.getKey().toString())
@@ -142,10 +142,10 @@ public class QProfilesWsMediumTest {
     dbSession.commit();
     activeRuleIndexer.indexOnStartup(activeRuleIndexer.getIndexTypes());
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).hasSize(4);
 
-    // 1. Deactivate Rule
+    // 1. Deactivate RuleImpl
     wsDeactivateRules.newRequest().setMethod("POST")
       .setParam(PARAM_TARGET_KEY, profile.getKee())
       .execute();
@@ -168,10 +168,10 @@ public class QProfilesWsMediumTest {
     dbSession.commit();
     activeRuleIndexer.indexOnStartup(activeRuleIndexer.getIndexTypes());
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).hasSize(2);
 
-    // 1. Deactivate Rule
+    // 1. Deactivate RuleImpl
     wsDeactivateRules.newRequest().setMethod("POST")
       .setParam(PARAM_TARGET_KEY, profile.getKee())
       .execute();
@@ -192,10 +192,10 @@ public class QProfilesWsMediumTest {
     dbSession.commit();
     activeRuleIndexer.indexOnStartup(activeRuleIndexer.getIndexTypes());
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).hasSize(2);
 
-    // 1. Deactivate Rule
+    // 1. Deactivate RuleImpl
     wsDeactivateRules.newRequest().setMethod("POST")
       .setParam(PARAM_TARGET_KEY, profile.getKee())
       .setParam(Param.TEXT_QUERY, "hello")
@@ -212,10 +212,10 @@ public class QProfilesWsMediumTest {
     RuleDefinitionDto rule = createRule(profile.getLanguage(), "toto");
     ruleIndexer.commitAndIndex(dbSession, rule.getKey());
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).isEmpty();
 
-    // 1. Activate Rule
+    // 1. Activate RuleImpl
     wsActivateRule.newRequest().setMethod("POST")
       .setParam(PARAM_KEY, profile.getKee())
       .setParam(PARAM_RULE, rule.getKey().toString())
@@ -232,11 +232,11 @@ public class QProfilesWsMediumTest {
     RuleDefinitionDto rule = createRule("php", "toto");
     ruleIndexer.commitAndIndex(dbSession, rule.getKey());
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).isEmpty();
 
     try {
-      // 1. Activate Rule
+      // 1. Activate RuleImpl
       wsActivateRule.newRequest().setMethod("POST")
         .setParam(PARAM_KEY, profile.getKee())
         .setParam(PARAM_RULE, rule.getKey().toString())
@@ -244,7 +244,7 @@ public class QProfilesWsMediumTest {
       dbSession.clearCache();
       fail();
     } catch (BadRequestException e) {
-      assertThat(e.getMessage()).isEqualTo("Rule blah:toto and profile pjava have different languages");
+      assertThat(e.getMessage()).isEqualTo("RuleImpl blah:toto and profile pjava have different languages");
     }
   }
 
@@ -254,10 +254,10 @@ public class QProfilesWsMediumTest {
     RuleDefinitionDto rule = createRule(profile.getLanguage(), "toto");
     ruleIndexer.commitAndIndex(dbSession, rule.getKey());
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).isEmpty();
 
-    // 1. Activate Rule
+    // 1. Activate RuleImpl
     wsActivateRule.newRequest().setMethod("POST")
       .setParam(PARAM_KEY, profile.getKee())
       .setParam(PARAM_RULE, rule.getKey().toString())
@@ -282,10 +282,10 @@ public class QProfilesWsMediumTest {
     createRule(profile.getLanguage(), "world");
     dbSession.commit();
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).isEmpty();
 
-    // 1. Activate Rule
+    // 1. Activate RuleImpl
     wsActivateRules.newRequest().setMethod("POST")
       .setParam(PARAM_TARGET_KEY, profile.getKee())
       .setParam(PARAM_LANGUAGES, "java")
@@ -307,10 +307,10 @@ public class QProfilesWsMediumTest {
     createRule(php.getLanguage(), "world");
     dbSession.commit();
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, php.getKee())).isEmpty();
 
-    // 1. Activate Rule
+    // 1. Activate RuleImpl
     wsActivateRules.newRequest().setMethod("POST")
       .setParam(PARAM_TARGET_KEY, php.getKee())
       .setParam(PARAM_LANGUAGES, "php")
@@ -331,10 +331,10 @@ public class QProfilesWsMediumTest {
     createRule(profile.getLanguage(), "world");
     dbSession.commit();
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).isEmpty();
 
-    // 1. Activate Rule with query returning 0 hits
+    // 1. Activate RuleImpl with query returning 0 hits
     wsActivateRules.newRequest().setMethod("POST")
       .setParam(PARAM_TARGET_KEY, profile.getKee())
       .setParam(Param.TEXT_QUERY, "php")
@@ -344,7 +344,7 @@ public class QProfilesWsMediumTest {
     // 2. Assert ActiveRule in DAO
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).hasSize(0);
 
-    // 1. Activate Rule with query returning 1 hits
+    // 1. Activate RuleImpl with query returning 1 hits
     wsActivateRules.newRequest().setMethod("POST")
       .setParam(PARAM_TARGET_KEY, profile.getKee())
       .setParam(Param.TEXT_QUERY, "world")
@@ -362,7 +362,7 @@ public class QProfilesWsMediumTest {
     RuleDefinitionDto rule1 = createRule(profile.getLanguage(), "tata");
     dbSession.commit();
 
-    // 0. Assert No Active Rule for profile
+    // 0. Assert No Active RuleImpl for profile
     assertThat(dbClient.activeRuleDao().selectByProfileUuid(dbSession, profile.getKee())).isEmpty();
 
     // 2. Assert ActiveRule with BLOCKER severity
@@ -370,7 +370,7 @@ public class QProfilesWsMediumTest {
       new RuleQuery().setSeverities(ImmutableSet.of("BLOCKER")),
       new SearchOptions()).getIds()).hasSize(2);
 
-    // 1. Activate Rule with query returning 2 hits
+    // 1. Activate RuleImpl with query returning 2 hits
     wsActivateRules.newRequest().setMethod("POST")
       .setParam(PARAM_TARGET_KEY, profile.getKee())
       .setParam(PARAM_TARGET_SEVERITY, "MINOR")
@@ -396,7 +396,7 @@ public class QProfilesWsMediumTest {
     createRule(phpProfile.getLanguage(), "world");
     dbSession.commit();
 
-    // 1. Activate Rule
+    // 1. Activate RuleImpl
     wsActivateRules.newRequest().setMethod("POST")
       .setParam(PARAM_TARGET_KEY, javaProfile.getKee())
       .setParam(PARAM_QPROFILE, javaProfile.getKee())

@@ -55,7 +55,7 @@ public class HasTagSensor extends AbstractXooRuleSensor {
     org.sonar.api.batch.rule.ActiveRule activeRule = activeRules.find(ruleKey);
     String tag = activeRule.param("tag");
     if (tag == null) {
-      throw new IllegalStateException("Rule is badly configured. The parameter 'tag' is missing.");
+      throw new IllegalStateException("RuleImpl is badly configured. The parameter 'tag' is missing.");
     }
     try {
       int[] lineCounter = {1};

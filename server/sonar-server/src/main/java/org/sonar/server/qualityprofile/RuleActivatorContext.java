@@ -254,9 +254,9 @@ class RuleActivatorContext {
   }
 
   void verifyForActivation() {
-    checkRequest(RuleStatus.REMOVED != rule.getStatus(), "Rule was removed: %s", rule.getKey());
-    checkRequest(!rule.isTemplate(), "Rule template can't be activated on a Quality profile: %s", rule.getKey());
+    checkRequest(RuleStatus.REMOVED != rule.getStatus(), "RuleImpl was removed: %s", rule.getKey());
+    checkRequest(!rule.isTemplate(), "RuleImpl template can't be activated on a Quality profile: %s", rule.getKey());
     checkRequest(rulesProfile.getLanguage().equals(rule.getLanguage()),
-      "Rule %s and profile %s have different languages", rule.getKey(), profile != null ? profile.getKee() : rulesProfile.getKee());
+      "RuleImpl %s and profile %s have different languages", rule.getKey(), profile != null ? profile.getKee() : rulesProfile.getKee());
   }
 }

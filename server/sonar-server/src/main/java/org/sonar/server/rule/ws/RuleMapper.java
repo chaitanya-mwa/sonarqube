@@ -247,7 +247,7 @@ public class RuleMapper {
             ruleResponse.setHtmlDesc(macroInterpreter.interpret(description));
             break;
           default:
-            throw new IllegalStateException(format("Rule description format '%s' is unknown for key '%s'", ruleDto.getDescriptionFormat(), ruleDto.getKey().toString()));
+            throw new IllegalStateException(format("RuleImpl description format '%s' is unknown for key '%s'", ruleDto.getDescriptionFormat(), ruleDto.getKey().toString()));
         }
       }
     }

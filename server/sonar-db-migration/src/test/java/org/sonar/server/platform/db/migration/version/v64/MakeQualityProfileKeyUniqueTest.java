@@ -19,11 +19,10 @@
  */
 package org.sonar.server.platform.db.migration.version.v64;
 
+import java.sql.SQLException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.sonar.db.CoreDbTester;
-
-import java.sql.SQLException;
 
 public class MakeQualityProfileKeyUniqueTest {
 

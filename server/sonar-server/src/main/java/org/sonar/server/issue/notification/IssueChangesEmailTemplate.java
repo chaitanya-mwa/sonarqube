@@ -99,7 +99,7 @@ public class IssueChangesEmailTemplate extends EmailTemplate {
 
   private static void appendHeader(Notification notif, StringBuilder sb) {
     appendLine(sb, StringUtils.defaultString(notif.getFieldValue("componentName"), notif.getFieldValue("componentKey")));
-    appendField(sb, "Rule", null, notif.getFieldValue("ruleName"));
+    appendField(sb, "RuleImpl", null, notif.getFieldValue("ruleName"));
     appendField(sb, "Message", null, notif.getFieldValue("message"));
   }
 

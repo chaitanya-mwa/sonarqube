@@ -55,7 +55,7 @@ import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.test.NodeConfigurationSource;
 import org.junit.rules.ExternalResource;
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.core.config.ConfigurationProvider;
 import org.sonar.core.platform.ComponentContainer;
 import org.sonar.elasticsearch.test.EsTestCluster;

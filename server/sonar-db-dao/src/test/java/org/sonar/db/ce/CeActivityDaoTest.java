@@ -28,7 +28,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.junit.Rule;
 import org.junit.Test;
-import org.sonar.api.utils.internal.TestSystem2;
+import org.sonar.api.test.utils.TestSystem2;
 import org.sonar.core.util.CloseableIterator;
 import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbSession;

@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.server.computation.task.projectanalysis.measure.Measure;
 import org.sonar.server.computation.task.projectanalysis.metric.Metric;
+import org.sonar.server.computation.task.projectanalysis.metric.Metric.MetricType;
 import org.sonar.server.computation.task.projectanalysis.metric.MetricImpl;
 
 import static com.google.common.base.Predicates.in;
@@ -36,7 +37,6 @@ import static org.junit.Assert.fail;
 import static org.sonar.server.computation.task.projectanalysis.measure.Measure.newMeasureBuilder;
 import static org.sonar.server.computation.task.projectanalysis.measure.Measure.Level.ERROR;
 import static org.sonar.server.computation.task.projectanalysis.measure.Measure.Level.OK;
-import static org.sonar.server.computation.task.projectanalysis.metric.Metric.MetricType;
 import static org.sonar.server.computation.task.projectanalysis.metric.Metric.MetricType.BOOL;
 import static org.sonar.server.computation.task.projectanalysis.metric.Metric.MetricType.DATA;
 import static org.sonar.server.computation.task.projectanalysis.metric.Metric.MetricType.FLOAT;

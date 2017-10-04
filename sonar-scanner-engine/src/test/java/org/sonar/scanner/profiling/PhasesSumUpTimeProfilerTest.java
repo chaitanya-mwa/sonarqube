@@ -43,7 +43,6 @@ import org.sonar.api.batch.events.SensorExecutionHandler;
 import org.sonar.api.batch.events.SensorExecutionHandler.SensorExecutionEvent;
 import org.sonar.api.batch.events.SensorsPhaseHandler;
 import org.sonar.api.batch.events.SensorsPhaseHandler.SensorsPhaseEvent;
-import org.sonar.api.batch.fs.internal.DefaultInputModule;
 import org.sonar.api.resources.Project;
 import org.sonar.api.utils.System2;
 import org.sonar.scanner.bootstrap.GlobalProperties;
@@ -134,7 +133,7 @@ public class PhasesSumUpTimeProfilerTest {
   }
 
   private Project mockProject(String name, boolean isRoot) throws IOException {
-    return new Project(new DefaultInputModule(ProjectDefinition.create().setName(name).setKey(name).setBaseDir(temp.newFolder()).setWorkDir(temp.newFolder())));
+    return new Project(ProjectDefinition.create().setName(name).setKey(name).setBaseDir(temp.newFolder()).setWorkDir(temp.newFolder()));
   }
 
   private void fakeAnalysis(PhasesSumUpTimeProfiler profiler, final Project module) {

@@ -25,13 +25,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.api.server.authentication.BaseIdentityProvider;
 import org.sonar.api.server.authentication.OAuth2IdentityProvider;
+import org.sonar.server.authentication.event.AuthenticationEvent.Method;
+import org.sonar.server.authentication.event.AuthenticationEvent.Provider;
+import org.sonar.server.authentication.event.AuthenticationEvent.Source;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.sonar.server.authentication.event.AuthenticationEvent.Method;
-import static org.sonar.server.authentication.event.AuthenticationEvent.Provider;
-import static org.sonar.server.authentication.event.AuthenticationEvent.Source;
 
 public class AuthenticationEventSourceTest {
   @Rule

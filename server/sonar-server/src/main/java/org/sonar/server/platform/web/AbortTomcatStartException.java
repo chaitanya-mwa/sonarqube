@@ -21,7 +21,7 @@ package org.sonar.server.platform.web;
 
 /**
  * An exception without any stacktrace nor message which point is solely to make tomcat startup fail during
- * initialization of the Context Listener {@link PlatformServletContextListener}.
+ * initialization of the RulesDefinitionContext Listener {@link PlatformServletContextListener}.
  */
 public class AbortTomcatStartException extends RuntimeException {
   public AbortTomcatStartException() {

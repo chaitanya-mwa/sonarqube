@@ -22,9 +22,9 @@ package org.sonar.scanner.rule;
 import java.util.Arrays;
 import org.junit.Test;
 import org.sonar.api.batch.rule.internal.ActiveRulesBuilder;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.rule.RuleKey;
+import org.sonar.api.test.config.MapSettings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;

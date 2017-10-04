@@ -23,7 +23,7 @@ import java.util.Optional;
 import org.sonar.api.ce.ComputeEngineSide;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.config.Settings;
-import org.sonar.api.config.internal.ConfigurationBridge;
+import org.sonar.core.config.ConfigurationBridge;
 import org.sonar.db.DbClient;
 import org.sonar.server.computation.task.projectanalysis.analysis.Branch;
 

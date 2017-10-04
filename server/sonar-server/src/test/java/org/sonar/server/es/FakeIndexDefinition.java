@@ -20,7 +20,7 @@
 package org.sonar.server.es;
 
 import org.elasticsearch.cluster.metadata.IndexMetaData;
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.test.config.MapSettings;
 
 import static org.sonar.server.es.NewIndex.SettingsConfiguration.newBuilder;
 

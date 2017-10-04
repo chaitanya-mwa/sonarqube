@@ -29,12 +29,12 @@ public interface RuleRepository {
 
   /**
    * @throws NullPointerException if {@code key} is {@code null}
-   * @throws IllegalArgumentException when there is no Rule for the specified RuleKey in the repository
+   * @throws IllegalArgumentException when there is no RuleImpl for the specified RuleKey in the repository
    */
   Rule getByKey(RuleKey key);
 
   /**
-   * @throws IllegalArgumentException when there is no Rule for the specified RuleKey in the repository
+   * @throws IllegalArgumentException when there is no RuleImpl for the specified RuleKey in the repository
    */
   Rule getById(int id);
 

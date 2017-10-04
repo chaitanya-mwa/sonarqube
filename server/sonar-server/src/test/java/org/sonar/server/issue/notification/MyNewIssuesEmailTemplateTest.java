@@ -96,8 +96,8 @@ public class MyNewIssuesEmailTemplateTest {
         "        Bug: 1    Vulnerability: 3    Code Smell: 0\n" +
         "\n" +
         "    Rules\n" +
-        "        Rule the Universe (Clojure): 42\n" +
-        "        Rule the World (Java): 5\n" +
+        "        RuleImpl the Universe (Clojure): 42\n" +
+        "        RuleImpl the World (Java): 5\n" +
         "\n" +
         "    Tags\n" +
         "        oscar: 3\n" +
@@ -252,9 +252,9 @@ public class MyNewIssuesEmailTemplateTest {
 
   private void addRules(Notification notification) {
     notification
-      .setFieldValue(RULE + ".1.label", "Rule the Universe (Clojure)")
+      .setFieldValue(RULE + ".1.label", "RuleImpl the Universe (Clojure)")
       .setFieldValue(RULE + ".1.count", "42")
-      .setFieldValue(RULE + ".2.label", "Rule the World (Java)")
+      .setFieldValue(RULE + ".2.label", "RuleImpl the World (Java)")
       .setFieldValue(RULE + ".2.count", "5");
   }
 

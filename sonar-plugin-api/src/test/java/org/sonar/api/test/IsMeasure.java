@@ -21,12 +21,11 @@ package org.sonar.api.test;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
+import org.mockito.ArgumentMatcher;
 import org.sonar.api.measures.Measure;
 import org.sonar.api.measures.Metric;
 
-public class IsMeasure extends BaseMatcher<Measure> {
+public class IsMeasure implements ArgumentMatcher<Measure> {
 
   private Metric metric = null;
   private Double value = null;
@@ -53,8 +52,13 @@ public class IsMeasure extends BaseMatcher<Measure> {
     this.data = data;
   }
 
-  public boolean matches(Object o) {
-    Measure m = (Measure) o;
+  @Override
+  public String toString() {
+    return mismatchTxt;
+  }
+
+  @Override
+  public boolean matches(Measure m) {
     if (metric != null && !ObjectUtils.equals(metric, m.getMetric())) {
       mismatchTxt = "metric: " + metric.getKey();
       return false;
@@ -70,9 +74,5 @@ public class IsMeasure extends BaseMatcher<Measure> {
       return false;
     }
     return true;
-  }
-
-  public void describeTo(Description description) {
-    description.appendText(mismatchTxt);
   }
 }

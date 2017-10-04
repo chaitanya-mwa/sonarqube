@@ -19,10 +19,6 @@
  */
 package org.sonar.server.computation.task.projectanalysis.issue;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -32,6 +28,10 @@ import org.sonar.core.issue.tracking.Input;
 import org.sonar.core.issue.tracking.Tracker;
 import org.sonar.core.issue.tracking.Tracking;
 import org.sonar.server.computation.task.projectanalysis.component.Component;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class MergeBranchTrackerExecutionTest {
   @Mock

@@ -85,7 +85,7 @@ public class SensorsExecutor {
 
   private void executeSensor(SensorContext context, Sensor sensor) {
     eventBus.fireEvent(new SensorExecutionEvent(sensor, true));
-    sensor.analyse(new Project(module), context);
+    sensor.analyse(new Project(module.definition()), context);
     eventBus.fireEvent(new SensorExecutionEvent(sensor, false));
   }
 }

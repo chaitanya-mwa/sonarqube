@@ -49,19 +49,19 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
+import org.mockito.hamcrest.MockitoHamcrest;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.core.Container;
 import org.simpleframework.transport.connect.SocketConnection;
 import org.sonar.api.CoreProperties;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.platform.Server;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.SonarException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.internal.matchers.ThrowableCauseMatcher.hasCause;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -295,7 +295,7 @@ public class DefaultHttpDownloaderTest {
 
     new DefaultHttpDownloader.BaseHttpDownloader(system, settings.asConfig(), null);
 
-    verify(system).setDefaultAuthenticator(argThat(new TypeSafeMatcher<Authenticator>() {
+    verify(system).setDefaultAuthenticator(MockitoHamcrest.argThat(new TypeSafeMatcher<Authenticator>() {
       @Override
       protected boolean matchesSafely(Authenticator authenticator) {
         DefaultHttpDownloader.ProxyAuthenticator a = (DefaultHttpDownloader.ProxyAuthenticator) authenticator;

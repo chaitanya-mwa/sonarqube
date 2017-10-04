@@ -24,12 +24,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.sonar.api.ce.measure.MeasureComputer;
 import org.sonar.api.ce.measure.test.TestMeasureComputerDefinitionContext;
-import org.sonar.server.computation.task.projectanalysis.component.TreeRootHolderRule;
+import org.sonar.server.computation.task.projectanalysis.api.measurecomputer.MeasureComputerDefinitionImpl;
 import org.sonar.server.computation.task.projectanalysis.component.Component;
 import org.sonar.server.computation.task.projectanalysis.component.ComponentVisitor;
+import org.sonar.server.computation.task.projectanalysis.component.TreeRootHolderRule;
 import org.sonar.server.computation.task.projectanalysis.component.VisitorsCrawler;
 import org.sonar.server.computation.task.projectanalysis.issue.ComponentIssuesRepository;
-import org.sonar.server.computation.task.projectanalysis.api.measurecomputer.MeasureComputerDefinitionImpl;
 import org.sonar.server.computation.task.projectanalysis.metric.MetricRepositoryRule;
 
 import static org.assertj.core.api.Assertions.assertThat;

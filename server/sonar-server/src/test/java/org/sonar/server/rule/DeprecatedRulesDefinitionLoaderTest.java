@@ -34,6 +34,7 @@ import org.sonar.api.rules.RulePriority;
 import org.sonar.api.rules.RuleRepository;
 import org.sonar.api.server.debt.DebtRemediationFunction;
 import org.sonar.api.server.rule.RulesDefinition;
+import org.sonar.api.server.rule.RulesDefinitionContext;
 import org.sonar.api.utils.ValidationMessages;
 import org.sonar.core.i18n.RuleI18nManager;
 import org.sonar.server.debt.DebtModelPluginRepository;
@@ -99,7 +100,7 @@ public class DeprecatedRulesDefinitionLoaderTest {
 
   @Test
   public void wrap_deprecated_rule_repositories() {
-    RulesDefinition.Context context = new RulesDefinition.Context();
+    RulesDefinitionContext context = new RulesDefinitionContext();
     CheckstyleRules checkstyleRules = new CheckstyleRules();
     when(pluginRepository.getPluginKey(checkstyleRules)).thenReturn("unittest");
     new DeprecatedRulesDefinitionLoader(i18n, debtModelRepository, importer, pluginRepository, new RuleRepository[] {checkstyleRules}).complete(context);
@@ -132,7 +133,7 @@ public class DeprecatedRulesDefinitionLoaderTest {
 
   @Test
   public void emulate_the_day_deprecated_api_can_be_dropped() {
-    RulesDefinition.Context context = new RulesDefinition.Context();
+    RulesDefinition.Context context = new RulesDefinitionContext();
 
     // no more RuleRepository !
     new DeprecatedRulesDefinitionLoader(i18n, debtModelRepository, importer, pluginRepository);
@@ -142,7 +143,7 @@ public class DeprecatedRulesDefinitionLoaderTest {
 
   @Test
   public void use_l10n_bundles() {
-    RulesDefinition.Context context = new RulesDefinition.Context();
+    RulesDefinitionContext context = new RulesDefinitionContext();
     when(i18n.getName("checkstyle", "ConstantName")).thenReturn("Constant Name");
     when(i18n.getDescription("checkstyle", "ConstantName")).thenReturn("Checks that constant names conform to the specified format");
     when(i18n.getParamDescription("checkstyle", "ConstantName", "format")).thenReturn("Regular expression");
@@ -162,7 +163,7 @@ public class DeprecatedRulesDefinitionLoaderTest {
 
   @Test
   public void define_rule_debt() {
-    RulesDefinition.Context context = new RulesDefinition.Context();
+    RulesDefinitionContext context = new RulesDefinitionContext();
 
     List<DebtModelXMLExporter.RuleDebt> ruleDebts = newArrayList(
       new DebtModelXMLExporter.RuleDebt()
@@ -192,7 +193,7 @@ public class DeprecatedRulesDefinitionLoaderTest {
 
   @Test
   public void fail_on_invalid_rule_debt() {
-    RulesDefinition.Context context = new RulesDefinition.Context();
+    RulesDefinitionContext context = new RulesDefinitionContext();
 
     List<DebtModelXMLExporter.RuleDebt> ruleDebts = newArrayList(
       new DebtModelXMLExporter.RuleDebt()

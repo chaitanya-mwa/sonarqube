@@ -22,8 +22,8 @@ package org.sonar.server.rule.ws;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.rule.RuleStatus;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.System2;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
@@ -124,7 +124,7 @@ public class DeleteActionTest {
     RuleDefinitionDto rule = dbTester.rules().insert();
 
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Rule '" + rule.getKey().toString() + "' cannot be deleted because it is not a custom rule");
+    thrown.expectMessage("RuleImpl '" + rule.getKey().toString() + "' cannot be deleted because it is not a custom rule");
 
     tester.newRequest()
       .setMethod("POST")

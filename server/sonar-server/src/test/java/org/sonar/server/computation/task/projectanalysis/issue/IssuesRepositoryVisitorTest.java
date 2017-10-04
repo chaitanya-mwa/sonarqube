@@ -19,16 +19,16 @@
  */
 package org.sonar.server.computation.task.projectanalysis.issue;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.sonar.server.computation.task.projectanalysis.component.ReportComponent.builder;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.sonar.core.issue.DefaultIssue;
 import org.sonar.server.computation.task.projectanalysis.component.Component;
 import org.sonar.server.computation.task.projectanalysis.component.TreeRootHolderRule;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.sonar.server.computation.task.projectanalysis.component.ReportComponent.builder;
 
 public class IssuesRepositoryVisitorTest {
   static final String FILE_UUID = "FILE_UUID";

@@ -28,6 +28,8 @@ import org.sonar.api.web.UserRole;
 import org.sonar.db.DbTester;
 import org.sonar.db.component.ComponentDto;
 import org.sonar.db.component.ResourceTypesRule;
+import org.sonar.db.protobuf.DbFileSources.Data;
+import org.sonar.db.protobuf.DbFileSources.Line;
 import org.sonar.server.component.ComponentFinder;
 import org.sonar.server.exceptions.ForbiddenException;
 import org.sonar.server.exceptions.NotFoundException;
@@ -38,8 +40,6 @@ import org.sonar.server.ws.WsActionTester;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.sonar.db.component.ComponentTesting.newFileDto;
-import static org.sonar.db.protobuf.DbFileSources.Data;
-import static org.sonar.db.protobuf.DbFileSources.Line;
 
 public class RawActionTest {
 

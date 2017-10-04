@@ -23,7 +23,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.mockito.ArgumentMatcher;
 import org.sonar.api.resources.Resource;
 
-public class IsResource extends ArgumentMatcher<Resource> {
+public class IsResource implements ArgumentMatcher<Resource> {
 
   private String scope;
   private String qualifier;
@@ -40,8 +40,7 @@ public class IsResource extends ArgumentMatcher<Resource> {
   }
 
   @Override
-  public boolean matches(Object o) {
-    Resource r = (Resource) o;
+  public boolean matches(Resource r) {
     return ObjectUtils.equals(r.getScope(), scope) && ObjectUtils.equals(r.getQualifier(), qualifier) && r.getKey().equals(key);
   }
 }

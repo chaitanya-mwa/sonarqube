@@ -23,9 +23,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid.Rating;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid.Rating;
 import static org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid.Rating.A;
 import static org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid.Rating.B;
 import static org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid.Rating.C;

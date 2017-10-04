@@ -24,12 +24,12 @@ import java.io.Reader;
 import org.apache.commons.lang.StringUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
+import org.mockito.hamcrest.MockitoHamcrest;
 import org.sonar.scanner.bootstrap.ScannerWsClient;
 import org.sonarqube.ws.client.WsRequest;
 import org.sonarqube.ws.client.WsResponse;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,7 +38,7 @@ public class WsTestUtil {
   public static void mockStream(ScannerWsClient mock, String path, InputStream is) {
     WsResponse response = mock(WsResponse.class);
     when(response.contentStream()).thenReturn(is);
-    when(mock.call(argThat(new RequestMatcher(path)))).thenReturn(response);
+    when(mock.call(MockitoHamcrest.argThat(new RequestMatcher(path)))).thenReturn(response);
   }
 
   public static void mockStream(ScannerWsClient mock, InputStream is) {
@@ -56,7 +56,7 @@ public class WsTestUtil {
   public static void mockReader(ScannerWsClient mock, String path, Reader reader) {
     WsResponse response = mock(WsResponse.class);
     when(response.contentReader()).thenReturn(reader);
-    when(mock.call(argThat(new RequestMatcher(path)))).thenReturn(response);
+    when(mock.call(MockitoHamcrest.argThat(new RequestMatcher(path)))).thenReturn(response);
   }
 
   public static void mockException(ScannerWsClient mock, Exception e) {
@@ -64,11 +64,11 @@ public class WsTestUtil {
   }
 
   public static void mockException(ScannerWsClient mock, String path, Exception e) {
-    when(mock.call(argThat(new RequestMatcher(path)))).thenThrow(e);
+    when(mock.call(MockitoHamcrest.argThat(new RequestMatcher(path)))).thenThrow(e);
   }
 
   public static void verifyCall(ScannerWsClient mock, String path) {
-    verify(mock).call(argThat(new RequestMatcher(path)));
+    verify(mock).call(MockitoHamcrest.argThat(new RequestMatcher(path)));
   }
 
   private static class RequestMatcher extends BaseMatcher<WsRequest> {

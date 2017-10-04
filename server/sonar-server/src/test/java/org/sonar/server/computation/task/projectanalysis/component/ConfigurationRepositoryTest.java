@@ -22,7 +22,7 @@ package org.sonar.server.computation.task.projectanalysis.component;
 import org.junit.Rule;
 import org.junit.Test;
 import org.sonar.api.config.Configuration;
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.System2;
 import org.sonar.ce.settings.ProjectConfigurationFactory;
 import org.sonar.db.DbClient;

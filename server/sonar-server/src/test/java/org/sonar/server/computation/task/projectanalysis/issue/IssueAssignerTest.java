@@ -19,8 +19,8 @@
  */
 package org.sonar.server.computation.task.projectanalysis.issue;
 
-import org.junit.Test;
 import org.junit.Rule;
+import org.junit.Test;
 import org.sonar.api.rules.RuleType;
 import org.sonar.api.utils.log.LogTester;
 import org.sonar.api.utils.log.LoggerLevel;

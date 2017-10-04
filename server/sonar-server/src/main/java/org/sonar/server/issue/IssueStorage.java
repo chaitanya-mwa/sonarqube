@@ -170,7 +170,7 @@ public abstract class IssueStorage {
   protected Rule rule(Issue issue) {
     Rule rule = ruleFinder.findByKey(issue.ruleKey());
     if (rule == null) {
-      throw new IllegalStateException("Rule not found: " + issue.ruleKey());
+      throw new IllegalStateException("RuleImpl not found: " + issue.ruleKey());
     }
     return rule;
   }

@@ -20,27 +20,33 @@
 package org.sonar.api.scan.filesystem;
 
 import org.junit.Test;
-import org.sonar.api.CoreProperties;
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.config.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.sonar.api.CoreProperties.PROJECT_EXCLUSIONS_PROPERTY;
+import static org.sonar.api.CoreProperties.PROJECT_INCLUSIONS_PROPERTY;
+import static org.sonar.api.CoreProperties.PROJECT_TEST_EXCLUSIONS_PROPERTY;
+import static org.sonar.api.CoreProperties.PROJECT_TEST_INCLUSIONS_PROPERTY;
 
 public class FileExclusionsTest {
   @Test
   public void ignore_inclusion_of_world() {
-    MapSettings settings = new MapSettings();
-    settings.setProperty(CoreProperties.PROJECT_INCLUSIONS_PROPERTY, "**/*");
-    settings.setProperty(CoreProperties.PROJECT_TEST_INCLUSIONS_PROPERTY, "**/*");
-    assertThat(new FileExclusions(settings.asConfig()).sourceInclusions()).isEmpty();
-    assertThat(new FileExclusions(settings.asConfig()).testInclusions()).isEmpty();
+    Configuration config = mock(Configuration.class);
+    when(config.getStringArray(PROJECT_INCLUSIONS_PROPERTY)).thenReturn(new String[] {"**/*"});
+    when(config.getStringArray(PROJECT_TEST_INCLUSIONS_PROPERTY)).thenReturn(new String[] {"**/*"});
+    assertThat(new FileExclusions(config).sourceInclusions()).isEmpty();
+    assertThat(new FileExclusions(config).testInclusions()).isEmpty();
   }
 
   @Test
   public void load_inclusions() {
-    MapSettings settings = new MapSettings();
-    settings.setProperty(CoreProperties.PROJECT_INCLUSIONS_PROPERTY, "**/*Foo.java");
-    settings.setProperty(CoreProperties.PROJECT_TEST_INCLUSIONS_PROPERTY, "**/*FooTest.java");
-    FileExclusions moduleExclusions = new FileExclusions(settings.asConfig());
+    Configuration config = mock(Configuration.class);
+    when(config.getStringArray(PROJECT_INCLUSIONS_PROPERTY)).thenReturn(new String[] {"**/*Foo.java"});
+    when(config.getStringArray(PROJECT_TEST_INCLUSIONS_PROPERTY)).thenReturn(new String[] {"**/*FooTest.java"});
+    FileExclusions moduleExclusions = new FileExclusions(config);
 
     assertThat(moduleExclusions.sourceInclusions()).containsOnly("**/*Foo.java");
     assertThat(moduleExclusions.testInclusions()).containsOnly("**/*FooTest.java");
@@ -48,10 +54,11 @@ public class FileExclusionsTest {
 
   @Test
   public void load_exclusions() {
-    MapSettings settings = new MapSettings();
-    settings.setProperty(CoreProperties.PROJECT_EXCLUSIONS_PROPERTY, "**/*Foo.java");
-    settings.setProperty(CoreProperties.PROJECT_TEST_EXCLUSIONS_PROPERTY, "**/*FooTest.java");
-    FileExclusions moduleExclusions = new FileExclusions(settings.asConfig());
+    Configuration config = mock(Configuration.class);
+    when(config.getStringArray(anyString())).thenReturn(new String[0]);
+    when(config.getStringArray(PROJECT_EXCLUSIONS_PROPERTY)).thenReturn(new String[] {"**/*Foo.java"});
+    when(config.getStringArray(PROJECT_TEST_EXCLUSIONS_PROPERTY)).thenReturn(new String[] {"**/*FooTest.java"});
+    FileExclusions moduleExclusions = new FileExclusions(config);
 
     assertThat(moduleExclusions.sourceInclusions()).isEmpty();
     assertThat(moduleExclusions.sourceExclusions()).containsOnly("**/*Foo.java");

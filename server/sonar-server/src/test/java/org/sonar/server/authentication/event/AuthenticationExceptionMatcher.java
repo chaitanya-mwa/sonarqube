@@ -23,12 +23,12 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
+import org.sonar.server.authentication.event.AuthenticationEvent.Source;
 
 import static java.util.Objects.requireNonNull;
-import static org.sonar.server.authentication.event.AuthenticationEvent.Source;
 
 /**
- * Matcher for {@link AuthenticationException} to be used with {@link org.junit.rules.ExpectedException} JUnit Rule.
+ * Matcher for {@link AuthenticationException} to be used with {@link org.junit.rules.ExpectedException} JUnit RuleImpl.
  *
  * <p>
  * Usage:

@@ -22,7 +22,6 @@ package org.sonar.api.config;
 import java.util.Optional;
 import org.sonar.api.batch.ScannerSide;
 import org.sonar.api.ce.ComputeEngineSide;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.server.ServerSide;
 import org.sonarsource.api.sonarlint.SonarLintSide;
 
@@ -65,7 +64,7 @@ import org.sonarsource.api.sonarlint.SonarLintSide;
  * </pre>
  *
  * <p>
- * For testing, and only for testing, the in-memory implementation {@link MapSettings} can be used.
+ * For testing, and only for testing, the in-memory implementation {@link org.sonar.api.config.internal.MapSettings} can be used.
  * <pre>
  * {@literal @}Test
  * public void my_test() {

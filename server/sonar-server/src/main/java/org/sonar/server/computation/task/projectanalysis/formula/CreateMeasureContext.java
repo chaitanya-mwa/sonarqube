@@ -24,7 +24,7 @@ import org.sonar.server.computation.task.projectanalysis.metric.Metric;
 import org.sonar.server.computation.task.projectanalysis.period.Period;
 
 /**
- * Context passing information to implementation of {@link Formula#createMeasure(Counter, CreateMeasureContext)} method.
+ * RulesDefinitionContext passing information to implementation of {@link Formula#createMeasure(Counter, CreateMeasureContext)} method.
  */
 public interface CreateMeasureContext {
   /**

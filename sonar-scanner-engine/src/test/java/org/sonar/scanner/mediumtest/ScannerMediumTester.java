@@ -49,6 +49,7 @@ import org.sonar.api.measures.Metric;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.server.rule.RulesDefinition;
 import org.sonar.api.server.rule.RulesDefinition.Repository;
+import org.sonar.api.server.rule.RulesDefinitionContext;
 import org.sonar.api.utils.DateUtils;
 import org.sonar.batch.bootstrapper.Batch;
 import org.sonar.batch.bootstrapper.EnvironmentInformation;
@@ -167,7 +168,7 @@ public class ScannerMediumTester extends ExternalResource {
   }
 
   public ScannerMediumTester addRules(RulesDefinition rulesDefinition) {
-    RulesDefinition.Context context = new RulesDefinition.Context();
+    RulesDefinition.Context context = new RulesDefinitionContext();
     rulesDefinition.define(context);
     List<Repository> repositories = context.repositories();
     for (Repository repo : repositories) {

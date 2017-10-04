@@ -20,10 +20,9 @@
 package org.sonar.server.rule;
 
 import com.google.common.collect.Sets;
+import java.util.Collections;
 import org.junit.Test;
 import org.sonar.db.rule.RuleDto;
-
-import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;

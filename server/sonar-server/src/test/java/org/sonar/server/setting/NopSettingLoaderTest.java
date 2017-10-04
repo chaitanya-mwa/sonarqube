@@ -21,7 +21,6 @@ package org.sonar.server.setting;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
-import org.sonar.server.setting.NopSettingLoader;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

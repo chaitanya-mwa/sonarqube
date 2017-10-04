@@ -19,15 +19,26 @@
  */
 package org.sonar.api.config;
 
+import java.util.Optional;
+import org.junit.Before;
 import org.junit.Test;
 import org.sonar.api.CoreProperties;
-import org.sonar.api.config.internal.MapSettings;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class EmailSettingsTest {
 
-  private EmailSettings underTest = new EmailSettings(new MapSettings().asConfig());
+  private EmailSettings underTest;
+
+  @Before
+  public void prepare() {
+    Configuration configuration = mock(Configuration.class);
+    when(configuration.get(anyString())).thenReturn(Optional.empty());
+    underTest = new EmailSettings(configuration);
+  }
 
   @Test
   public void should_return_default_values() {

@@ -144,22 +144,22 @@ public class UpdateAction implements RulesWsAction {
 
     action
       .createParam(PARAM_NAME)
-      .setDescription("Rule name (mandatory for custom rule)")
+      .setDescription("RuleImpl name (mandatory for custom rule)")
       .setExampleValue("My custom rule");
 
     action
       .createParam(PARAM_DESCRIPTION)
-      .setDescription("Rule description (mandatory for custom rule and manual rule)")
+      .setDescription("RuleImpl description (mandatory for custom rule and manual rule)")
       .setExampleValue("Description of my custom rule");
 
     action
       .createParam(PARAM_SEVERITY)
-      .setDescription("Rule severity (Only when updating a custom rule)")
+      .setDescription("RuleImpl severity (Only when updating a custom rule)")
       .setPossibleValues(Severity.ALL);
 
     action
       .createParam(PARAM_STATUS)
-      .setDescription("Rule status (Only when updating a custom rule)")
+      .setDescription("RuleImpl status (Only when updating a custom rule)")
       .setPossibleValues(RuleStatus.values());
 
     action.createParam(PARAM_ORGANIZATION)
@@ -272,7 +272,7 @@ public class UpdateAction implements RulesWsAction {
 
   private UpdateResponse buildResponse(DbSession dbSession, RuleKey key, OrganizationDto organization) {
     RuleDto rule = dbClient.ruleDao().selectByKey(dbSession, organization, key)
-      .orElseThrow(() -> new NotFoundException(format("Rule not found: %s", key)));
+      .orElseThrow(() -> new NotFoundException(format("RuleImpl not found: %s", key)));
     List<RuleDefinitionDto> templateRules = new ArrayList<>(1);
     if (rule.getDefinition().isCustomRule()) {
       dbClient.ruleDao().selectDefinitionById(rule.getTemplateId(), dbSession)

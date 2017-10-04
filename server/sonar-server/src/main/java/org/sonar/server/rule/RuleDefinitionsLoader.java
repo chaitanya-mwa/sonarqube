@@ -20,10 +20,11 @@
 package org.sonar.server.rule;
 
 import org.sonar.api.server.rule.RulesDefinition;
+import org.sonar.api.server.rule.RulesDefinitionContext;
 import org.sonar.server.plugins.ServerPluginRepository;
 
 /**
- * Loads all instances of {@link RulesDefinition}. Used during server startup
+ * Loads all instances of {@link RulesDefinitionImpl}. Used during server startup
  * and restore of debt model backup.
  */
 public class RuleDefinitionsLoader {
@@ -50,7 +51,7 @@ public class RuleDefinitionsLoader {
   }
 
   public RulesDefinition.Context load() {
-    RulesDefinition.Context context = new RulesDefinition.Context();
+    RulesDefinitionContext context = new RulesDefinitionContext();
     for (RulesDefinition pluginDefinition : pluginDefs) {
       context.setCurrentPluginKey(serverPluginRepository.getPluginKey(pluginDefinition));
       pluginDefinition.define(context);

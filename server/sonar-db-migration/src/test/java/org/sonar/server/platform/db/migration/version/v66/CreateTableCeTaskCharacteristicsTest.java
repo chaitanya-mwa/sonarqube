@@ -19,15 +19,14 @@
  */
 package org.sonar.server.platform.db.migration.version.v66;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.sql.SQLException;
 import java.sql.Types;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.db.CoreDbTester;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreateTableCeTaskCharacteristicsTest {
   private static final String TABLE = "ce_task_characteristics";

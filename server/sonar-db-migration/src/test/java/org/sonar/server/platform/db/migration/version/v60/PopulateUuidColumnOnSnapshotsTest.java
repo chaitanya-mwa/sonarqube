@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.sonar.api.utils.System2;
 import org.sonar.core.util.UuidFactoryImpl;
 import org.sonar.db.CoreDbTester;
 

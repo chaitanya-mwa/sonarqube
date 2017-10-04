@@ -26,11 +26,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.sonar.core.test.Test.Fake;
 import org.sonar.test.TestUtils;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.sonar.core.test.Test.Fake;
 import static org.sonar.core.util.Protobuf.setNullable;
 
 public class ProtobufTest {

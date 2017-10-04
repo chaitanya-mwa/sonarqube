@@ -29,7 +29,7 @@ import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.Rule;
 import org.junit.Test;
-import org.sonar.api.utils.internal.TestSystem2;
+import org.sonar.api.test.utils.TestSystem2;
 import org.sonar.db.DbTester;
 import org.sonar.server.es.BulkIndexer.Size;
 

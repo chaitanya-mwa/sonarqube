@@ -21,10 +21,11 @@ package org.sonar.api;
 
 import java.util.Arrays;
 import org.junit.Test;
-import org.sonar.api.internal.SonarRuntimeImpl;
 import org.sonar.api.utils.Version;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class PluginTest {
 
@@ -32,7 +33,8 @@ public class PluginTest {
 
   @Test
   public void test_context() {
-    SonarRuntime runtime = SonarRuntimeImpl.forSonarQube(VERSION_5_6, SonarQubeSide.SERVER);
+    SonarRuntime runtime = mock(SonarRuntime.class);
+    when(runtime.getApiVersion()).thenReturn(VERSION_5_6);
     Plugin.Context context = new Plugin.Context(runtime);
 
     assertThat(context.getSonarQubeVersion()).isEqualTo(VERSION_5_6);

@@ -275,7 +275,7 @@ public class ScannerExtensionDictionnary {
       || (org.sonar.api.batch.Sensor.class.equals(type) && ClassUtils.isAssignable(extension.getClass(), Sensor.class)))
       && (matcher == null || matcher.accept(extension));
     if (keep && module != null && ClassUtils.isAssignable(extension.getClass(), CheckProject.class)) {
-      keep = ((CheckProject) extension).shouldExecuteOnProject(new Project(module));
+      keep = ((CheckProject) extension).shouldExecuteOnProject(new Project(module.definition()));
     }
     return keep;
   }

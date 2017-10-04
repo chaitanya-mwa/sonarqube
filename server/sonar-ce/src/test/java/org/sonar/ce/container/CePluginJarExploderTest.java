@@ -24,9 +24,9 @@ import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.sonar.server.platform.ServerFileSystem;
 import org.sonar.core.platform.ExplodedPlugin;
 import org.sonar.core.platform.PluginInfo;
+import org.sonar.server.platform.ServerFileSystem;
 
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 import static org.assertj.core.api.Assertions.assertThat;

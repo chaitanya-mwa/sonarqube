@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.sonar.api.server.debt.DebtRemediationFunction;
 import org.sonar.api.server.rule.RulesDefinition;
+import org.sonar.api.server.rule.RulesDefinitionContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,7 +33,7 @@ public class XooRulesDefinitionTest {
   @Before
   public void setUp() {
     XooRulesDefinition def = new XooRulesDefinition();
-    context = new RulesDefinition.Context();
+    context = new RulesDefinitionContext();
     def.define(context);
   }
 

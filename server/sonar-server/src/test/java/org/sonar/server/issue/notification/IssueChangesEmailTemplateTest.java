@@ -25,8 +25,8 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.sonar.api.config.EmailSettings;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.notifications.Notification;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.db.DbTester;
 import org.sonar.plugins.emailnotifications.api.EmailMessage;
 

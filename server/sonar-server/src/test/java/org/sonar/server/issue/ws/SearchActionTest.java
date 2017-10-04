@@ -24,11 +24,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.issue.Issue;
 import org.sonar.api.resources.Languages;
 import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.server.ws.WebService;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.DateUtils;
 import org.sonar.api.utils.Durations;
 import org.sonar.api.utils.System2;
@@ -698,8 +698,8 @@ public class SearchActionTest {
 
   private RuleDto newRule() {
     RuleDto rule = RuleTesting.newXooX1()
-      .setName("Rule name")
-      .setDescription("Rule desc")
+      .setName("RuleImpl name")
+      .setDescription("RuleImpl desc")
       .setStatus(RuleStatus.READY);
     db.rules().insert(rule.getDefinition());
     return rule;

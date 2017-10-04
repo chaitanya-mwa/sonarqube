@@ -28,13 +28,13 @@ import org.apache.commons.io.IOUtils;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
+import org.mockito.hamcrest.MockitoHamcrest;
 import org.sonar.api.server.ws.LocalConnector;
 import org.sonarqube.ws.MediaTypes;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -90,7 +90,7 @@ public class LocalWsConnectorTest {
   private void verifyRequested(final String expectedMethod, final String expectedPath,
     final String expectedMediaType,
     final Map<String, String> expectedParams) {
-    verify(connector).call(argThat(new TypeSafeMatcher<LocalConnector.LocalRequest>() {
+    verify(connector).call(MockitoHamcrest.argThat(new TypeSafeMatcher<LocalConnector.LocalRequest>() {
       @Override
       protected boolean matchesSafely(LocalConnector.LocalRequest localRequest) {
         boolean ok = localRequest.getMethod().equals(expectedMethod) && localRequest.getPath().equals(expectedPath);

@@ -19,6 +19,19 @@
  */
 package org.sonar.server.computation.task.projectanalysis.step;
 
+import com.google.common.base.Optional;
+import java.util.Collections;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.sonar.api.test.config.MapSettings;
+import org.sonar.server.computation.task.projectanalysis.analysis.AnalysisMetadataHolder;
+import org.sonar.server.computation.task.projectanalysis.component.ConfigurationRepository;
+import org.sonar.server.computation.task.projectanalysis.qualitygate.MutableQualityGateHolderRule;
+import org.sonar.server.computation.task.projectanalysis.qualitygate.QualityGate;
+import org.sonar.server.computation.task.projectanalysis.qualitygate.QualityGateService;
+
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.guava.api.Assertions.assertThat;
@@ -26,21 +39,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-import java.util.Collections;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.sonar.api.config.internal.MapSettings;
-import org.sonar.server.computation.task.projectanalysis.analysis.AnalysisMetadataHolder;
-import org.sonar.server.computation.task.projectanalysis.component.ConfigurationRepository;
-import org.sonar.server.computation.task.projectanalysis.qualitygate.MutableQualityGateHolderRule;
-import org.sonar.server.computation.task.projectanalysis.qualitygate.QualityGate;
-import org.sonar.server.computation.task.projectanalysis.qualitygate.QualityGateService;
-
-import com.google.common.base.Optional;
 
 public class LoadQualityGateStepTest {
 

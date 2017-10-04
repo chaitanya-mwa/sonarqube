@@ -114,7 +114,7 @@ public class IssueFilter {
       String componentPathPattern = settings.get(propPrefix + RESOURCE_KEY).orElse(null);
       checkArgument(!isNullOrEmpty(componentPathPattern), format("File path pattern cannot be empty. Please check '%s' settings", propertyKey));
       String ruleKeyPattern = settings.get(propPrefix + RULE_KEY).orElse(null);
-      checkArgument(!isNullOrEmpty(ruleKeyPattern), format("Rule key pattern cannot be empty. Please check '%s' settings", propertyKey));
+      checkArgument(!isNullOrEmpty(ruleKeyPattern), format("RuleImpl key pattern cannot be empty. Please check '%s' settings", propertyKey));
       patterns.add(new IssuePattern(componentPathPattern, ruleKeyPattern));
     }
     return patterns;

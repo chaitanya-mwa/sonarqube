@@ -82,7 +82,7 @@ public class ShowAction implements RulesWsAction {
 
     action
       .createParam(PARAM_KEY)
-      .setDescription("Rule key")
+      .setDescription("RuleImpl key")
       .setRequired(true)
       .setExampleValue("javascript:EmptyBlock");
 
@@ -106,7 +106,7 @@ public class ShowAction implements RulesWsAction {
     try (DbSession dbSession = dbClient.openSession(false)) {
       OrganizationDto organization = getOrganization(request, dbSession);
       RuleDto rule = dbClient.ruleDao().selectByKey(dbSession, organization, key)
-        .orElseThrow(() -> new NotFoundException(String.format("Rule not found: %s", key)));
+        .orElseThrow(() -> new NotFoundException(String.format("RuleImpl not found: %s", key)));
 
       List<RuleDefinitionDto> templateRules = ofNullable(rule.getTemplateId())
         .flatMap(templateId -> dbClient.ruleDao().selectDefinitionById(rule.getTemplateId(), dbSession))

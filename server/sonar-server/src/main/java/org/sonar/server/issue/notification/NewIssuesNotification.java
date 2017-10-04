@@ -126,7 +126,7 @@ public class NewIssuesNotification extends Notification {
     for (Map.Entry<String, MetricStatsInt> ruleStats : fiveBiggest) {
       String ruleKey = ruleStats.getKey();
       RuleDefinitionDto rule = Optional.ofNullable(ruleByRuleKey.get(ruleKey))
-        .orElseThrow(() -> new RowNotFoundException(String.format("Rule with key '%s' does not exist", ruleKey)));
+        .orElseThrow(() -> new RowNotFoundException(String.format("RuleImpl with key '%s' does not exist", ruleKey)));
       String name = rule.getName() + " (" + rule.getLanguage() + ")";
       setFieldValue(metric + DOT + i + LABEL, name);
       setFieldValue(metric + DOT + i + COUNT, String.valueOf(ruleStats.getValue().getOnLeak()));

@@ -23,8 +23,8 @@ package org.sonar.db.component;
 import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
+import org.sonar.api.test.utils.TestSystem2;
 import org.sonar.api.utils.System2;
-import org.sonar.api.utils.internal.TestSystem2;
 import org.sonar.db.DbSession;
 import org.sonar.db.DbTester;
 

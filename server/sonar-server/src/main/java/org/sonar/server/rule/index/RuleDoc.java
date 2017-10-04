@@ -33,7 +33,7 @@ import org.sonar.markdown.Markdown;
 import org.sonar.server.es.BaseDoc;
 
 /**
- * Implementation of Rule based on an Elasticsearch document
+ * Implementation of RuleImpl based on an Elasticsearch document
  */
 public class RuleDoc extends BaseDoc {
 

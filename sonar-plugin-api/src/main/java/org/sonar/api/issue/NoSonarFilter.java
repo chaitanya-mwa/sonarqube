@@ -25,7 +25,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.sonar.api.batch.ScannerSide;
 import org.sonar.api.batch.fs.InputFile;
-import org.sonar.api.batch.fs.internal.DefaultInputFile;
 import org.sonar.api.scan.issue.filter.FilterableIssue;
 import org.sonar.api.scan.issue.filter.IssueFilter;
 import org.sonar.api.scan.issue.filter.IssueFilterChain;
@@ -59,7 +58,7 @@ public class NoSonarFilter implements IssueFilter {
    * @since 5.0
    */
   public NoSonarFilter noSonarInFile(InputFile inputFile, Set<Integer> noSonarLines) {
-    noSonarLinesByResource.put(((DefaultInputFile) inputFile).key(), noSonarLines);
+    noSonarLinesByResource.put(inputFile.key(), noSonarLines);
     return this;
   }
 

@@ -187,7 +187,7 @@ public class DefaultIndex {
     } else if (inputComponent instanceof InputFile) {
       r = File.create(((InputFile) inputComponent).relativePath());
     } else if (inputComponent instanceof InputModule) {
-      r = new Project(((DefaultInputModule) inputComponent));
+      r = new Project(((DefaultInputModule) inputComponent).definition());
     } else {
       throw new IllegalArgumentException("Unknow input path type: " + inputComponent);
     }

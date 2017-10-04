@@ -30,13 +30,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.hamcrest.MockitoHamcrest;
 import org.sonar.scanner.config.DefaultConfiguration;
 import org.sonar.scanner.protocol.output.ScannerReport;
 import org.sonar.scanner.protocol.output.ScannerReportWriter;
 import org.sonar.scanner.repository.ContextPropertiesCache;
 
 import static java.util.Collections.emptyList;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -91,7 +91,7 @@ public class ContextPropertiesPublisherTest {
   }
 
   private void expectWritten(List<ScannerReport.ContextProperty> expected) {
-    verify(writer).writeContextProperties(argThat(new TypeSafeMatcher<Iterable<ScannerReport.ContextProperty>>() {
+    verify(writer).writeContextProperties(MockitoHamcrest.argThat(new TypeSafeMatcher<Iterable<ScannerReport.ContextProperty>>() {
       @Override
       protected boolean matchesSafely(Iterable<ScannerReport.ContextProperty> props) {
         List<ScannerReport.ContextProperty> copy = Lists.newArrayList(props);

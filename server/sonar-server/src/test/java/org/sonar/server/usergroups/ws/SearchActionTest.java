@@ -36,6 +36,8 @@ import org.sonar.server.ws.TestRequest;
 import org.sonar.server.ws.WsActionTester;
 import org.sonarqube.ws.Common.Paging;
 import org.sonarqube.ws.MediaTypes;
+import org.sonarqube.ws.WsUserGroups.Group;
+import org.sonarqube.ws.WsUserGroups.SearchWsResponse;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.capitalize;
@@ -48,8 +50,6 @@ import static org.sonar.api.server.ws.WebService.Param.TEXT_QUERY;
 import static org.sonar.db.permission.OrganizationPermission.ADMINISTER;
 import static org.sonar.db.user.GroupTesting.newGroupDto;
 import static org.sonar.test.JsonAssert.assertJson;
-import static org.sonarqube.ws.WsUserGroups.Group;
-import static org.sonarqube.ws.WsUserGroups.SearchWsResponse;
 
 public class SearchActionTest {
 

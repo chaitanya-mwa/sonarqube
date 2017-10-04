@@ -29,11 +29,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.resources.Languages;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rule.RuleStatus;
 import org.sonar.api.rules.RuleType;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.utils.System2;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
@@ -238,8 +238,8 @@ public class ShowActionTest {
   @Test
   public void show_rule() throws Exception {
     RuleDto ruleDto = RuleTesting.newDto(RuleKey.of("java", "S001"), dbTester.getDefaultOrganization())
-      .setName("Rule S001")
-      .setDescription("Rule S001 <b>description</b>")
+      .setName("RuleImpl S001")
+      .setDescription("RuleImpl S001 <b>description</b>")
       .setDescriptionFormat(Format.HTML)
       .setSeverity(MINOR)
       .setStatus(RuleStatus.BETA)
@@ -266,8 +266,8 @@ public class ShowActionTest {
   @Test
   public void show_rule_with_default_debt_infos() throws Exception {
     RuleDto ruleDto = RuleTesting.newDto(RuleKey.of("java", "S001"), dbTester.getDefaultOrganization())
-      .setName("Rule S001")
-      .setDescription("Rule S001 <b>description</b>")
+      .setName("RuleImpl S001")
+      .setDescription("RuleImpl S001 <b>description</b>")
       .setSeverity(MINOR)
       .setStatus(RuleStatus.BETA)
       .setConfigKey("InternalKeyS001")
@@ -294,8 +294,8 @@ public class ShowActionTest {
   @Test
   public void show_rule_with_overridden_debt() throws Exception {
     RuleDto ruleDto = RuleTesting.newDto(RuleKey.of("java", "S001"), dbTester.getDefaultOrganization())
-      .setName("Rule S001")
-      .setDescription("Rule S001 <b>description</b>")
+      .setName("RuleImpl S001")
+      .setDescription("RuleImpl S001 <b>description</b>")
       .setSeverity(MINOR)
       .setStatus(RuleStatus.BETA)
       .setConfigKey("InternalKeyS001")
@@ -321,8 +321,8 @@ public class ShowActionTest {
   @Test
   public void show_rule_with_default_and_overridden_debt_infos() throws Exception {
     RuleDto ruleDto = RuleTesting.newDto(RuleKey.of("java", "S001"), dbTester.getDefaultOrganization())
-      .setName("Rule S001")
-      .setDescription("Rule S001 <b>description</b>")
+      .setName("RuleImpl S001")
+      .setDescription("RuleImpl S001 <b>description</b>")
       .setSeverity(MINOR)
       .setStatus(RuleStatus.BETA)
       .setConfigKey("InternalKeyS001")
@@ -348,8 +348,8 @@ public class ShowActionTest {
   @Test
   public void show_rule_with_no_default_and_no_overridden_debt() throws Exception {
     RuleDefinitionDto ruleDto = RuleTesting.newRule(RuleKey.of("java", "S001"))
-      .setName("Rule S001")
-      .setDescription("Rule S001 <b>description</b>")
+      .setName("RuleImpl S001")
+      .setDescription("RuleImpl S001 <b>description</b>")
       .setDescriptionFormat(Format.HTML)
       .setSeverity(MINOR)
       .setStatus(RuleStatus.BETA)
@@ -403,8 +403,8 @@ public class ShowActionTest {
   @Test
   public void show_deprecated_rule_rem_function_fields() throws Exception {
     RuleDto ruleDto = RuleTesting.newDto(RuleKey.of("java", "S001"), dbTester.getDefaultOrganization())
-      .setName("Rule S001")
-      .setDescription("Rule S001 <b>description</b>")
+      .setName("RuleImpl S001")
+      .setDescription("RuleImpl S001 <b>description</b>")
       .setSeverity(MINOR)
       .setStatus(RuleStatus.BETA)
       .setConfigKey("InternalKeyS001")
@@ -429,8 +429,8 @@ public class ShowActionTest {
   @Test
   public void show_rule_when_activated() throws Exception {
     RuleDefinitionDto ruleDto = RuleTesting.newRule(RuleKey.of("java", "S001"))
-      .setName("Rule S001")
-      .setDescription("Rule S001 <b>description</b>")
+      .setName("RuleImpl S001")
+      .setDescription("RuleImpl S001 <b>description</b>")
       .setDescriptionFormat(Format.HTML)
       .setSeverity(MINOR)
       .setStatus(RuleStatus.BETA)

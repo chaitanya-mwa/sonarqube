@@ -93,7 +93,7 @@ public class RuleUpdater {
     try (DbSession dbSession = dbClient.openSession(false)) {
       RuleDto rule = dbClient.ruleDao().selectOrFailByKey(dbSession, change.getOrganization(), change.getRuleKey());
       if (RuleStatus.REMOVED == rule.getStatus()) {
-        throw new IllegalArgumentException("Rule with REMOVED status cannot be updated: " + change.getRuleKey());
+        throw new IllegalArgumentException("RuleImpl with REMOVED status cannot be updated: " + change.getRuleKey());
       }
       return rule;
     }
@@ -213,7 +213,7 @@ public class RuleUpdater {
     if (update.isChangeParameters() && update.isCustomRule()) {
       RuleDto customRule = rule;
       Integer templateId = customRule.getTemplateId();
-      checkNotNull(templateId, "Rule '%s' has no persisted template!", customRule);
+      checkNotNull(templateId, "RuleImpl '%s' has no persisted template!", customRule);
       Optional<RuleDefinitionDto> templateRule = dbClient.ruleDao().selectDefinitionById(templateId, dbSession);
       if (!templateRule.isPresent()) {
         throw new IllegalStateException(String.format("Template %s of rule %s does not exist",

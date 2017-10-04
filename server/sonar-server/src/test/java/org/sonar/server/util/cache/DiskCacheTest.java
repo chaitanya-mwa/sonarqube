@@ -19,14 +19,13 @@
  */
 package org.sonar.server.util.cache;
 
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.sonar.api.utils.System2;
 import org.sonar.core.util.CloseableIterator;
-
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;

@@ -70,7 +70,7 @@ public class RuleCreator {
 
   public RuleKey create(DbSession dbSession, NewCustomRule newRule) {
     RuleKey templateKey = newRule.templateKey();
-    checkArgument(templateKey != null, "Rule template key should not be null");
+    checkArgument(templateKey != null, "RuleImpl template key should not be null");
     String defaultOrganizationUuid = defaultOrganizationProvider.get().getUuid();
     OrganizationDto defaultOrganization = dbClient.organizationDao().selectByUuid(dbSession, defaultOrganizationUuid)
       .orElseThrow(() -> new IllegalStateException(format("Could not find default organization for uuid '%s'", defaultOrganizationUuid)));

@@ -21,11 +21,11 @@ package org.sonar.server.ui.ws;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.sonar.api.config.internal.MapSettings;
 import org.sonar.api.platform.Server;
 import org.sonar.api.resources.ResourceType;
 import org.sonar.api.resources.ResourceTypeTree;
 import org.sonar.api.resources.ResourceTypes;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.api.web.page.Page;
 import org.sonar.api.web.page.PageDefinition;
 import org.sonar.core.platform.PluginRepository;

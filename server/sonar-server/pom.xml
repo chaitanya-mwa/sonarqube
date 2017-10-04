@@ -115,6 +115,11 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>sonar-plugin-api-impl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>sonar-ws</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -261,6 +266,12 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>mockwebserver</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>sonar-plugin-api-testing-common</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
 

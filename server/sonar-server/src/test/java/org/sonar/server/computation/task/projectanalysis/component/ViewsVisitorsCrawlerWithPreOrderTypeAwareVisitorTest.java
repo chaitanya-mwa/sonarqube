@@ -26,8 +26,8 @@ import org.mockito.InOrder;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.sonar.server.computation.task.projectanalysis.component.Component.Type.SUBVIEW;
 import static org.sonar.server.computation.task.projectanalysis.component.Component.Type.PROJECT_VIEW;
+import static org.sonar.server.computation.task.projectanalysis.component.Component.Type.SUBVIEW;
 import static org.sonar.server.computation.task.projectanalysis.component.Component.Type.VIEW;
 import static org.sonar.server.computation.task.projectanalysis.component.ComponentVisitor.Order.PRE_ORDER;
 

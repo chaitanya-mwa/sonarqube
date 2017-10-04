@@ -24,7 +24,6 @@ import java.sql.Types;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.sonar.api.utils.System2;
 import org.sonar.db.CoreDbTester;
 
 public class AddIsRootColumnOnTableUsersTest {

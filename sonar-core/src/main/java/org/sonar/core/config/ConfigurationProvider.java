@@ -22,7 +22,6 @@ package org.sonar.core.config;
 import org.picocontainer.injectors.ProviderAdapter;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.config.Settings;
-import org.sonar.api.config.internal.ConfigurationBridge;
 
 public class ConfigurationProvider extends ProviderAdapter {
 

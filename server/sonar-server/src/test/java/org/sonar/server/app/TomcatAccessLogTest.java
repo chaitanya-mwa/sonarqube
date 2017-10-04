@@ -19,6 +19,9 @@
  */
 package org.sonar.server.app;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.startup.Tomcat;
@@ -31,11 +34,10 @@ import org.sonar.api.utils.log.Logger;
 import org.sonar.process.ProcessProperties;
 import org.sonar.process.Props;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class TomcatAccessLogTest {
 

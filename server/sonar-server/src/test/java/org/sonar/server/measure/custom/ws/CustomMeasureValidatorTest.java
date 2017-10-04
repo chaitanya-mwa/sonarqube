@@ -24,8 +24,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.db.measure.custom.CustomMeasureDto;
-import org.sonar.server.exceptions.BadRequestException;
 import org.sonar.db.measure.custom.CustomMeasureTesting;
+import org.sonar.server.exceptions.BadRequestException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.sonar.api.measures.Metric.Level.WARN;

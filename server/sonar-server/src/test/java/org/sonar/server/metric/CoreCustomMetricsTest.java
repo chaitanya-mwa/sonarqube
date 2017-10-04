@@ -19,10 +19,9 @@
  */
 package org.sonar.server.metric;
 
+import java.util.List;
 import org.junit.Test;
 import org.sonar.api.measures.Metric;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

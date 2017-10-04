@@ -71,7 +71,7 @@ public class RuleActivatorContextFactory {
 
   private RuleDefinitionDto initRule(RuleKey ruleKey, RuleActivatorContext context, DbSession dbSession) {
     Optional<RuleDefinitionDto> rule = getRule(dbSession, ruleKey);
-    checkRequest(rule.isPresent(), "Rule not found: %s", ruleKey);
+    checkRequest(rule.isPresent(), "RuleImpl not found: %s", ruleKey);
     RuleDefinitionDto ruleDefinitionDto = rule.get();
     context.setRule(ruleDefinitionDto);
     context.setRuleParams(getRuleParams(dbSession, ruleDefinitionDto));

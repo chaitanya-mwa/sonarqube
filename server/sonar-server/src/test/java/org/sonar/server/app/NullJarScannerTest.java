@@ -19,12 +19,11 @@
  */
 package org.sonar.server.app;
 
+import javax.servlet.ServletContext;
 import org.apache.tomcat.JarScanFilter;
 import org.apache.tomcat.JarScanType;
 import org.apache.tomcat.JarScannerCallback;
 import org.junit.Test;
-
-import javax.servlet.ServletContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

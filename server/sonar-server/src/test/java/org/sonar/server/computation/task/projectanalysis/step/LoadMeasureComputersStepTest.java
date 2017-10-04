@@ -30,8 +30,8 @@ import org.junit.rules.ExpectedException;
 import org.sonar.api.ce.measure.MeasureComputer;
 import org.sonar.api.measures.Metric;
 import org.sonar.api.measures.Metrics;
-import org.sonar.server.computation.task.projectanalysis.measure.MeasureComputersHolderImpl;
 import org.sonar.server.computation.task.projectanalysis.api.measurecomputer.MeasureComputerWrapper;
+import org.sonar.server.computation.task.projectanalysis.measure.MeasureComputersHolderImpl;
 import org.sonar.server.computation.task.step.ComputationStep;
 
 import static com.google.common.collect.Lists.newArrayList;

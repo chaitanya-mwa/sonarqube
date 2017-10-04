@@ -115,8 +115,8 @@ public class IssueChangeNotificationTest {
 
   @Test
   public void set_rule_name() {
-    IssueChangeNotification result = notification.setRuleName("Xoo Rule");
-    assertThat(result.getFieldValue("ruleName")).isEqualTo("Xoo Rule");
+    IssueChangeNotification result = notification.setRuleName("Xoo RuleImpl");
+    assertThat(result.getFieldValue("ruleName")).isEqualTo("Xoo RuleImpl");
   }
 
   @Test

@@ -25,7 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeResponse;
 import org.junit.Rule;
 import org.junit.Test;
-import org.sonar.api.config.internal.MapSettings;
+import org.sonar.api.test.config.MapSettings;
 import org.sonar.server.es.EsTester;
 import org.sonar.server.es.IndexDefinition;
 import org.sonar.server.es.NewIndex;
