@@ -24,6 +24,7 @@ import ComponentNavBranchesMenu from './ComponentNavBranchesMenu';
 import SingleBranchHelperPopup from './SingleBranchHelperPopup';
 import NoBranchSupportPopup from './NoBranchSupportPopup';
 import { Branch, Component } from '../../../types';
+import * as theme from '../../../theme';
 import BranchIcon from '../../../../components/icons-components/BranchIcon';
 import { isShortLivingBranch } from '../../../../helpers/branches';
 import { translate } from '../../../../helpers/l10n';
@@ -156,7 +157,7 @@ export default class ComponentNavBranch extends React.PureComponent<Props, State
   renderSingleBranchPopup = () => (
     <div className="display-inline-block spacer-left">
       <a className="link-no-underline" href="#" onClick={this.handleSingleBranchClick}>
-        <HelpIcon fill="#4b9fd5" />
+        <HelpIcon fill={theme.blue} />
       </a>
       <BubblePopupHelper
         isOpen={this.state.singleBranchPopupOpen}
@@ -170,7 +171,7 @@ export default class ComponentNavBranch extends React.PureComponent<Props, State
   renderNoBranchSupportPopup = () => (
     <div className="display-inline-block spacer-left">
       <a className="link-no-underline" href="#" onClick={this.handleNoBranchSupportClick}>
-        <HelpIcon fill="#cdcdcd" />
+        <HelpIcon fill={theme.gray80} />
       </a>
       <BubblePopupHelper
         isOpen={this.state.noBranchSupportPopupOpen}
@@ -191,7 +192,7 @@ export default class ComponentNavBranch extends React.PureComponent<Props, State
     if (!this.context.branchesEnabled) {
       return (
         <div className="navbar-context-branches">
-          <BranchIcon branch={currentBranch} className="little-spacer-right" color="#cdcdcd" />
+          <BranchIcon branch={currentBranch} className="little-spacer-right" color={theme.gray80} />
           <span className="note">{currentBranch.name}</span>
           {this.renderNoBranchSupportPopup()}
         </div>
