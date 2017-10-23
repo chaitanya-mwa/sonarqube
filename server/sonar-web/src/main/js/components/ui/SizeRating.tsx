@@ -18,21 +18,17 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import * as React from 'react';
-import * as classNames from 'classnames';
 import { inRange } from 'lodash';
-import './SizeRating.css';
+import styled, { Theme } from '../styled';
 
 interface Props {
+  className?: string;
   muted?: boolean;
   small?: boolean;
-  value: number | null | undefined;
+  value: number;
 }
 
-export default function SizeRating({ small = false, muted = false, value }: Props) {
-  if (value == null) {
-    return <div className="size-rating size-rating-muted">&nbsp;</div>;
-  }
-
+function SizeRating({ className, value }: Props) {
   let letter;
   if (inRange(value, 0, 1000)) {
     letter = 'XS';
@@ -46,10 +42,24 @@ export default function SizeRating({ small = false, muted = false, value }: Prop
     letter = 'XL';
   }
 
-  const className = classNames('size-rating', {
-    'size-rating-small': small,
-    'size-rating-muted': muted
-  });
-
   return <div className={className}>{letter}</div>;
 }
+
+const size = (props: Props & Theme) =>
+  props.small ? props.theme.smallControlHeight : props.theme.controlHeight;
+
+export default styled(SizeRating)`
+  display: inline-block;
+  vertical-align: top;
+  width: ${size};
+  height: ${size};
+  line-height: ${size};
+  margin-top: ${props => (props.small ? '-1px' : 0)};
+  margin-bottom: ${props => (props.small ? '-1px' : 0)};
+  border-radius: ${size};
+  background-color: ${props => (props.muted ? '#bdbdbd' : props.theme.blue)};
+  color: #fff;
+  font-size: ${props => (props.small ? props.theme.smallestFontSize : props.theme.smallFontSize)};
+  text-align: center;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.35);
+`;

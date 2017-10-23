@@ -48,10 +48,12 @@ module.exports = {
   // sizes
   baseFontSize: '13px',
   smallFontSize: '12px',
+  smallestFontSize: '10px',
   mediumFontSize: '14px',
   bigFontSize: '16px',
 
   controlHeight: '24px',
+  smallControlHeight: '18px',
 
   // different
   defaultShadow: '0 6px 12px rgba(0, 0, 0, 0.175)',

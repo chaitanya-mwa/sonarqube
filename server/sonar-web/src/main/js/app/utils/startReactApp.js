@@ -21,6 +21,7 @@ import React from 'react';
 import { render } from 'react-dom';
 import { Router, Route, IndexRoute, Redirect } from 'react-router';
 import { Provider } from 'react-redux';
+import { ThemeProvider } from 'styled-components';
 import DefaultHelmetContainer from '../components/DefaultHelmetContainer';
 import LocalizationContainer from '../components/LocalizationContainer';
 import MigrationContainer from '../components/MigrationContainer';
@@ -72,6 +73,7 @@ import { maintenanceRoutes, setupRoutes } from '../../apps/maintenance/routes';
 import { globalPermissionsRoutes, projectPermissionsRoutes } from '../../apps/permissions/routes';
 import getStore from './getStore';
 import getHistory from './getHistory';
+import * as theme from '../theme';
 
 function handleUpdate() {
   const { action } = this.state.location;
@@ -88,157 +90,162 @@ const startReactApp = () => {
   const store = getStore();
 
   render(
-    <Provider store={store}>
-      <Router history={history} onUpdate={handleUpdate}>
-        <Route
-          path="/account/issues"
-          onEnter={(_, replace) => {
-            replace({ pathname: '/issues', query: { myIssues: 'true', resolved: 'false' } });
-          }}
-        />
+    <ThemeProvider theme={theme}>
+      <Provider store={store}>
+        <Router history={history} onUpdate={handleUpdate}>
+          <Route
+            path="/account/issues"
+            onEnter={(_, replace) => {
+              replace({ pathname: '/issues', query: { myIssues: 'true', resolved: 'false' } });
+            }}
+          />
 
-        <Route
-          path="/codingrules"
-          onEnter={(nextState, replace) => {
-            replace('/coding_rules' + window.location.hash);
-          }}
-        />
+          <Route
+            path="/codingrules"
+            onEnter={(nextState, replace) => {
+              replace('/coding_rules' + window.location.hash);
+            }}
+          />
 
-        <Route
-          path="/dashboard/index/:key"
-          onEnter={(nextState, replace) => {
-            replace({ pathname: '/dashboard', query: { id: nextState.params.key } });
-          }}
-        />
+          <Route
+            path="/dashboard/index/:key"
+            onEnter={(nextState, replace) => {
+              replace({ pathname: '/dashboard', query: { id: nextState.params.key } });
+            }}
+          />
 
-        <Route
-          path="/issues/search"
-          onEnter={(nextState, replace) => {
-            replace('/issues' + window.location.hash);
-          }}
-        />
+          <Route
+            path="/issues/search"
+            onEnter={(nextState, replace) => {
+              replace('/issues' + window.location.hash);
+            }}
+          />
 
-        <Redirect from="/admin" to="/admin/settings" />
-        <Redirect from="/background_tasks" to="/admin/background_tasks" />
-        <Redirect from="/component/index" to="/component" />
-        <Redirect from="/component_issues" to="/project/issues" />
-        <Redirect from="/dashboard/index" to="/dashboard" />
-        <Redirect from="/governance" to="/portfolio" />
-        <Redirect from="/groups" to="/admin/groups" />
-        <Redirect from="/extension/governance/portfolios" to="/portfolios" />
-        <Redirect from="/metrics" to="/admin/custom_metrics" />
-        <Redirect from="/permission_templates" to="/admin/permission_templates" />
-        <Redirect from="/profiles/index" to="/profiles" />
-        <Redirect from="/projects_admin" to="/admin/projects_management" />
-        <Redirect from="/quality_gates/index" to="/quality_gates" />
-        <Redirect from="/roles/global" to="/admin/permissions" />
-        <Redirect from="/settings" to="/admin/settings" />
-        <Redirect from="/settings/encryption" to="/admin/settings/encryption" />
-        <Redirect from="/settings/index" to="/admin/settings" />
-        <Redirect from="/sessions/login" to="/sessions/new" />
-        <Redirect from="/system" to="/admin/system" />
-        <Redirect from="/system/index" to="/admin/system" />
-        <Redirect from="/view" to="/portfolio" />
-        <Redirect from="/users" to="/admin/users" />
-        <Redirect from="/updatecenter" to="/admin/update_center" />
-        <Redirect from="/updatecenter/available" to="/admin/update_center/available" />
-        <Redirect from="/updatecenter/installed" to="/admin/update_center/installed" />
-        <Redirect from="/updatecenter/system" to="/admin/update_center/system" />
-        <Redirect from="/updatecenter/updates" to="/admin/update_center/updates" />
+          <Redirect from="/admin" to="/admin/settings" />
+          <Redirect from="/background_tasks" to="/admin/background_tasks" />
+          <Redirect from="/component/index" to="/component" />
+          <Redirect from="/component_issues" to="/project/issues" />
+          <Redirect from="/dashboard/index" to="/dashboard" />
+          <Redirect from="/governance" to="/portfolio" />
+          <Redirect from="/groups" to="/admin/groups" />
+          <Redirect from="/extension/governance/portfolios" to="/portfolios" />
+          <Redirect from="/metrics" to="/admin/custom_metrics" />
+          <Redirect from="/permission_templates" to="/admin/permission_templates" />
+          <Redirect from="/profiles/index" to="/profiles" />
+          <Redirect from="/projects_admin" to="/admin/projects_management" />
+          <Redirect from="/quality_gates/index" to="/quality_gates" />
+          <Redirect from="/roles/global" to="/admin/permissions" />
+          <Redirect from="/settings" to="/admin/settings" />
+          <Redirect from="/settings/encryption" to="/admin/settings/encryption" />
+          <Redirect from="/settings/index" to="/admin/settings" />
+          <Redirect from="/sessions/login" to="/sessions/new" />
+          <Redirect from="/system" to="/admin/system" />
+          <Redirect from="/system/index" to="/admin/system" />
+          <Redirect from="/view" to="/portfolio" />
+          <Redirect from="/users" to="/admin/users" />
+          <Redirect from="/updatecenter" to="/admin/update_center" />
+          <Redirect from="/updatecenter/available" to="/admin/update_center/available" />
+          <Redirect from="/updatecenter/installed" to="/admin/update_center/installed" />
+          <Redirect from="/updatecenter/system" to="/admin/update_center/system" />
+          <Redirect from="/updatecenter/updates" to="/admin/update_center/updates" />
 
-        <Route path="markdown/help" component={MarkdownHelp} />
+          <Route path="markdown/help" component={MarkdownHelp} />
 
-        <Route component={DefaultHelmetContainer}>
-          <Route component={LocalizationContainer}>
-            <Route component={SimpleContainer}>
-              <Route path="maintenance">{maintenanceRoutes}</Route>
-              <Route path="setup">{setupRoutes}</Route>
-            </Route>
-
-            <Route component={MigrationContainer}>
-              <Route component={SimpleSessionsContainer}>
-                <Route path="/sessions" childRoutes={sessionsRoutes} />
+          <Route component={DefaultHelmetContainer}>
+            <Route component={LocalizationContainer}>
+              <Route component={SimpleContainer}>
+                <Route path="maintenance">{maintenanceRoutes}</Route>
+                <Route path="setup">{setupRoutes}</Route>
               </Route>
 
-              <Route path="/" component={App}>
-                <IndexRoute component={Landing} />
-
-                <Route component={GlobalContainer}>
-                  <Route path="about" childRoutes={aboutRoutes} />
-                  <Route path="account" childRoutes={accountRoutes} />
-                  <Route path="coding_rules" childRoutes={codingRulesRoutes} />
-                  <Route path="component" childRoutes={componentRoutes} />
-                  <Route
-                    path="extension/:pluginKey/:extensionKey"
-                    component={GlobalPageExtension}
-                  />
-                  <Route path="issues" childRoutes={issuesRoutes} />
-                  <Route path="organizations" childRoutes={organizationsRoutes} />
-                  <Route path="projects" childRoutes={projectsRoutes} />
-                  <Route path="quality_gates" childRoutes={qualityGatesRoutes} />
-                  <Route path="portfolios" component={PortfoliosPage} />
-                  <Route path="profiles" childRoutes={qualityProfilesRoutes} />
-                  <Route path="web_api" childRoutes={webAPIRoutes} />
-
-                  <Route
-                    getComponent={() =>
-                      import('../components/ComponentContainer').then(i => i.default)}>
-                    <Route path="code" childRoutes={codeRoutes} />
-                    <Route path="component_measures" childRoutes={componentMeasuresRoutes} />
-                    <Route path="dashboard" childRoutes={overviewRoutes} />
-                    <Route path="portfolio" childRoutes={portfolioRoutes} />
-                    <Route path="project/activity" childRoutes={projectActivityRoutes} />
-                    <Route
-                      path="project/extension/:pluginKey/:extensionKey"
-                      component={ProjectPageExtension}
-                    />
-                    <Route path="project/issues" childRoutes={issuesRoutes} />
-                    <Route path="project/quality_gate" childRoutes={projectQualityGateRoutes} />
-                    <Route
-                      path="project/quality_profiles"
-                      childRoutes={projectQualityProfilesRoutes}
-                    />
-                    <Route component={ProjectAdminContainer}>
-                      <Route path="custom_measures" childRoutes={customMeasuresRoutes} />
-                      <Route
-                        path="project/admin/extension/:pluginKey/:extensionKey"
-                        component={ProjectAdminPageExtension}
-                      />
-                      <Route path="project/background_tasks" childRoutes={backgroundTasksRoutes} />
-                      <Route path="project/branches" childRoutes={projectBranchesRoutes} />
-                      <Route path="project/settings" childRoutes={settingsRoutes} />
-                      <Route path="project_roles" childRoutes={projectPermissionsRoutes} />
-                    </Route>
-                    {projectAdminRoutes}
-                  </Route>
-
-                  <Route component={AdminContainer} path="admin">
-                    <Route
-                      path="extension/:pluginKey/:extensionKey"
-                      component={GlobalAdminPageExtension}
-                    />
-                    <Route path="background_tasks" childRoutes={backgroundTasksRoutes} />
-                    <Route path="custom_metrics" childRoutes={metricsRoutes} />
-                    <Route path="groups" childRoutes={groupsRoutes} />
-                    <Route path="permission_templates" childRoutes={permissionTemplatesRoutes} />
-                    <Route path="roles/global" childRoutes={globalPermissionsRoutes} />
-                    <Route path="permissions" childRoutes={globalPermissionsRoutes} />
-                    <Route path="projects_management" childRoutes={projectsManagementRoutes} />
-                    <Route path="settings" childRoutes={settingsRoutes} />
-                    <Route path="system" childRoutes={systemRoutes} />
-                    <Route path="update_center" childRoutes={updateCenterRoutes} />
-                    <Route path="users" childRoutes={usersRoutes} />
-                  </Route>
+              <Route component={MigrationContainer}>
+                <Route component={SimpleSessionsContainer}>
+                  <Route path="/sessions" childRoutes={sessionsRoutes} />
                 </Route>
 
-                <Route path="not_found" component={NotFound} />
-                <Route path="*" component={NotFound} />
+                <Route path="/" component={App}>
+                  <IndexRoute component={Landing} />
+
+                  <Route component={GlobalContainer}>
+                    <Route path="about" childRoutes={aboutRoutes} />
+                    <Route path="account" childRoutes={accountRoutes} />
+                    <Route path="coding_rules" childRoutes={codingRulesRoutes} />
+                    <Route path="component" childRoutes={componentRoutes} />
+                    <Route
+                      path="extension/:pluginKey/:extensionKey"
+                      component={GlobalPageExtension}
+                    />
+                    <Route path="issues" childRoutes={issuesRoutes} />
+                    <Route path="organizations" childRoutes={organizationsRoutes} />
+                    <Route path="projects" childRoutes={projectsRoutes} />
+                    <Route path="quality_gates" childRoutes={qualityGatesRoutes} />
+                    <Route path="portfolios" component={PortfoliosPage} />
+                    <Route path="profiles" childRoutes={qualityProfilesRoutes} />
+                    <Route path="web_api" childRoutes={webAPIRoutes} />
+
+                    <Route
+                      getComponent={() =>
+                        import('../components/ComponentContainer').then(i => i.default)}>
+                      <Route path="code" childRoutes={codeRoutes} />
+                      <Route path="component_measures" childRoutes={componentMeasuresRoutes} />
+                      <Route path="dashboard" childRoutes={overviewRoutes} />
+                      <Route path="portfolio" childRoutes={portfolioRoutes} />
+                      <Route path="project/activity" childRoutes={projectActivityRoutes} />
+                      <Route
+                        path="project/extension/:pluginKey/:extensionKey"
+                        component={ProjectPageExtension}
+                      />
+                      <Route path="project/issues" childRoutes={issuesRoutes} />
+                      <Route path="project/quality_gate" childRoutes={projectQualityGateRoutes} />
+                      <Route
+                        path="project/quality_profiles"
+                        childRoutes={projectQualityProfilesRoutes}
+                      />
+                      <Route component={ProjectAdminContainer}>
+                        <Route path="custom_measures" childRoutes={customMeasuresRoutes} />
+                        <Route
+                          path="project/admin/extension/:pluginKey/:extensionKey"
+                          component={ProjectAdminPageExtension}
+                        />
+                        <Route
+                          path="project/background_tasks"
+                          childRoutes={backgroundTasksRoutes}
+                        />
+                        <Route path="project/branches" childRoutes={projectBranchesRoutes} />
+                        <Route path="project/settings" childRoutes={settingsRoutes} />
+                        <Route path="project_roles" childRoutes={projectPermissionsRoutes} />
+                      </Route>
+                      {projectAdminRoutes}
+                    </Route>
+
+                    <Route component={AdminContainer} path="admin">
+                      <Route
+                        path="extension/:pluginKey/:extensionKey"
+                        component={GlobalAdminPageExtension}
+                      />
+                      <Route path="background_tasks" childRoutes={backgroundTasksRoutes} />
+                      <Route path="custom_metrics" childRoutes={metricsRoutes} />
+                      <Route path="groups" childRoutes={groupsRoutes} />
+                      <Route path="permission_templates" childRoutes={permissionTemplatesRoutes} />
+                      <Route path="roles/global" childRoutes={globalPermissionsRoutes} />
+                      <Route path="permissions" childRoutes={globalPermissionsRoutes} />
+                      <Route path="projects_management" childRoutes={projectsManagementRoutes} />
+                      <Route path="settings" childRoutes={settingsRoutes} />
+                      <Route path="system" childRoutes={systemRoutes} />
+                      <Route path="update_center" childRoutes={updateCenterRoutes} />
+                      <Route path="users" childRoutes={usersRoutes} />
+                    </Route>
+                  </Route>
+
+                  <Route path="not_found" component={NotFound} />
+                  <Route path="*" component={NotFound} />
+                </Route>
               </Route>
             </Route>
           </Route>
-        </Route>
-      </Router>
-    </Provider>,
+        </Router>
+      </Provider>
+    </ThemeProvider>,
     el
   );
 };

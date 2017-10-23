@@ -272,7 +272,7 @@ exports[`should render correctly with all data 1`] = `
         <span
           className="spacer-left"
         >
-          <SizeRating
+          <Styled(SizeRating)
             value={2053}
           />
         </span>
@@ -312,7 +312,7 @@ exports[`should render ncloc correctly 1`] = `
       <span
         className="spacer-left"
       >
-        <SizeRating
+        <Styled(SizeRating)
           value={16549887}
         />
       </span>

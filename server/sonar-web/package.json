@@ -41,6 +41,7 @@
     "redux": "3.3.1",
     "redux-logger": "2.2.1",
     "redux-thunk": "1.0.2",
+    "styled-components": "2.2.1",
     "underscore": "1.8.3",
     "whatwg-fetch": "1.0.0"
   },
@@ -96,6 +97,7 @@
     "handlebars-loader": "1.5.0",
     "html-webpack-plugin": "2.28.0",
     "jest": "20.0.4",
+    "jest-styled-components": "4.9.0",
     "postcss-custom-properties": "6.2.0",
     "postcss-loader": "2.0.8",
     "prettier": "1.6.1",
@@ -152,6 +154,7 @@
       "<rootDir>/config/polyfills.js",
       "<rootDir>/config/jest/SetupTestEnvironment.js"
     ],
+    "setupTestFrameworkScriptFile": "<rootDir>/config/jest/styled-components.js",
     "snapshotSerializers": [
       "enzyme-to-json/serializer"
     ],
