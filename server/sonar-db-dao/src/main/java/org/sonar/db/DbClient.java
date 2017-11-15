@@ -38,6 +38,7 @@ import org.sonar.db.event.EventDao;
 import org.sonar.db.issue.IssueChangeDao;
 import org.sonar.db.issue.IssueDao;
 import org.sonar.db.loadedtemplate.LoadedTemplateDao;
+import org.sonar.db.measure.CurrentMeasureDao;
 import org.sonar.db.measure.MeasureDao;
 import org.sonar.db.measure.custom.CustomMeasureDao;
 import org.sonar.db.metric.MetricDao;
@@ -132,6 +133,7 @@ public class DbClient {
   private final AnalysisPropertiesDao analysisPropertiesDao;
   private final QProfileEditUsersDao qProfileEditUsersDao;
   private final QProfileEditGroupsDao qProfileEditGroupsDao;
+  private final CurrentMeasureDao currentMeasureDao;
 
   public DbClient(Database database, MyBatis myBatis, DBSessions dbSessions, Dao... daos) {
     this.database = database;
@@ -194,6 +196,7 @@ public class DbClient {
     analysisPropertiesDao = getDao(map, AnalysisPropertiesDao.class);
     qProfileEditUsersDao = getDao(map, QProfileEditUsersDao.class);
     qProfileEditGroupsDao = getDao(map, QProfileEditGroupsDao.class);
+    currentMeasureDao = getDao(map, CurrentMeasureDao.class);
   }
 
   public DbSession openSession(boolean batch) {
@@ -410,6 +413,10 @@ public class DbClient {
 
   public QProfileEditGroupsDao qProfileEditGroupsDao() {
     return qProfileEditGroupsDao;
+  }
+
+  public CurrentMeasureDao currentMeasureDao() {
+    return currentMeasureDao;
   }
 
   protected <K extends Dao> K getDao(Map<Class, Dao> map, Class<K> clazz) {

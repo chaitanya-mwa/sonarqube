@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd">
+
+<mapper namespace="org.sonar.db.measure.CurrentMeasureMapper">
+
+  <sql id="columns">
+    cm.uuid as uuid,
+    cm.component_uuid as componentUuid,
+    cm.project_uuid as projectUuid,
+    cm.metric_id as metricId,
+    cm.value as value,
+    cm.text_value as textValue,
+    cm.measure_data as data,
+    cm.variation as variation
+  </sql>
+
+  <insert id="insert" parameterType="org.sonar.db.measure.CurrentMeasureDto" useGeneratedKeys="false">
+    insert into current_measures (
+    uuid,
+    component_uuid,
+    project_uuid,
+    metric_id,
+    value,
+    text_value,
+    variation,
+    measure_data,
+    created_at,
+    updated_at
+    ) values (
+    #{dto.uuid, jdbcType=VARCHAR},
+    #{dto.componentUuid, jdbcType=VARCHAR},
+    #{dto.projectUuid, jdbcType=VARCHAR},
+    #{dto.metricId, jdbcType=INTEGER},
+    #{dto.value, jdbcType=DOUBLE},
+    #{dto.textValue, jdbcType=VARCHAR},
+    #{dto.variation, jdbcType=DOUBLE},
+    #{dto.data, jdbcType=BINARY},
+    #{now, jdbcType=BIGINT},
+    #{now, jdbcType=BIGINT}
+    )
+  </insert>
+
+  <delete id="deleteByProjectUuid" parameterType="String">
+    delete from current_measures
+    where project_uuid = #{projectUuid, jdbcType=VARCHAR}
+  </delete>
+
+  <select id="selectByComponentUuids" parameterType="map" resultType="org.sonar.db.measure.CurrentMeasureDto">
+    select <include refid="columns"/> from current_measures cm
+    where
+    cm.metric_id in <foreach item="metricId" collection="metricIds" open="(" separator="," close=")">#{metricId, jdbcType=INTEGER}</foreach>
+    and cm.component_uuid in
+    <foreach item="componentUuid" collection="componentUuids" open="(" separator="," close=")">
+      #{componentUuid, jdbcType=VARCHAR}
+    </foreach>
+  </select>
+</mapper>
