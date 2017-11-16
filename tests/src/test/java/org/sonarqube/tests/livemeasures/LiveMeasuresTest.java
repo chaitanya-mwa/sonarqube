@@ -60,20 +60,41 @@ public class LiveMeasuresTest {
 
     orchestrator.executeBuildQuietly(SonarScanner.create(ItUtils.projectDir(PROJECT_DIR)));
 
-    assertThat(numberOfBugs()).as("Number of bugs before change").isEqualTo(1);
+    assertThat(numberOf("bugs")).as("Number of bugs before change").isEqualTo(1);
 
     String issueKey = tester.wsClient().issues().search(new SearchWsRequest()).getIssuesList().get(0).getKey();
     tester.wsClient().issues().doTransition(
       new DoTransitionRequest(issueKey, "falsepositive")
     );
 
-    assertThat(numberOfBugs()).as("Number of bugs after change").isEqualTo(0);
+    assertThat(numberOf("bugs")).as("Number of bugs after change").isEqualTo(0);
   }
 
-  private int numberOfBugs() {
+  @Test
+  public void live_update_project_level_measures_on_issue_type_change() {
+    ItUtils.restoreProfile(orchestrator, getClass().getResource("/livemeasures/LiveMeasuresTest/one-bug-per-line-profile.xml"));
+    orchestrator.getServer().provisionProject(PROJECT_KEY, "LiveMeasuresTestExample");
+    orchestrator.getServer().associateProjectToQualityProfile(PROJECT_KEY, "xoo", "one-bug-per-line-profile");
+
+    orchestrator.executeBuildQuietly(SonarScanner.create(ItUtils.projectDir(PROJECT_DIR)));
+
+    assertThat(numberOf("bugs")).as("Number of bugs before change").isEqualTo(1);
+    assertThat(numberOf("code_smells")).as("Number of code_smells before change").isEqualTo(0);
+
+    String issueKey = tester.wsClient().issues().search(new SearchWsRequest()).getIssuesList().get(0).getKey();
+    tester.wsClient().issues().doTransition(
+      new DoTransitionRequest(issueKey, "falsepositive")
+    );
+
+    assertThat(numberOf("bugs")).as("Number of bugs after change").isEqualTo(0);
+    assertThat(numberOf("code_smells")).as("Number of code_smells before change").isEqualTo(1);
+
+  }
+
+  private int numberOf(String bugs) {
     return parseInt(tester.wsClient().measures().component(
       new ComponentWsRequest()
-        .setMetricKeys(Collections.singletonList("bugs"))
+        .setMetricKeys(Collections.singletonList(bugs))
         .setComponent(PROJECT_KEY)
     ).getComponent().getMeasuresList().get(0).getValue());
   }
