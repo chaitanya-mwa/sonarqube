@@ -24,7 +24,7 @@ import java.util.Arrays;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
-public class CurrentMeasureDto {
+public class LiveMeasureDto {
 
   private static final int MAX_TEXT_VALUE_LENGTH = 4000;
 
@@ -130,7 +130,7 @@ public class CurrentMeasureDto {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("CurrentMeasureDto{");
+    StringBuilder sb = new StringBuilder("LiveMeasureDto{");
     sb.append("uuid='").append(uuid).append('\'');
     sb.append(", componentUuid='").append(componentUuid).append('\'');
     sb.append(", projectUuid='").append(projectUuid).append('\'');

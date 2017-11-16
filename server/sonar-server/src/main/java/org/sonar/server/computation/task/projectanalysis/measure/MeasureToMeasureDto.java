@@ -20,7 +20,7 @@
 package org.sonar.server.computation.task.projectanalysis.measure;
 
 import javax.annotation.CheckForNull;
-import org.sonar.db.measure.CurrentMeasureDto;
+import org.sonar.db.measure.LiveMeasureDto;
 import org.sonar.db.measure.MeasureDto;
 import org.sonar.server.computation.task.projectanalysis.analysis.AnalysisMetadataHolder;
 import org.sonar.server.computation.task.projectanalysis.component.Component;
@@ -58,8 +58,8 @@ public class MeasureToMeasureDto {
     return out;
   }
 
-  public CurrentMeasureDto toCurrentMeasureDto(Measure measure, Metric metric, Component component) {
-    CurrentMeasureDto out = new CurrentMeasureDto();
+  public LiveMeasureDto toLiveMeasureDto(Measure measure, Metric metric, Component component) {
+    LiveMeasureDto out = new LiveMeasureDto();
     out.setMetricId(metric.getId());
     out.setComponentUuid(component.getUuid());
     out.setProjectUuid(analysisMetadataHolder.getProject().getUuid());

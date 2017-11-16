@@ -29,20 +29,20 @@ import org.sonar.db.DbSession;
 
 import static org.sonar.db.DatabaseUtils.executeLargeInputs;
 
-public class CurrentMeasureDao implements Dao {
+public class LiveMeasureDao implements Dao {
 
   private final System2 system2;
 
-  public CurrentMeasureDao(System2 system2) {
+  public LiveMeasureDao(System2 system2) {
     this.system2 = system2;
   }
 
-  public void insert(DbSession dbSession, CurrentMeasureDto dto) {
+  public void insert(DbSession dbSession, LiveMeasureDto dto) {
     dto.setUuid(Uuids.create());
     mapper(dbSession).insert(dto, system2.now());
   }
 
-  public List<CurrentMeasureDto> selectByComponentUuids(DbSession dbSession, Collection<String> largeComponentUuids, Collection<Integer> metricIds) {
+  public List<LiveMeasureDto> selectByComponentUuids(DbSession dbSession, Collection<String> largeComponentUuids, Collection<Integer> metricIds) {
     if (largeComponentUuids.isEmpty() || metricIds.isEmpty()) {
       return Collections.emptyList();
     }
@@ -57,8 +57,8 @@ public class CurrentMeasureDao implements Dao {
     mapper(dbSession).deleteByProjectUuid(projectUuid);
   }
 
-  private static CurrentMeasureMapper mapper(DbSession dbSession) {
-    return dbSession.getMapper(CurrentMeasureMapper.class);
+  private static LiveMeasureMapper mapper(DbSession dbSession) {
+    return dbSession.getMapper(LiveMeasureMapper.class);
   }
 
 }

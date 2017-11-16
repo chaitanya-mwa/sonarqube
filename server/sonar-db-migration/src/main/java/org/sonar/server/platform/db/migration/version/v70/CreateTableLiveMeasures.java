@@ -32,11 +32,11 @@ import static org.sonar.server.platform.db.migration.def.DecimalColumnDef.newDec
 import static org.sonar.server.platform.db.migration.def.IntegerColumnDef.newIntegerColumnDefBuilder;
 import static org.sonar.server.platform.db.migration.def.VarcharColumnDef.newVarcharColumnDefBuilder;
 
-public class CreateTableCurrentMeasures extends DdlChange {
+public class CreateTableLiveMeasures extends DdlChange {
 
-  private static final String TABLE_NAME = "current_measures";
+  private static final String TABLE_NAME = "live_measures";
 
-  public CreateTableCurrentMeasures(Database db) {
+  public CreateTableLiveMeasures(Database db) {
     super(db);
   }
 
@@ -97,7 +97,7 @@ public class CreateTableCurrentMeasures extends DdlChange {
       .addColumn(projectColumn)
       .setUnique(false)
       .setTable(TABLE_NAME)
-      .setName("current_measures_project")
+      .setName("live_measures_project")
       .build()
     );
   }

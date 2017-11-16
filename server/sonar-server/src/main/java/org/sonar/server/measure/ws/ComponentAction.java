@@ -40,7 +40,7 @@ import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
 import org.sonar.db.component.SnapshotDto;
-import org.sonar.db.measure.CurrentMeasureDto;
+import org.sonar.db.measure.LiveMeasureDto;
 import org.sonar.db.metric.MetricDto;
 import org.sonar.server.component.ComponentFinder;
 import org.sonar.server.exceptions.NotFoundException;
@@ -140,7 +140,7 @@ public class ComponentAction implements MeasuresWsAction {
       SnapshotDto analysis = dbClient.snapshotDao().selectLastAnalysisByRootComponentUuid(dbSession, component.projectUuid()).orElse(null);
       List<MetricDto> metrics = searchMetrics(dbSession, request);
       List<WsMeasures.Period> periods = snapshotToWsPeriods(analysis);
-      List<CurrentMeasureDto> measures = searchMeasures(dbSession, component, analysis, metrics, developerId);
+      List<LiveMeasureDto> measures = searchMeasures(dbSession, component, analysis, metrics, developerId);
 
       return buildResponse(request, component, refComponent, measures, metrics, periods);
     }
@@ -173,12 +173,12 @@ public class ComponentAction implements MeasuresWsAction {
     return dbClient.componentDao().selectByUuid(dbSession, component.getCopyResourceUuid());
   }
 
-  private static ComponentWsResponse buildResponse(ComponentWsRequest request, ComponentDto component, Optional<ComponentDto> refComponent, List<CurrentMeasureDto> measures,
+  private static ComponentWsResponse buildResponse(ComponentWsRequest request, ComponentDto component, Optional<ComponentDto> refComponent, List<LiveMeasureDto> measures,
     List<MetricDto> metrics, List<WsMeasures.Period> periods) {
     ComponentWsResponse.Builder response = ComponentWsResponse.newBuilder();
     Map<Integer, MetricDto> metricsById = Maps.uniqueIndex(metrics, MetricDto::getId);
-    Map<MetricDto, CurrentMeasureDto> measuresByMetric = new HashMap<>();
-    for (CurrentMeasureDto measure : measures) {
+    Map<MetricDto, LiveMeasureDto> measuresByMetric = new HashMap<>();
+    for (LiveMeasureDto measure : measures) {
       MetricDto metric = metricsById.get(measure.getMetricId());
       measuresByMetric.put(metric, measure);
     }
@@ -217,13 +217,13 @@ public class ComponentAction implements MeasuresWsAction {
     return metrics;
   }
 
-  private List<CurrentMeasureDto> searchMeasures(DbSession dbSession, ComponentDto component, @Nullable SnapshotDto analysis, List<MetricDto> metrics, @Nullable Long developerId) {
+  private List<LiveMeasureDto> searchMeasures(DbSession dbSession, ComponentDto component, @Nullable SnapshotDto analysis, List<MetricDto> metrics, @Nullable Long developerId) {
     if (analysis == null) {
       return emptyList();
     }
 
     List<Integer> metricIds = Lists.transform(metrics, MetricDto::getId);
-    return dbClient.currentMeasureDao().selectByComponentUuids(dbSession, singletonList(component.uuid()), metricIds);
+    return dbClient.liveMeasureDao().selectByComponentUuids(dbSession, singletonList(component.uuid()), metricIds);
   }
 
   private static ComponentWsRequest toComponentWsRequest(Request request) {

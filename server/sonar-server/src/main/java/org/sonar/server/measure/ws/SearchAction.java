@@ -34,7 +34,7 @@ import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
-import org.sonar.db.measure.CurrentMeasureDto;
+import org.sonar.db.measure.LiveMeasureDto;
 import org.sonar.db.metric.MetricDto;
 import org.sonar.server.user.UserSession;
 import org.sonarqube.ws.WsMeasures.Measure;
@@ -105,7 +105,7 @@ public class SearchAction implements MeasuresWsAction {
     private SearchRequest request;
     private List<ComponentDto> projects;
     private List<MetricDto> metrics;
-    private List<CurrentMeasureDto> measures;
+    private List<LiveMeasureDto> measures;
 
     ResponseBuilder(Request httpRequest, DbSession dbSession) {
       this.dbSession = dbSession;
@@ -161,8 +161,8 @@ public class SearchAction implements MeasuresWsAction {
         .collect(toList());
     }
 
-    private List<CurrentMeasureDto> searchMeasures() {
-      return dbClient.currentMeasureDao().selectByComponentUuids(dbSession,
+    private List<LiveMeasureDto> searchMeasures() {
+      return dbClient.liveMeasureDao().selectByComponentUuids(dbSession,
         projects.stream().map(ComponentDto::uuid).collect(MoreCollectors.toArrayList(projects.size())),
         metrics.stream().map(MetricDto::getId).collect(MoreCollectors.toArrayList(metrics.size())));
     }
@@ -179,7 +179,7 @@ public class SearchAction implements MeasuresWsAction {
       Map<String, String> componentNamesByKey = projects.stream().collect(toMap(ComponentDto::getDbKey, ComponentDto::name));
       Map<Integer, MetricDto> metricsById = metrics.stream().collect(toMap(MetricDto::getId, identity()));
 
-      Function<CurrentMeasureDto, MetricDto> dbMeasureToDbMetric = dbMeasure -> metricsById.get(dbMeasure.getMetricId());
+      Function<LiveMeasureDto, MetricDto> dbMeasureToDbMetric = dbMeasure -> metricsById.get(dbMeasure.getMetricId());
       Function<Measure, String> byMetricKey = Measure::getMetric;
       Function<Measure, String> byComponentName = wsMeasure -> componentNamesByKey.get(wsMeasure.getComponent());
 

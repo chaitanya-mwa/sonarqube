@@ -64,7 +64,7 @@ import org.sonar.db.issue.IssueMapper;
 import org.sonar.db.issue.ShortBranchIssueDto;
 import org.sonar.db.loadedtemplate.LoadedTemplateDto;
 import org.sonar.db.loadedtemplate.LoadedTemplateMapper;
-import org.sonar.db.measure.CurrentMeasureMapper;
+import org.sonar.db.measure.LiveMeasureMapper;
 import org.sonar.db.measure.MeasureDto;
 import org.sonar.db.measure.MeasureMapper;
 import org.sonar.db.measure.custom.CustomMeasureDto;
@@ -211,7 +211,7 @@ public class MyBatis implements Startable {
       ComponentKeyUpdaterMapper.class,
       ComponentLinkMapper.class,
       ComponentMapper.class,
-      CurrentMeasureMapper.class,
+      LiveMeasureMapper.class,
       CustomMeasureMapper.class,
       DefaultQProfileMapper.class,
       DuplicationMapper.class,

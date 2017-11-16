@@ -23,15 +23,14 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Multimap;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
-import org.sonar.db.measure.CurrentMeasureDao;
-import org.sonar.db.measure.CurrentMeasureDto;
+import org.sonar.db.measure.LiveMeasureDao;
+import org.sonar.db.measure.LiveMeasureDto;
 import org.sonar.server.computation.task.projectanalysis.component.Component;
 import org.sonar.server.computation.task.projectanalysis.component.CrawlerDepthLimit;
 import org.sonar.server.computation.task.projectanalysis.component.DepthTraversalTypeAwareCrawler;
@@ -45,17 +44,18 @@ import org.sonar.server.computation.task.projectanalysis.metric.MetricRepository
 import org.sonar.server.computation.task.step.ComputationStep;
 
 import static com.google.common.collect.FluentIterable.from;
+import static java.util.Collections.unmodifiableSet;
 import static org.sonar.api.measures.CoreMetrics.CLASS_COMPLEXITY_DISTRIBUTION_KEY;
 import static org.sonar.api.measures.CoreMetrics.FILE_COMPLEXITY_DISTRIBUTION_KEY;
 import static org.sonar.api.measures.CoreMetrics.FUNCTION_COMPLEXITY_DISTRIBUTION_KEY;
 import static org.sonar.server.computation.task.projectanalysis.component.ComponentVisitor.Order.PRE_ORDER;
 
-public class PersistCurrentMeasuresStep implements ComputationStep {
+public class PersistLiveMeasuresStep implements ComputationStep {
 
   /**
    * List of metrics that should not be persisted on file measure (Waiting for SONAR-6688 to be implemented)
    */
-  private static final Set<String> NOT_TO_PERSIST_ON_FILE_METRIC_KEYS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+  private static final Set<String> NOT_TO_PERSIST_ON_FILE_METRIC_KEYS = unmodifiableSet(new HashSet<>(Arrays.asList(
     FILE_COMPLEXITY_DISTRIBUTION_KEY,
     FUNCTION_COMPLEXITY_DISTRIBUTION_KEY,
     CLASS_COMPLEXITY_DISTRIBUTION_KEY)));
@@ -66,7 +66,7 @@ public class PersistCurrentMeasuresStep implements ComputationStep {
   private final TreeRootHolder treeRootHolder;
   private final MeasureRepository measureRepository;
 
-  public PersistCurrentMeasuresStep(DbClient dbClient, MetricRepository metricRepository, MeasureToMeasureDto measureToMeasureDto,
+  public PersistLiveMeasuresStep(DbClient dbClient, MetricRepository metricRepository, MeasureToMeasureDto measureToMeasureDto,
     TreeRootHolder treeRootHolder, MeasureRepository measureRepository) {
     this.dbClient = dbClient;
     this.metricRepository = metricRepository;
@@ -77,13 +77,13 @@ public class PersistCurrentMeasuresStep implements ComputationStep {
 
   @Override
   public String getDescription() {
-    return "Persist current measures";
+    return "Persist live measures";
   }
 
   @Override
   public void execute() {
     try (DbSession dbSession = dbClient.openSession(true)) {
-      dbClient.currentMeasureDao().deleteByProjectUuid(dbSession, treeRootHolder.getRoot().getUuid());
+      dbClient.liveMeasureDao().deleteByProjectUuid(dbSession, treeRootHolder.getRoot().getUuid());
       new DepthTraversalTypeAwareCrawler(new MeasureVisitor(dbSession)).visit(treeRootHolder.getRoot());
       dbSession.commit();
     }
@@ -111,9 +111,9 @@ public class PersistCurrentMeasuresStep implements ComputationStep {
         }
 
         Metric metric = metricRepository.getByKey(metricKey);
-        CurrentMeasureDao dao = dbClient.currentMeasureDao();
+        LiveMeasureDao dao = dbClient.liveMeasureDao();
         for (Measure measure : from(measures.getValue()).filter(NonEmptyMeasure.INSTANCE)) {
-          CurrentMeasureDto dto = measureToMeasureDto.toCurrentMeasureDto(measure, metric, component);
+          LiveMeasureDto dto = measureToMeasureDto.toLiveMeasureDto(measure, metric, component);
           dao.insert(session, dto);
         }
       }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd">
 
-<mapper namespace="org.sonar.db.measure.CurrentMeasureMapper">
+<mapper namespace="org.sonar.db.measure.LiveMeasureMapper">
 
   <sql id="columns">
     cm.uuid as uuid,
@@ -14,8 +14,8 @@
     cm.variation as variation
   </sql>
 
-  <insert id="insert" parameterType="org.sonar.db.measure.CurrentMeasureDto" useGeneratedKeys="false">
-    insert into current_measures (
+  <insert id="insert" parameterType="org.sonar.db.measure.LiveMeasureDto" useGeneratedKeys="false">
+    insert into live_measures (
     uuid,
     component_uuid,
     project_uuid,
@@ -41,12 +41,12 @@
   </insert>
 
   <delete id="deleteByProjectUuid" parameterType="String">
-    delete from current_measures
+    delete from live_measures
     where project_uuid = #{projectUuid, jdbcType=VARCHAR}
   </delete>
 
-  <select id="selectByComponentUuids" parameterType="map" resultType="org.sonar.db.measure.CurrentMeasureDto">
-    select <include refid="columns"/> from current_measures cm
+  <select id="selectByComponentUuids" parameterType="map" resultType="org.sonar.db.measure.LiveMeasureDto">
+    select <include refid="columns"/> from live_measures cm
     where
     cm.metric_id in <foreach item="metricId" collection="metricIds" open="(" separator="," close=")">#{metricId, jdbcType=INTEGER}</foreach>
     and cm.component_uuid in

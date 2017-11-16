@@ -23,16 +23,16 @@ import java.util.Collection;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
-public interface CurrentMeasureMapper {
+public interface LiveMeasureMapper {
 
   void insert(
-    @Param("dto") CurrentMeasureDto dto,
+    @Param("dto") LiveMeasureDto dto,
     @Param("now") long now);
 
   void deleteByProjectUuid(
     @Param("projectUuid") String projectUuid);
 
-  List<CurrentMeasureDto> selectByComponentUuids(
+  List<LiveMeasureDto> selectByComponentUuids(
     @Param("componentUuids") List<String> componentUuids,
     @Param("metricIds") Collection<Integer> metricIds);
 }

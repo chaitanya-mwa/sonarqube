@@ -26,7 +26,7 @@ public class DbVersion70 implements DbVersion {
   @Override
   public void addSteps(MigrationStepRegistry registry) {
     registry
-      .add(2000, "Create table current_measures", CreateTableCurrentMeasures.class)
+      .add(2000, "Create table live_measures", CreateTableLiveMeasures.class)
     ;
   }
 }
