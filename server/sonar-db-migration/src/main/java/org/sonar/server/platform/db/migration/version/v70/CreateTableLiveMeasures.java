@@ -21,6 +21,7 @@ package org.sonar.server.platform.db.migration.version.v70;
 
 import java.sql.SQLException;
 import org.sonar.db.Database;
+import org.sonar.server.platform.db.migration.def.ColumnDef;
 import org.sonar.server.platform.db.migration.def.VarcharColumnDef;
 import org.sonar.server.platform.db.migration.sql.CreateIndexBuilder;
 import org.sonar.server.platform.db.migration.sql.CreateTableBuilder;
@@ -42,10 +43,19 @@ public class CreateTableLiveMeasures extends DdlChange {
 
   @Override
   public void execute(Context context) throws SQLException {
-    VarcharColumnDef projectColumn = newVarcharColumnDefBuilder()
+    ColumnDef projectColumn = newVarcharColumnDefBuilder()
       .setColumnName("project_uuid")
       .setIsNullable(false)
       .setLimit(VarcharColumnDef.UUID_VARCHAR_SIZE)
+      .build();
+    ColumnDef componentColumn = newVarcharColumnDefBuilder()
+      .setColumnName("component_uuid")
+      .setIsNullable(false)
+      .setLimit(VarcharColumnDef.UUID_VARCHAR_SIZE)
+      .build();
+    ColumnDef metricColumn = newIntegerColumnDefBuilder()
+      .setColumnName("metric_id")
+      .setIsNullable(false)
       .build();
 
     context.execute(new CreateTableBuilder(getDialect(), TABLE_NAME)
@@ -55,15 +65,8 @@ public class CreateTableLiveMeasures extends DdlChange {
         .setLimit(VarcharColumnDef.UUID_VARCHAR_SIZE)
         .build())
       .addColumn(projectColumn)
-      .addColumn(newVarcharColumnDefBuilder()
-        .setColumnName("component_uuid")
-        .setIsNullable(false)
-        .setLimit(VarcharColumnDef.UUID_VARCHAR_SIZE)
-        .build())
-      .addColumn(newIntegerColumnDefBuilder()
-        .setColumnName("metric_id")
-        .setIsNullable(false)
-        .build())
+      .addColumn(componentColumn)
+      .addColumn(metricColumn)
       .addColumn(newDecimalColumnDefBuilder()
         .setColumnName("value")
         .setPrecision(38)
@@ -98,6 +101,15 @@ public class CreateTableLiveMeasures extends DdlChange {
       .setUnique(false)
       .setTable(TABLE_NAME)
       .setName("live_measures_project")
+      .build()
+    );
+
+    context.execute(new CreateIndexBuilder(getDialect())
+      .addColumn(componentColumn)
+      .addColumn(metricColumn)
+      .setUnique(true)
+      .setTable(TABLE_NAME)
+      .setName("live_measures_component")
       .build()
     );
   }
