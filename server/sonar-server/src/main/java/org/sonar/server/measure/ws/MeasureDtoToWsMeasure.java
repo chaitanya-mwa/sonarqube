@@ -20,7 +20,7 @@
 package org.sonar.server.measure.ws;
 
 import javax.annotation.Nullable;
-import org.sonar.db.measure.MeasureDto;
+import org.sonar.db.measure.CurrentMeasureDto;
 import org.sonar.db.metric.MetricDto;
 import org.sonarqube.ws.WsMeasures;
 import org.sonarqube.ws.WsMeasures.Measure;
@@ -34,10 +34,10 @@ class MeasureDtoToWsMeasure {
     // static methods
   }
 
-  static void updateMeasureBuilder(Measure.Builder measureBuilder, MetricDto metricDto, MeasureDto measureDto) {
+  static void updateMeasureBuilder(Measure.Builder measureBuilder, MetricDto metricDto, CurrentMeasureDto measureDto) {
     Double value = measureDto.getValue();
     Double variation = measureDto.getVariation();
-    updateMeasureBuilder(measureBuilder, metricDto, value == null ? Double.NaN : value, measureDto.getData(), variation == null ? Double.NaN : variation);
+    updateMeasureBuilder(measureBuilder, metricDto, value == null ? Double.NaN : value, measureDto.getDataAsString(), variation == null ? Double.NaN : variation);
   }
 
   static void updateMeasureBuilder(Measure.Builder measureBuilder, MetricDto metric, double doubleValue, @Nullable String stringValue, double variation) {

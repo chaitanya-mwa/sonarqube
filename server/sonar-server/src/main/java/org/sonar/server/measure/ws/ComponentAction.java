@@ -21,7 +21,6 @@ package org.sonar.server.measure.ws;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -32,24 +31,19 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import org.sonar.api.resources.Qualifiers;
 import org.sonar.api.server.ws.Change;
 import org.sonar.api.server.ws.Request;
 import org.sonar.api.server.ws.Response;
 import org.sonar.api.server.ws.WebService;
 import org.sonar.api.web.UserRole;
-import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
 import org.sonar.db.component.SnapshotDto;
-import org.sonar.db.measure.MeasureDto;
-import org.sonar.db.measure.MeasureQuery;
+import org.sonar.db.measure.CurrentMeasureDto;
 import org.sonar.db.metric.MetricDto;
-import org.sonar.db.metric.MetricDtoFunctions;
 import org.sonar.server.component.ComponentFinder;
 import org.sonar.server.exceptions.NotFoundException;
-import org.sonar.server.measure.ws.MetricDtoWithBestValue.MetricDtoToMetricDtoWithBestValueFunction;
 import org.sonar.server.user.UserSession;
 import org.sonarqube.ws.WsMeasures;
 import org.sonarqube.ws.WsMeasures.ComponentWsResponse;
@@ -59,6 +53,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.sonar.core.util.Uuids.UUID_EXAMPLE_01;
 import static org.sonar.server.component.ComponentFinder.ParamNames.COMPONENT_ID_AND_COMPONENT;
@@ -86,8 +81,6 @@ import static org.sonarqube.ws.client.measure.MeasuresWsParameters.PARAM_DEVELOP
 import static org.sonarqube.ws.client.measure.MeasuresWsParameters.PARAM_METRIC_KEYS;
 
 public class ComponentAction implements MeasuresWsAction {
-  private static final Set<String> QUALIFIERS_ELIGIBLE_FOR_BEST_VALUE = ImmutableSortedSet.of(Qualifiers.FILE, Qualifiers.UNIT_TEST_FILE);
-
   private final DbClient dbClient;
   private final ComponentFinder componentFinder;
   private final UserSession userSession;
@@ -147,7 +140,7 @@ public class ComponentAction implements MeasuresWsAction {
       SnapshotDto analysis = dbClient.snapshotDao().selectLastAnalysisByRootComponentUuid(dbSession, component.projectUuid()).orElse(null);
       List<MetricDto> metrics = searchMetrics(dbSession, request);
       List<WsMeasures.Period> periods = snapshotToWsPeriods(analysis);
-      List<MeasureDto> measures = searchMeasures(dbSession, component, analysis, metrics, developerId);
+      List<CurrentMeasureDto> measures = searchMeasures(dbSession, component, analysis, metrics, developerId);
 
       return buildResponse(request, component, refComponent, measures, metrics, periods);
     }
@@ -180,12 +173,12 @@ public class ComponentAction implements MeasuresWsAction {
     return dbClient.componentDao().selectByUuid(dbSession, component.getCopyResourceUuid());
   }
 
-  private static ComponentWsResponse buildResponse(ComponentWsRequest request, ComponentDto component, Optional<ComponentDto> refComponent, List<MeasureDto> measures,
+  private static ComponentWsResponse buildResponse(ComponentWsRequest request, ComponentDto component, Optional<ComponentDto> refComponent, List<CurrentMeasureDto> measures,
     List<MetricDto> metrics, List<WsMeasures.Period> periods) {
     ComponentWsResponse.Builder response = ComponentWsResponse.newBuilder();
     Map<Integer, MetricDto> metricsById = Maps.uniqueIndex(metrics, MetricDto::getId);
-    Map<MetricDto, MeasureDto> measuresByMetric = new HashMap<>();
-    for (MeasureDto measure : measures) {
+    Map<MetricDto, CurrentMeasureDto> measuresByMetric = new HashMap<>();
+    for (CurrentMeasureDto measure : measures) {
       MetricDto metric = metricsById.get(measure.getMetricId());
       measuresByMetric.put(metric, measure);
     }
@@ -224,46 +217,13 @@ public class ComponentAction implements MeasuresWsAction {
     return metrics;
   }
 
-  private List<MeasureDto> searchMeasures(DbSession dbSession, ComponentDto component, @Nullable SnapshotDto analysis, List<MetricDto> metrics, @Nullable Long developerId) {
+  private List<CurrentMeasureDto> searchMeasures(DbSession dbSession, ComponentDto component, @Nullable SnapshotDto analysis, List<MetricDto> metrics, @Nullable Long developerId) {
     if (analysis == null) {
       return emptyList();
     }
 
     List<Integer> metricIds = Lists.transform(metrics, MetricDto::getId);
-    MeasureQuery query = MeasureQuery.builder()
-      .setPersonId(developerId)
-      .setMetricIds(metricIds)
-      .setComponentUuid(component.uuid())
-      .build();
-    List<MeasureDto> measures = dbClient.measureDao().selectByQuery(dbSession, query);
-    addBestValuesToMeasures(measures, component, metrics);
-
-    return measures;
-  }
-
-  /**
-   * Conditions for best value measure:
-   * <ul>
-   * <li>component is a production file or test file</li>
-   * <li>metric is optimized for best value</li>
-   * </ul>
-   */
-  private static void addBestValuesToMeasures(List<MeasureDto> measures, ComponentDto component, List<MetricDto> metrics) {
-    if (!QUALIFIERS_ELIGIBLE_FOR_BEST_VALUE.contains(component.qualifier())) {
-      return;
-    }
-
-    List<MetricDtoWithBestValue> metricWithBestValueList = metrics.stream()
-      .filter(MetricDtoFunctions.isOptimizedForBestValue())
-      .map(new MetricDtoToMetricDtoWithBestValueFunction())
-      .collect(MoreCollectors.toList(metrics.size()));
-    Map<Integer, MeasureDto> measuresByMetricId = Maps.uniqueIndex(measures, MeasureDto::getMetricId);
-
-    for (MetricDtoWithBestValue metricWithBestValue : metricWithBestValueList) {
-      if (measuresByMetricId.get(metricWithBestValue.getMetric().getId()) == null) {
-        measures.add(metricWithBestValue.getBestValue());
-      }
-    }
+    return dbClient.currentMeasureDao().selectByComponentUuids(dbSession, singletonList(component.uuid()), metricIds);
   }
 
   private static ComponentWsRequest toComponentWsRequest(Request request) {
