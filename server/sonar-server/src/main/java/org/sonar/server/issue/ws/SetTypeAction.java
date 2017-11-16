@@ -23,7 +23,6 @@ import com.google.common.io.Resources;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.ws.Change;
 import org.sonar.api.server.ws.Request;
@@ -37,6 +36,7 @@ import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.issue.IssueDto;
+import org.sonar.server.computation.task.projectanalysis.issue.IssueCounter;
 import org.sonar.server.issue.IssueFieldsSetter;
 import org.sonar.server.issue.IssueFinder;
 import org.sonar.server.issue.IssueUpdater;
@@ -121,8 +121,10 @@ public class SetTypeAction implements IssuesWsAction {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(system2.now()), userSession.getLogin());
     if (issueFieldsSetter.setType(issue, ruleType, context)) {
       List<DiffOperation> operations = new ArrayList<>();
-      operations.add(new DiffOperation(getMetricKeyForRuleType(initialRuleType), -1.0));
-      operations.add(new DiffOperation(getMetricKeyForRuleType(issue.type()), 1.0));
+      operations.add(new DiffOperation(getMetricKeyForRuleType(initialRuleType), -1.0, -1.0, issueDto.getIssueCreationTime()));
+      operations.add(new DiffOperation(getNewMetricKeyForRuleType(initialRuleType), 0.0, -1.0, issueDto.getIssueCreationTime()));
+      operations.add(new DiffOperation(getMetricKeyForRuleType(issue.type()), 1.0, 1.0, issueDto.getIssueCreationTime()));
+      operations.add(new DiffOperation(getNewMetricKeyForRuleType(issue.type()), 0.0, 1.0, issueDto.getIssueCreationTime()));
 
       SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, operations);
       issueChangeWebhook.onChange(
@@ -137,17 +139,10 @@ public class SetTypeAction implements IssuesWsAction {
   }
 
   private static String getMetricKeyForRuleType(RuleType type) {
-    // TODO reuse IssueCounter.TYPE_TO_METRIC_KEY
-    switch (type) {
-      case CODE_SMELL:
-        return CoreMetrics.CODE_SMELLS_KEY;
-      case BUG:
-        return CoreMetrics.BUGS_KEY;
-      case VULNERABILITY:
-        return CoreMetrics.VULNERABILITIES_KEY;
-      default:
-        throw new IllegalArgumentException("Unsupported rule type: " + type);
-    }
+    return IssueCounter.TYPE_TO_METRIC_KEY.get(type);
+  }
 
+  private static String getNewMetricKeyForRuleType(RuleType type) {
+    return IssueCounter.TYPE_TO_NEW_METRIC_KEY.get(type);
   }
 }

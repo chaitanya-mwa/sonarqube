@@ -92,12 +92,12 @@ public class IssueCounter extends IssueVisitor {
     MINOR, NEW_MINOR_VIOLATIONS_KEY,
     INFO, NEW_INFO_VIOLATIONS_KEY);
 
-  private static final Map<RuleType, String> TYPE_TO_METRIC_KEY = ImmutableMap.<RuleType, String>builder()
+  public static final Map<RuleType, String> TYPE_TO_METRIC_KEY = ImmutableMap.<RuleType, String>builder()
     .put(RuleType.CODE_SMELL, CoreMetrics.CODE_SMELLS_KEY)
     .put(RuleType.BUG, CoreMetrics.BUGS_KEY)
     .put(RuleType.VULNERABILITY, CoreMetrics.VULNERABILITIES_KEY)
     .build();
-  private static final Map<RuleType, String> TYPE_TO_NEW_METRIC_KEY = ImmutableMap.<RuleType, String>builder()
+  public static final Map<RuleType, String> TYPE_TO_NEW_METRIC_KEY = ImmutableMap.<RuleType, String>builder()
     .put(RuleType.CODE_SMELL, CoreMetrics.NEW_CODE_SMELLS_KEY)
     .put(RuleType.BUG, CoreMetrics.NEW_BUGS_KEY)
     .put(RuleType.VULNERABILITY, CoreMetrics.NEW_VULNERABILITIES_KEY)

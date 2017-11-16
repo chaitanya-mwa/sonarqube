@@ -19,6 +19,7 @@
  */
 package org.sonar.db.metric;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -33,7 +34,7 @@ public interface MetricMapper {
 
   MetricDto selectByKey(@Param("key") String key);
 
-  List<MetricDto> selectByKeys(@Param("keys") List<String> keys);
+  List<MetricDto> selectByKeys(@Param("keys") Collection<String> keys);
 
   List<MetricDto> selectAll();
 

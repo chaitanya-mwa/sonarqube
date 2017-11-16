@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Date;
 import org.sonar.api.issue.DefaultTransitions;
 import org.sonar.api.issue.Issue;
-import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.ws.Change;
 import org.sonar.api.server.ws.Request;
@@ -39,6 +38,7 @@ import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.issue.IssueDto;
+import org.sonar.server.computation.task.projectanalysis.issue.IssueCounter;
 import org.sonar.server.issue.IssueFinder;
 import org.sonar.server.issue.IssueUpdater;
 import org.sonar.server.issue.TransitionService;
@@ -119,12 +119,14 @@ public class DoTransitionAction implements IssuesWsAction {
 
       if (initialStatus.equals(Issue.STATUS_OPEN) || initialStatus.equals(Issue.STATUS_CONFIRMED) || initialStatus.equals(Issue.STATUS_REOPENED)) {
         if (targetStatus.equals(Issue.STATUS_RESOLVED) || targetStatus.equals(Issue.STATUS_CLOSED)) {
-          diffOperations.add(new DiffOperation(getMetricKeyForRuleType(defaultIssue.type()), -1.0));
+          diffOperations.add(new DiffOperation(getMetricKeyForRuleType(defaultIssue.type()), -1.0, -1.0, issueDto.getIssueCreationTime()));
+          diffOperations.add(new DiffOperation(getNewMetricKeyForRuleType(defaultIssue.type()), 0.0, -1.0, issueDto.getIssueCreationTime()));
         }
 
       } else if (initialStatus.equals(Issue.STATUS_RESOLVED) || initialStatus.equals(Issue.STATUS_CLOSED)) {
         if (targetStatus.equals(Issue.STATUS_OPEN) || targetStatus.equals(Issue.STATUS_CONFIRMED) || targetStatus.equals(Issue.STATUS_REOPENED)) {
-          diffOperations.add(new DiffOperation(getMetricKeyForRuleType(defaultIssue.type()), 1.0));
+          diffOperations.add(new DiffOperation(getMetricKeyForRuleType(defaultIssue.type()), 1.0, 1.0, issueDto.getIssueCreationTime()));
+          diffOperations.add(new DiffOperation(getNewMetricKeyForRuleType(defaultIssue.type()), 0.0, 1.0, issueDto.getIssueCreationTime()));
         }
       }
 
@@ -141,17 +143,10 @@ public class DoTransitionAction implements IssuesWsAction {
   }
 
   private static String getMetricKeyForRuleType(RuleType type) {
-    // TODO reuse IssueCounter.TYPE_TO_METRIC_KEY
-    switch (type) {
-      case CODE_SMELL:
-        return CoreMetrics.CODE_SMELLS_KEY;
-      case BUG:
-        return CoreMetrics.BUGS_KEY;
-      case VULNERABILITY:
-        return CoreMetrics.VULNERABILITIES_KEY;
-      default:
-        throw new IllegalArgumentException("Unsupported rule type: " + type);
-    }
+    return IssueCounter.TYPE_TO_METRIC_KEY.get(type);
+  }
 
+  private static String getNewMetricKeyForRuleType(RuleType type) {
+    return IssueCounter.TYPE_TO_NEW_METRIC_KEY.get(type);
   }
 }

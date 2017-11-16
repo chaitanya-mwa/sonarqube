@@ -21,18 +21,30 @@ package org.sonar.server.measure.live;
 
 public class DiffOperation {
   private final String metricKey;
-  private final double diff;
+  private final double valueIncrement;
+  private final double leakVariationIncrement;
+  private final long issueCreatedAt;
 
-  public DiffOperation(String metricKey, double diff) {
+  public DiffOperation(String metricKey, double valueIncrement, double leakVariationIncrement, long issueCreatedAt) {
     this.metricKey = metricKey;
-    this.diff = diff;
+    this.valueIncrement = valueIncrement;
+    this.leakVariationIncrement = leakVariationIncrement;
+    this.issueCreatedAt = issueCreatedAt;
   }
 
   public String getMetricKey() {
     return metricKey;
   }
 
-  public double getDiff() {
-    return diff;
+  public double getValueIncrement() {
+    return valueIncrement;
+  }
+
+  public double getLeakVariationIncrement() {
+    return leakVariationIncrement;
+  }
+
+  public long getIssueCreatedAt() {
+    return issueCreatedAt;
   }
 }
