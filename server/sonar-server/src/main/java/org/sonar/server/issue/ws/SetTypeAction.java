@@ -113,6 +113,7 @@ public class SetTypeAction implements IssuesWsAction {
   private SearchResponseData setType(DbSession session, String issueKey, RuleType ruleType) {
     IssueDto issueDto = issueFinder.getByKey(session, issueKey);
     DefaultIssue issue = issueDto.toDefaultIssue();
+    RuleType initialRuleType = issue.type();
     userSession.checkComponentUuidPermission(ISSUE_ADMIN, issue.projectUuid());
 
     IssueChangeContext context = IssueChangeContext.createUser(new Date(system2.now()), userSession.getLogin());
@@ -120,6 +121,8 @@ public class SetTypeAction implements IssuesWsAction {
       DiffOperation diffOperation = null;
       if (ruleType == RuleType.BUG) {
         diffOperation = new DiffOperation(CoreMetrics.BUGS_KEY, 1.0);
+      } else if (initialRuleType == RuleType.BUG) {
+        diffOperation = new DiffOperation(CoreMetrics.BUGS_KEY, -1.0);
       }
 
       SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, diffOperation);
