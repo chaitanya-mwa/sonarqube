@@ -21,7 +21,6 @@ package org.sonarqube.tests.livemeasures;
 
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.build.SonarScanner;
-import java.util.Collections;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -34,12 +33,14 @@ import org.sonarqube.ws.client.measure.ComponentWsRequest;
 import util.ItUtils;
 
 import static java.lang.Integer.parseInt;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class LiveMeasuresTest {
 
   private static final String PROJECT_KEY = "LiveMeasuresTestExample";
-  private static final String PROJECT_DIR = "livemeasures/LiveMeasuresTest";
+  private static final String PROJECT_DIR_V1 = "livemeasures/LiveMeasuresTest-v1";
+  private static final String PROJECT_DIR_V2 = "livemeasures/LiveMeasuresTest-v2";
 
   @ClassRule
   public static Orchestrator orchestrator = Category4Suite.ORCHESTRATOR;
@@ -58,16 +59,40 @@ public class LiveMeasuresTest {
     orchestrator.getServer().provisionProject(PROJECT_KEY, "LiveMeasuresTestExample");
     orchestrator.getServer().associateProjectToQualityProfile(PROJECT_KEY, "xoo", "one-bug-per-line-profile");
 
-    orchestrator.executeBuildQuietly(SonarScanner.create(ItUtils.projectDir(PROJECT_DIR)));
+    orchestrator.executeBuildQuietly(SonarScanner.create(ItUtils.projectDir(PROJECT_DIR_V1)));
 
-    assertThat(numberOf("bugs")).as("Number of bugs before change").isEqualTo(1);
+    assertThat(numberOf("bugs")).as("Number of bugs before change").isEqualTo(2);
 
-    String issueKey = tester.wsClient().issues().search(new SearchWsRequest()).getIssuesList().get(0).getKey();
+    String issueKey = tester.wsClient().issues().search(
+      new SearchWsRequest().setResolved(false).setComponentKeys(singletonList(PROJECT_KEY))).getIssuesList().get(0).getKey();
     tester.wsClient().issues().doTransition(
       new DoTransitionRequest(issueKey, "falsepositive")
     );
 
-    assertThat(numberOf("bugs")).as("Number of bugs after change").isEqualTo(0);
+    assertThat(numberOf("bugs")).as("Number of bugs after change").isEqualTo(1);
+
+    orchestrator.executeBuildQuietly(SonarScanner.create(ItUtils.projectDir(PROJECT_DIR_V2)));
+
+    assertThat(numberOf("bugs")).as("Number of bugs v2, before change").isEqualTo(2);
+    assertThat(numberOfNew("new_bugs")).as("Number of new bugs, before change").isEqualTo(1);
+
+    String issueKey2 = tester.wsClient().issues().search(
+      new SearchWsRequest().setResolved(false).setComponentKeys(singletonList(PROJECT_KEY)).setSinceLeakPeriod(true)).getIssuesList().get(0).getKey();
+    tester.wsClient().issues().doTransition(
+      new DoTransitionRequest(issueKey2, "falsepositive")
+    );
+
+    assertThat(numberOf("bugs")).as("Number of bugs v2, after change").isEqualTo(1);
+    assertThat(numberOfNew("new_bugs")).as("Number of new bugs, after change").isEqualTo(0);
+
+    String issueKey3 = tester.wsClient().issues().search(
+      new SearchWsRequest().setResolved(false).setComponentKeys(singletonList(PROJECT_KEY))).getIssuesList().get(0).getKey();
+    tester.wsClient().issues().doTransition(
+      new DoTransitionRequest(issueKey3, "falsepositive")
+    );
+
+    assertThat(numberOf("bugs")).as("Number of bugs v2, after change").isEqualTo(0);
+    assertThat(numberOfNew("new_bugs")).as("Number of new bugs, after change").isEqualTo(0);
   }
 
   @Test
@@ -76,7 +101,7 @@ public class LiveMeasuresTest {
     orchestrator.getServer().provisionProject(PROJECT_KEY, "LiveMeasuresTestExample");
     orchestrator.getServer().associateProjectToQualityProfile(PROJECT_KEY, "xoo", "one-bug-per-line-profile");
 
-    orchestrator.executeBuildQuietly(SonarScanner.create(ItUtils.projectDir(PROJECT_DIR)));
+    orchestrator.executeBuildQuietly(SonarScanner.create(ItUtils.projectDir(PROJECT_DIR_V1)));
 
     assertThat(numberOf("bugs")).as("Number of bugs before change").isEqualTo(1);
     assertThat(numberOf("code_smells")).as("Number of code_smells before change").isEqualTo(0);
@@ -91,11 +116,19 @@ public class LiveMeasuresTest {
 
   }
 
-  private int numberOf(String bugs) {
+  private int numberOf(String metricKey) {
     return parseInt(tester.wsClient().measures().component(
       new ComponentWsRequest()
-        .setMetricKeys(Collections.singletonList(bugs))
+        .setMetricKeys(singletonList(metricKey))
         .setComponent(PROJECT_KEY)
     ).getComponent().getMeasuresList().get(0).getValue());
+  }
+
+  private int numberOfNew(String metricKey) {
+    return parseInt(tester.wsClient().measures().component(
+      new ComponentWsRequest()
+        .setMetricKeys(singletonList(metricKey))
+        .setComponent(PROJECT_KEY)
+    ).getComponent().getMeasuresList().get(0).getPeriods().getPeriodsValueList().get(0).getValue());
   }
 }
