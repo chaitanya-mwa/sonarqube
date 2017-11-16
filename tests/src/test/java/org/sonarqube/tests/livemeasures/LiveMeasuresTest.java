@@ -53,7 +53,7 @@ public class LiveMeasuresTest {
   }
 
   @Test
-  public void should_not_exclude_anything() {
+  public void live_update_project_level_measures_on_issue_transition() {
     ItUtils.restoreProfile(orchestrator, getClass().getResource("/livemeasures/LiveMeasuresTest/one-bug-per-line-profile.xml"));
     orchestrator.getServer().provisionProject(PROJECT_KEY, "LiveMeasuresTestExample");
     orchestrator.getServer().associateProjectToQualityProfile(PROJECT_KEY, "xoo", "one-bug-per-line-profile");
