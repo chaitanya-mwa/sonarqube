@@ -54,24 +54,27 @@ public class LiveMeasureDto {
     return componentUuid;
   }
 
-  public void setComponentUuid(String s) {
+  public LiveMeasureDto setComponentUuid(String s) {
     this.componentUuid = s;
+    return this;
   }
 
   public String getProjectUuid() {
     return projectUuid;
   }
 
-  public void setProjectUuid(String s) {
+  public LiveMeasureDto setProjectUuid(String s) {
     this.projectUuid = s;
+    return this;
   }
 
   public int getMetricId() {
     return metricId;
   }
 
-  public void setMetricId(int i) {
+  public LiveMeasureDto setMetricId(int i) {
     this.metricId = i;
+    return this;
   }
 
   @CheckForNull
@@ -79,8 +82,9 @@ public class LiveMeasureDto {
     return value;
   }
 
-  public void setValue(@Nullable Double value) {
+  public LiveMeasureDto setValue(@Nullable Double value) {
     this.value = value;
+    return this;
   }
 
   @CheckForNull
@@ -101,7 +105,7 @@ public class LiveMeasureDto {
     return textValue;
   }
 
-  public void setData(@Nullable String data) {
+  public LiveMeasureDto setData(@Nullable String data) {
     if (data == null) {
       this.textValue = null;
       this.data = null;
@@ -112,11 +116,13 @@ public class LiveMeasureDto {
       this.textValue = data;
       this.data = null;
     }
+    return this;
   }
 
-  public void setData(@Nullable byte[] data) {
+  public LiveMeasureDto setData(@Nullable byte[] data) {
     this.textValue = null;
     this.data = data;
+    return this;
   }
 
   @CheckForNull
@@ -124,8 +130,9 @@ public class LiveMeasureDto {
     return variation;
   }
 
-  public void setVariation(@Nullable Double variation) {
+  public LiveMeasureDto setVariation(@Nullable Double variation) {
     this.variation = variation;
+    return this;
   }
 
   @Override

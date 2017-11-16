@@ -22,8 +22,19 @@ package org.sonar.db.measure;
 import java.util.Collection;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.session.ResultHandler;
 
 public interface LiveMeasureMapper {
+
+  List<LiveMeasureDto> selectByComponentUuids(
+    @Param("componentUuids") List<String> componentUuids,
+    @Param("metricIds") Collection<Integer> metricIds);
+
+  void selectTreeByQuery(
+    @Param("query") MeasureTreeQuery measureQuery,
+    @Param("baseUuid") String baseUuid,
+    @Param("baseUuidPath") String baseUuidPath,
+    ResultHandler<LiveMeasureDto> resultHandler);
 
   void insert(
     @Param("dto") LiveMeasureDto dto,
@@ -35,8 +46,4 @@ public interface LiveMeasureMapper {
 
   void deleteByProjectUuid(
     @Param("projectUuid") String projectUuid);
-
-  List<LiveMeasureDto> selectByComponentUuids(
-    @Param("componentUuids") List<String> componentUuids,
-    @Param("metricIds") Collection<Integer> metricIds);
 }

@@ -4,14 +4,14 @@
 <mapper namespace="org.sonar.db.measure.LiveMeasureMapper">
 
   <sql id="columns">
-    cm.uuid as uuid,
-    cm.component_uuid as componentUuid,
-    cm.project_uuid as projectUuid,
-    cm.metric_id as metricId,
-    cm.value as value,
-    cm.text_value as textValue,
-    cm.measure_data as data,
-    cm.variation as variation
+    lm.uuid as uuid,
+    lm.component_uuid as componentUuid,
+    lm.project_uuid as projectUuid,
+    lm.metric_id as metricId,
+    lm.value as value,
+    lm.text_value as textValue,
+    lm.measure_data as data,
+    lm.variation as variation
   </sql>
 
   <insert id="insert" parameterType="map" useGeneratedKeys="false">
@@ -54,12 +54,37 @@
   </delete>
 
   <select id="selectByComponentUuids" parameterType="map" resultType="org.sonar.db.measure.LiveMeasureDto">
-    select <include refid="columns"/> from live_measures cm
+    select <include refid="columns"/> from live_measures lm
     where
-    cm.metric_id in <foreach item="metricId" collection="metricIds" open="(" separator="," close=")">#{metricId, jdbcType=INTEGER}</foreach>
-    and cm.component_uuid in
+    lm.metric_id in <foreach item="metricId" collection="metricIds" open="(" separator="," close=")">#{metricId, jdbcType=INTEGER}</foreach>
+    and lm.component_uuid in
     <foreach item="componentUuid" collection="componentUuids" open="(" separator="," close=")">
       #{componentUuid, jdbcType=VARCHAR}
     </foreach>
+  </select>
+
+  <select id="selectTreeByQuery" parameterType="map" resultType="org.sonar.db.measure.LiveMeasureDto" fetchSize="${_scrollFetchSize}" resultSetType="FORWARD_ONLY">
+    select <include refid="columns"/> from live_measures lm
+    inner join projects p on p.uuid = lm.component_uuid
+    <include refid="org.sonar.db.component.ComponentMapper.selectDescendantsJoins"/>
+    <where>
+      <if test="query.getMetricIds() != null">
+        lm.metric_id in
+        <foreach item="metricId" collection="query.getMetricIds()" open="(" separator="," close=")">#{metricId,jdbcType=INTEGER}</foreach>
+      </if>
+      <include refid="org.sonar.db.component.ComponentMapper.selectDescendantsFilters"/>
+    </where>
+
+    -- Add measures of base component
+    union all
+    select <include refid="columns"/> from live_measures lm
+    inner join projects p on p.uuid = lm.component_uuid and lm.component_uuid = #{baseUuid, jdbcType=VARCHAR}
+    <where>
+      <if test="query.getMetricIds() != null">
+        lm.metric_id in
+        <foreach item="metricId" collection="query.getMetricIds()" open="(" separator="," close=")">#{metricId,jdbcType=INTEGER}</foreach>
+      </if>
+      <include refid="org.sonar.db.component.ComponentMapper.selectDescendantsFilters"/>
+    </where>
   </select>
 </mapper>

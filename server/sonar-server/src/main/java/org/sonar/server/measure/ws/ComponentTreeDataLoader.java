@@ -39,7 +39,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,10 +51,9 @@ import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
 import org.sonar.db.component.ComponentTreeQuery;
 import org.sonar.db.component.SnapshotDto;
-import org.sonar.db.measure.MeasureDto;
+import org.sonar.db.measure.LiveMeasureDto;
 import org.sonar.db.measure.MeasureTreeQuery;
 import org.sonar.db.metric.MetricDto;
-import org.sonar.db.metric.MetricDtoFunctions;
 import org.sonar.server.component.ComponentFinder;
 import org.sonar.server.exceptions.NotFoundException;
 import org.sonar.server.measure.ws.ComponentTreeData.Measure;
@@ -204,45 +202,15 @@ public class ComponentTreeDataLoader {
       .build();
 
     Table<String, MetricDto, Measure> measuresByComponentUuidAndMetric = HashBasedTable.create(components.size(), metrics.size());
-    dbClient.measureDao().selectTreeByQuery(dbSession, baseComponent, measureQuery, result -> {
-      MeasureDto measureDto = result.getResultObject();
+    dbClient.liveMeasureDao().selectTreeByQuery(dbSession, baseComponent, measureQuery, result -> {
+      LiveMeasureDto measureDto = result.getResultObject();
       measuresByComponentUuidAndMetric.put(
         measureDto.getComponentUuid(),
         metricsById.get(measureDto.getMetricId()),
         Measure.createFromMeasureDto(measureDto));
     });
 
-    addBestValuesToMeasures(measuresByComponentUuidAndMetric, components, metrics);
-
     return measuresByComponentUuidAndMetric;
-  }
-
-  /**
-   * Conditions for best value measure:
-   * <ul>
-   * <li>component is a production file or test file</li>
-   * <li>metric is optimized for best value</li>
-   * </ul>
-   */
-  private static void addBestValuesToMeasures(Table<String, MetricDto, Measure> measuresByComponentUuidAndMetric, List<ComponentDto> components,
-    List<MetricDto> metrics) {
-    List<MetricDtoWithBestValue> metricDtosWithBestValueMeasure = metrics.stream()
-      .filter(MetricDtoFunctions.isOptimizedForBestValue())
-      .map(new MetricDtoToMetricDtoWithBestValue())
-      .collect(MoreCollectors.toList(metrics.size()));
-    if (metricDtosWithBestValueMeasure.isEmpty()) {
-      return;
-    }
-
-    Stream<ComponentDto> componentsEligibleForBestValue = components.stream().filter(IsFileComponent.INSTANCE);
-    componentsEligibleForBestValue.forEach(component -> {
-      for (MetricDtoWithBestValue metricWithBestValue : metricDtosWithBestValueMeasure) {
-        if (measuresByComponentUuidAndMetric.get(component.uuid(), metricWithBestValue.getMetric()) == null) {
-          measuresByComponentUuidAndMetric.put(component.uuid(), metricWithBestValue.getMetric(),
-            Measure.createFromMeasureDto(metricWithBestValue.getBestValue()));
-        }
-      }
-    });
   }
 
   private static List<ComponentDto> filterComponents(List<ComponentDto> components,

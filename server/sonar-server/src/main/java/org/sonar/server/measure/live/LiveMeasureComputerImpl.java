@@ -19,6 +19,7 @@
  */
 package org.sonar.server.measure.live;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
@@ -40,7 +41,12 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
   @Override
   public void refresh(DbSession dbSession, ComponentDto component, DiffOperation diffOperation) {
     List<MetricDto> metrics = dbClient.metricDao().selectByKeys(dbSession, asList(diffOperation.getMetricKey()));
-    List<LiveMeasureDto> dbMeasures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, component.getUuidPathAsList(), toMetricIds(metrics));
+
+    List<String> uuids = new ArrayList<>();
+    uuids.add(component.uuid());
+    uuids.addAll(component.getUuidPathAsList());
+
+    List<LiveMeasureDto> dbMeasures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, uuids, toMetricIds(metrics));
 
     dbMeasures.stream()
       .filter(m -> m.getValue() != null)

@@ -19,7 +19,6 @@
  */
 package org.sonar.db.measure;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -40,14 +39,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.sonar.api.resources.Qualifiers.FILE;
-import static org.sonar.api.resources.Qualifiers.UNIT_TEST_FILE;
 import static org.sonar.api.utils.DateUtils.parseDate;
 import static org.sonar.db.component.ComponentTesting.newFileDto;
 import static org.sonar.db.component.ComponentTesting.newModuleDto;
 import static org.sonar.db.component.SnapshotTesting.newAnalysis;
-import static org.sonar.db.measure.MeasureTreeQuery.Strategy.CHILDREN;
-import static org.sonar.db.measure.MeasureTreeQuery.Strategy.LEAVES;
 
 public class MeasureDaoTest {
 
@@ -220,90 +215,6 @@ public class MeasureDaoTest {
   }
 
   @Test
-  public void select_tree_by_query() {
-    ComponentDto project = db.components().insertPrivateProject();
-    ComponentDto module1 = db.components().insertComponent(newModuleDto(project));
-    ComponentDto module2 = db.components().insertComponent(newModuleDto(project));
-    ComponentDto file1 = db.components().insertComponent(newFileDto(module1).setUuid("C1").setName("File One"));
-    db.components().insertComponent(newFileDto(module2).setUuid("C2").setName("File Two").setQualifier(UNIT_TEST_FILE));
-    insertAnalysis(LAST_ANALYSIS_UUID, project.uuid(), true);
-
-    // project
-    insertMeasure("PROJECT_M1", LAST_ANALYSIS_UUID, project.uuid(), NCLOC_METRIC_ID);
-    // module 1
-    insertMeasure("MODULE_M1", LAST_ANALYSIS_UUID, module1.uuid(), NCLOC_METRIC_ID);
-    // component C1
-    insertMeasure("M2", LAST_ANALYSIS_UUID, "C1", NCLOC_METRIC_ID);
-    insertMeasure("M3", LAST_ANALYSIS_UUID, "C1", COVERAGE_METRIC_ID);
-    insertMeasureOnPerson("M4", LAST_ANALYSIS_UUID, "C1", NCLOC_METRIC_ID, A_PERSON_ID);
-    // component C2
-    insertMeasure("M6", LAST_ANALYSIS_UUID, "C2", NCLOC_METRIC_ID);
-    db.commit();
-
-    // Children measures of project
-    verifyMeasures(project, MeasureTreeQuery.builder().setStrategy(CHILDREN), "PROJECT_M1", "MODULE_M1");
-
-    // Children measures of module 1
-    verifyMeasures(module1, MeasureTreeQuery.builder().setStrategy(CHILDREN), "M2", "M3", "MODULE_M1");
-
-    // Children measure on file => only measures from itself
-    verifyMeasures(file1, MeasureTreeQuery.builder().setStrategy(CHILDREN), "M2", "M3");
-
-    // Leaves measures of project
-    verifyMeasures(project, MeasureTreeQuery.builder().setStrategy(LEAVES), "PROJECT_M1", "MODULE_M1", "M2", "M3", "M6");
-
-    // Leaves measures of module 1
-    verifyMeasures(module1, MeasureTreeQuery.builder().setStrategy(LEAVES), "MODULE_M1", "M2", "M3");
-
-    // Leaves measures of project by metric ids
-    verifyMeasures(project, MeasureTreeQuery.builder().setMetricIds(asList(NCLOC_METRIC_ID)).setStrategy(LEAVES), "PROJECT_M1", "MODULE_M1", "M2",
-      "M6");
-
-    // Leaves measure on file
-    verifyMeasures(file1, MeasureTreeQuery.builder().setStrategy(LEAVES), "M2", "M3");
-
-    // Leaves measures of project matching name
-    verifyMeasures(project, MeasureTreeQuery.builder().setNameOrKeyQuery("OnE").setStrategy(LEAVES), "M2", "M3");
-
-    // Leaves measures of project matching qualifiers
-    verifyMeasures(project, MeasureTreeQuery.builder().setQualifiers(asList(FILE)).setStrategy(LEAVES), "M2", "M3");
-    verifyMeasures(project, MeasureTreeQuery.builder().setQualifiers(asList(FILE, UNIT_TEST_FILE)).setStrategy(LEAVES), "M2", "M3", "M6");
-  }
-
-  @Test
-  public void select_tree_by_query_use_only_latest_analysis() {
-    ComponentDto project = db.components().insertPrivateProject();
-    ComponentDto file1 = db.components().insertComponent(newFileDto(project).setUuid("C1").setName("File One"));
-    db.components().insertComponent(newFileDto(project).setUuid("C2").setName("File Two").setQualifier(UNIT_TEST_FILE));
-    insertAnalysis(LAST_ANALYSIS_UUID, project.uuid(), true);
-    insertAnalysis(OTHER_ANALYSIS_UUID, project.uuid(), false);
-
-    // project
-    insertMeasure("PROJECT_M1", LAST_ANALYSIS_UUID, project.uuid(), NCLOC_METRIC_ID);
-    insertMeasure("PROJECT_M2", OTHER_ANALYSIS_UUID, project.uuid(), NCLOC_METRIC_ID);
-    // component C1
-    insertMeasure("M2", LAST_ANALYSIS_UUID, "C1", NCLOC_METRIC_ID);
-    insertMeasure("M3", LAST_ANALYSIS_UUID, "C1", COVERAGE_METRIC_ID);
-    insertMeasure("M4", OTHER_ANALYSIS_UUID, "C1", COVERAGE_METRIC_ID);
-    // component C2
-    insertMeasure("M5", LAST_ANALYSIS_UUID, "C2", NCLOC_METRIC_ID);
-    insertMeasure("M6", OTHER_ANALYSIS_UUID, "C2", NCLOC_METRIC_ID);
-    db.commit();
-
-    // Children measures of project
-    verifyMeasures(project, MeasureTreeQuery.builder().setStrategy(CHILDREN), "PROJECT_M1", "M2", "M3", "M5");
-
-    // Children measure on file => only measures from itself
-    verifyMeasures(file1, MeasureTreeQuery.builder().setStrategy(CHILDREN), "M2", "M3");
-
-    // Leaves measures of project
-    verifyMeasures(project, MeasureTreeQuery.builder().setStrategy(LEAVES), "PROJECT_M1", "M2", "M3", "M5");
-
-    // Leaves measure on file
-    verifyMeasures(file1, MeasureTreeQuery.builder().setStrategy(LEAVES), "M2", "M3");
-  }
-
-  @Test
   public void select_past_measures_with_several_analyses() {
     ComponentDto project = db.components().insertPrivateProject();
     long lastAnalysisDate = parseDate("2017-01-25").getTime();
@@ -388,11 +299,7 @@ public class MeasureDaoTest {
     assertThat(underTest.selectByQuery(db.getSession(), query.build())).isEmpty();
   }
 
-  private void verifyMeasures(ComponentDto baseComponent, MeasureTreeQuery.Builder measureQuery, String... expectedIds) {
-    List<MeasureDto> measures = new ArrayList<>();
-    underTest.selectTreeByQuery(db.getSession(), baseComponent, measureQuery.build(), result -> measures.add(result.getResultObject()));
-    assertThat(measures).extracting(MeasureDto::getData).containsOnly(expectedIds);
-  }
+
 
   private void insertMeasure(String id, String analysisUuid, String componentUuid, int metricId) {
     insertMeasure(id, analysisUuid, componentUuid, null, metricId);
