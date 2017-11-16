@@ -17,26 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.db.measure;
+@ParametersAreNonnullByDefault
+package org.sonar.server.measure.live;
 
-import java.util.Collection;
-import java.util.List;
-import org.apache.ibatis.annotations.Param;
-
-public interface LiveMeasureMapper {
-
-  void insert(
-    @Param("dto") LiveMeasureDto dto,
-    @Param("now") long now);
-
-  void update(
-    @Param("dto") LiveMeasureDto dto,
-    @Param("now") long now);
-
-  void deleteByProjectUuid(
-    @Param("projectUuid") String projectUuid);
-
-  List<LiveMeasureDto> selectByComponentUuids(
-    @Param("componentUuids") List<String> componentUuids,
-    @Param("metricIds") Collection<Integer> metricIds);
-}
+import javax.annotation.ParametersAreNonnullByDefault;

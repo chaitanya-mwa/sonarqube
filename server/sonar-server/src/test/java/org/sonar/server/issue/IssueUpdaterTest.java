@@ -45,6 +45,7 @@ import org.sonar.server.issue.index.IssueIndexer;
 import org.sonar.server.issue.index.IssueIteratorFactory;
 import org.sonar.server.issue.notification.IssueChangeNotification;
 import org.sonar.server.issue.ws.SearchResponseData;
+import org.sonar.server.measure.live.LiveMeasureComputer;
 import org.sonar.server.notification.NotificationManager;
 import org.sonar.server.organization.DefaultOrganizationProvider;
 import org.sonar.server.organization.TestDefaultOrganizationProvider;
@@ -83,8 +84,9 @@ public class IssueUpdaterTest {
   private ArgumentCaptor<IssueChangeNotification> notificationArgumentCaptor = ArgumentCaptor.forClass(IssueChangeNotification.class);
 
   private IssueIndexer issueIndexer = new IssueIndexer(esTester.client(), dbClient, new IssueIteratorFactory(dbClient));
+  private LiveMeasureComputer liveMeasureComputer = mock(LiveMeasureComputer.class);
   private IssueUpdater underTest = new IssueUpdater(dbClient,
-    new ServerIssueStorage(system2, new DefaultRuleFinder(dbClient, defaultOrganizationProvider), dbClient, issueIndexer), notificationManager);
+    new ServerIssueStorage(system2, new DefaultRuleFinder(dbClient, defaultOrganizationProvider), dbClient, issueIndexer), notificationManager, liveMeasureComputer);
 
   @Test
   public void update_issue() throws Exception {
@@ -92,7 +94,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    underTest.saveIssue(dbTester.getSession(), issue, context, null);
+    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, null);
 
     IssueDto issueReloaded = dbClient.issueDao().selectByKey(dbTester.getSession(), issue.key()).get();
     assertThat(issueReloaded.getSeverity()).isEqualTo(BLOCKER);
@@ -107,7 +109,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    underTest.saveIssue(dbTester.getSession(), issue, context, "increase severity");
+    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, "increase severity", null);
 
     verify(notificationManager).scheduleForSending(notificationArgumentCaptor.capture());
     IssueChangeNotification issueChangeNotification = notificationArgumentCaptor.getValue();
@@ -133,7 +135,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    underTest.saveIssue(dbTester.getSession(), issue, context, "increase severity");
+    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, "increase severity", null);
 
     verify(notificationManager).scheduleForSending(notificationArgumentCaptor.capture());
     IssueChangeNotification issueChangeNotification = notificationArgumentCaptor.getValue();
@@ -152,7 +154,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    underTest.saveIssue(dbTester.getSession(), issue, context, null);
+    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, null);
 
     verify(notificationManager).scheduleForSending(notificationArgumentCaptor.capture());
     assertThat(notificationArgumentCaptor.getValue().getFieldValue("ruleName")).isNull();
@@ -175,7 +177,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    SearchResponseData preloadedSearchResponseData = underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null);
+    SearchResponseData preloadedSearchResponseData = underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, null);
 
     assertThat(preloadedSearchResponseData.getIssues())
       .hasSize(1);
@@ -199,7 +201,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    SearchResponseData preloadedSearchResponseData = underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null);
+    SearchResponseData preloadedSearchResponseData = underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, null);
 
     assertThat(preloadedSearchResponseData.getIssues())
       .hasSize(1);

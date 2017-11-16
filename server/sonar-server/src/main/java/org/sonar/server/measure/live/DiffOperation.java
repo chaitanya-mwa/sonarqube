@@ -17,26 +17,22 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.db.measure;
+package org.sonar.server.measure.live;
 
-import java.util.Collection;
-import java.util.List;
-import org.apache.ibatis.annotations.Param;
+public class DiffOperation {
+  private final String metricKey;
+  private final double diff;
 
-public interface LiveMeasureMapper {
+  public DiffOperation(String metricKey, double diff) {
+    this.metricKey = metricKey;
+    this.diff = diff;
+  }
 
-  void insert(
-    @Param("dto") LiveMeasureDto dto,
-    @Param("now") long now);
+  public String getMetricKey() {
+    return metricKey;
+  }
 
-  void update(
-    @Param("dto") LiveMeasureDto dto,
-    @Param("now") long now);
-
-  void deleteByProjectUuid(
-    @Param("projectUuid") String projectUuid);
-
-  List<LiveMeasureDto> selectByComponentUuids(
-    @Param("componentUuids") List<String> componentUuids,
-    @Param("metricIds") Collection<Integer> metricIds);
+  public double getDiff() {
+    return diff;
+  }
 }

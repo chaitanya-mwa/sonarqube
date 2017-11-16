@@ -37,11 +37,6 @@ public class LiveMeasureDao implements Dao {
     this.system2 = system2;
   }
 
-  public void insert(DbSession dbSession, LiveMeasureDto dto) {
-    dto.setUuid(Uuids.create());
-    mapper(dbSession).insert(dto, system2.now());
-  }
-
   public List<LiveMeasureDto> selectByComponentUuids(DbSession dbSession, Collection<String> largeComponentUuids, Collection<Integer> metricIds) {
     if (largeComponentUuids.isEmpty() || metricIds.isEmpty()) {
       return Collections.emptyList();
@@ -53,12 +48,20 @@ public class LiveMeasureDao implements Dao {
         mapper(dbSession).selectByComponentUuids(componentUuids, metricIds));
   }
 
+  public void insert(DbSession dbSession, LiveMeasureDto dto) {
+    dto.setUuid(Uuids.create());
+    mapper(dbSession).insert(dto, system2.now());
+  }
+
   public void deleteByProjectUuid(DbSession dbSession, String projectUuid) {
     mapper(dbSession).deleteByProjectUuid(projectUuid);
+  }
+
+  public void update(DbSession dbSession, LiveMeasureDto dto) {
+    mapper(dbSession).update(dto, system2.now());
   }
 
   private static LiveMeasureMapper mapper(DbSession dbSession) {
     return dbSession.getMapper(LiveMeasureMapper.class);
   }
-
 }

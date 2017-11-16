@@ -21,6 +21,7 @@ package org.sonar.server.issue.ws;
 
 import com.google.common.io.Resources;
 import java.util.Date;
+import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.ws.Change;
 import org.sonar.api.server.ws.Request;
@@ -38,6 +39,7 @@ import org.sonar.server.issue.IssueFieldsSetter;
 import org.sonar.server.issue.IssueFinder;
 import org.sonar.server.issue.IssueUpdater;
 import org.sonar.server.issue.webhook.IssueChangeWebhook;
+import org.sonar.server.measure.live.DiffOperation;
 import org.sonar.server.user.UserSession;
 
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -115,7 +117,12 @@ public class SetTypeAction implements IssuesWsAction {
 
     IssueChangeContext context = IssueChangeContext.createUser(new Date(system2.now()), userSession.getLogin());
     if (issueFieldsSetter.setType(issue, ruleType, context)) {
-      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null);
+      DiffOperation diffOperation = null;
+      if (ruleType == RuleType.BUG) {
+        diffOperation = new DiffOperation(CoreMetrics.BUGS_KEY, 1.0);
+      }
+
+      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, diffOperation);
       issueChangeWebhook.onChange(
         new IssueChangeWebhook.IssueChangeData(
           searchResponseData.getIssues().stream().map(IssueDto::toDefaultIssue).collect(MoreCollectors.toList(searchResponseData.getIssues().size())),

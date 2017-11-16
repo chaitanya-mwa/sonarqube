@@ -17,26 +17,15 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.db.measure;
+package org.sonar.server.measure.live;
 
-import java.util.Collection;
-import java.util.List;
-import org.apache.ibatis.annotations.Param;
+import org.sonar.api.server.ServerSide;
+import org.sonar.db.DbSession;
+import org.sonar.db.component.ComponentDto;
 
-public interface LiveMeasureMapper {
+@ServerSide
+public interface LiveMeasureComputer {
 
-  void insert(
-    @Param("dto") LiveMeasureDto dto,
-    @Param("now") long now);
+  void refresh(DbSession dbSession, ComponentDto component, DiffOperation diffOperation);
 
-  void update(
-    @Param("dto") LiveMeasureDto dto,
-    @Param("now") long now);
-
-  void deleteByProjectUuid(
-    @Param("projectUuid") String projectUuid);
-
-  List<LiveMeasureDto> selectByComponentUuids(
-    @Param("componentUuids") List<String> componentUuids,
-    @Param("metricIds") Collection<Integer> metricIds);
 }

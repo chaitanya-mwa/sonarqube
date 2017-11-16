@@ -198,7 +198,7 @@ public class ComponentDto {
   /**
    * List of ancestor UUIDs, ordered by depth in tree.
    */
-  List<String> getUuidPathAsList() {
+  public List<String> getUuidPathAsList() {
     return UUID_PATH_SPLITTER.splitToList(uuidPath);
   }
 

@@ -22,6 +22,9 @@ package org.sonar.server.issue.ws;
 import com.google.common.io.Resources;
 import java.util.Date;
 import org.sonar.api.issue.DefaultTransitions;
+import org.sonar.api.issue.Issue;
+import org.sonar.api.measures.CoreMetrics;
+import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.ws.Change;
 import org.sonar.api.server.ws.Request;
 import org.sonar.api.server.ws.Response;
@@ -38,6 +41,7 @@ import org.sonar.server.issue.IssueFinder;
 import org.sonar.server.issue.IssueUpdater;
 import org.sonar.server.issue.TransitionService;
 import org.sonar.server.issue.webhook.IssueChangeWebhook;
+import org.sonar.server.measure.live.DiffOperation;
 import org.sonar.server.user.UserSession;
 
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -104,10 +108,27 @@ public class DoTransitionAction implements IssuesWsAction {
 
   private SearchResponseData doTransition(DbSession session, IssueDto issueDto, String transitionKey) {
     DefaultIssue defaultIssue = issueDto.toDefaultIssue();
+    String initialStatus = defaultIssue.status();
     IssueChangeContext context = IssueChangeContext.createUser(new Date(system2.now()), userSession.getLogin());
     transitionService.checkTransitionPermission(transitionKey, defaultIssue);
     if (transitionService.doTransition(defaultIssue, context, transitionKey)) {
-      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, defaultIssue, context, null);
+      String targetStatus = defaultIssue.status();
+      DiffOperation diffOperation = null;
+
+      if (defaultIssue.type()== RuleType.BUG) {
+        if (initialStatus.equals(Issue.STATUS_OPEN) || initialStatus.equals(Issue.STATUS_CONFIRMED) || initialStatus.equals(Issue.STATUS_REOPENED)) {
+          if (targetStatus.equals(Issue.STATUS_RESOLVED) || targetStatus.equals(Issue.STATUS_CLOSED)) {
+            diffOperation = new DiffOperation(CoreMetrics.BUGS_KEY, -1.0);
+          }
+
+        } else if (initialStatus.equals(Issue.STATUS_RESOLVED) || initialStatus.equals(Issue.STATUS_CLOSED)) {
+          if (targetStatus.equals(Issue.STATUS_OPEN) || targetStatus.equals(Issue.STATUS_CONFIRMED) || targetStatus.equals(Issue.STATUS_REOPENED)) {
+            diffOperation = new DiffOperation(CoreMetrics.BUGS_KEY, 1.0);
+          }
+        }
+      }
+
+      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, defaultIssue, context, null, diffOperation);
       issueChangeWebhook.onChange(
         new IssueChangeWebhook.IssueChangeData(
           searchResponseData.getIssues().stream().map(IssueDto::toDefaultIssue).collect(MoreCollectors.toList(searchResponseData.getIssues().size())),

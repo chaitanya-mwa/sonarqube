@@ -107,7 +107,7 @@ public class SetSeverityAction implements IssuesWsAction {
 
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), userSession.getLogin());
     if (issueFieldsSetter.setManualSeverity(issue, severity, context)) {
-      return issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null);
+      return issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, null);
     }
     return new SearchResponseData(issueDto);
   }

@@ -14,7 +14,7 @@
     cm.variation as variation
   </sql>
 
-  <insert id="insert" parameterType="org.sonar.db.measure.LiveMeasureDto" useGeneratedKeys="false">
+  <insert id="insert" parameterType="map" useGeneratedKeys="false">
     insert into live_measures (
     uuid,
     component_uuid,
@@ -39,6 +39,14 @@
     #{now, jdbcType=BIGINT}
     )
   </insert>
+
+  <update id="update" parameterType="map" useGeneratedKeys="false">
+    update live_measures set
+    value = #{dto.value, jdbcType=DOUBLE},
+    variation = #{dto.variation, jdbcType=DOUBLE},
+    updated_at = #{now, jdbcType=BIGINT}
+    where uuid = #{dto.uuid, jdbcType=VARCHAR}
+  </update>
 
   <delete id="deleteByProjectUuid" parameterType="String">
     delete from live_measures
