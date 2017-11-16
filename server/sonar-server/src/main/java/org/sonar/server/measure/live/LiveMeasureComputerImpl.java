@@ -20,6 +20,7 @@
 package org.sonar.server.measure.live;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
@@ -39,21 +40,27 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
   }
 
   @Override
-  public void refresh(DbSession dbSession, ComponentDto component, DiffOperation diffOperation) {
-    List<MetricDto> metrics = dbClient.metricDao().selectByKeys(dbSession, asList(diffOperation.getMetricKey()));
+  public void refresh(DbSession dbSession, ComponentDto component, Collection<DiffOperation> diffOperations) {
+    if (diffOperations.isEmpty()) {
+      return;
+    }
 
-    List<String> uuids = new ArrayList<>();
-    uuids.add(component.uuid());
-    uuids.addAll(component.getUuidPathAsList());
+    for (DiffOperation diffOperation : diffOperations) {
+      List<MetricDto> metrics = dbClient.metricDao().selectByKeys(dbSession, asList(diffOperation.getMetricKey()));
 
-    List<LiveMeasureDto> dbMeasures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, uuids, toMetricIds(metrics));
+      List<String> uuids = new ArrayList<>();
+      uuids.add(component.uuid());
+      uuids.addAll(component.getUuidPathAsList());
 
-    dbMeasures.stream()
-      .filter(m -> m.getValue() != null)
-      .forEach(m -> {
-        m.setValue(m.getValue() + diffOperation.getDiff());
-        dbClient.liveMeasureDao().update(dbSession, m);
-      });
+      List<LiveMeasureDto> dbMeasures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, uuids, toMetricIds(metrics));
+
+      dbMeasures.stream()
+        .filter(m -> m.getValue() != null)
+        .forEach(m -> {
+          m.setValue(m.getValue() + diffOperation.getDiff());
+          dbClient.liveMeasureDao().update(dbSession, m);
+        });
+    }
     dbSession.commit();
   }
 

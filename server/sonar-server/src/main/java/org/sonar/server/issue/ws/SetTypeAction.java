@@ -20,7 +20,9 @@
 package org.sonar.server.issue.ws;
 
 import com.google.common.io.Resources;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.ws.Change;
@@ -118,14 +120,11 @@ public class SetTypeAction implements IssuesWsAction {
 
     IssueChangeContext context = IssueChangeContext.createUser(new Date(system2.now()), userSession.getLogin());
     if (issueFieldsSetter.setType(issue, ruleType, context)) {
-      DiffOperation diffOperation = null;
-      if (ruleType == RuleType.BUG) {
-        diffOperation = new DiffOperation(CoreMetrics.BUGS_KEY, 1.0);
-      } else if (initialRuleType == RuleType.BUG) {
-        diffOperation = new DiffOperation(CoreMetrics.BUGS_KEY, -1.0);
-      }
+      List<DiffOperation> operations = new ArrayList<>();
+      operations.add(new DiffOperation(getMetricKeyForRuleType(initialRuleType), -1.0));
+      operations.add(new DiffOperation(getMetricKeyForRuleType(issue.type()), 1.0));
 
-      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, diffOperation);
+      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, operations);
       issueChangeWebhook.onChange(
         new IssueChangeWebhook.IssueChangeData(
           searchResponseData.getIssues().stream().map(IssueDto::toDefaultIssue).collect(MoreCollectors.toList(searchResponseData.getIssues().size())),
@@ -137,4 +136,18 @@ public class SetTypeAction implements IssuesWsAction {
     return new SearchResponseData(issueDto);
   }
 
+  private static String getMetricKeyForRuleType(RuleType type) {
+    // TODO reuse IssueCounter.TYPE_TO_METRIC_KEY
+    switch (type) {
+      case CODE_SMELL:
+        return CoreMetrics.CODE_SMELLS_KEY;
+      case BUG:
+        return CoreMetrics.BUGS_KEY;
+      case VULNERABILITY:
+        return CoreMetrics.VULNERABILITIES_KEY;
+      default:
+        throw new IllegalArgumentException("Unsupported rule type: " + type);
+    }
+
+  }
 }

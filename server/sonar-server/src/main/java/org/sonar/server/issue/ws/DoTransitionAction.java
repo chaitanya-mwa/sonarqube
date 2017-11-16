@@ -20,6 +20,8 @@
 package org.sonar.server.issue.ws;
 
 import com.google.common.io.Resources;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import org.sonar.api.issue.DefaultTransitions;
 import org.sonar.api.issue.Issue;
@@ -113,22 +115,20 @@ public class DoTransitionAction implements IssuesWsAction {
     transitionService.checkTransitionPermission(transitionKey, defaultIssue);
     if (transitionService.doTransition(defaultIssue, context, transitionKey)) {
       String targetStatus = defaultIssue.status();
-      DiffOperation diffOperation = null;
+      Collection<DiffOperation> diffOperations = new ArrayList<>();
 
-      if (defaultIssue.type()== RuleType.BUG) {
-        if (initialStatus.equals(Issue.STATUS_OPEN) || initialStatus.equals(Issue.STATUS_CONFIRMED) || initialStatus.equals(Issue.STATUS_REOPENED)) {
-          if (targetStatus.equals(Issue.STATUS_RESOLVED) || targetStatus.equals(Issue.STATUS_CLOSED)) {
-            diffOperation = new DiffOperation(CoreMetrics.BUGS_KEY, -1.0);
-          }
+      if (initialStatus.equals(Issue.STATUS_OPEN) || initialStatus.equals(Issue.STATUS_CONFIRMED) || initialStatus.equals(Issue.STATUS_REOPENED)) {
+        if (targetStatus.equals(Issue.STATUS_RESOLVED) || targetStatus.equals(Issue.STATUS_CLOSED)) {
+          diffOperations.add(new DiffOperation(getMetricKeyForRuleType(defaultIssue.type()), -1.0));
+        }
 
-        } else if (initialStatus.equals(Issue.STATUS_RESOLVED) || initialStatus.equals(Issue.STATUS_CLOSED)) {
-          if (targetStatus.equals(Issue.STATUS_OPEN) || targetStatus.equals(Issue.STATUS_CONFIRMED) || targetStatus.equals(Issue.STATUS_REOPENED)) {
-            diffOperation = new DiffOperation(CoreMetrics.BUGS_KEY, 1.0);
-          }
+      } else if (initialStatus.equals(Issue.STATUS_RESOLVED) || initialStatus.equals(Issue.STATUS_CLOSED)) {
+        if (targetStatus.equals(Issue.STATUS_OPEN) || targetStatus.equals(Issue.STATUS_CONFIRMED) || targetStatus.equals(Issue.STATUS_REOPENED)) {
+          diffOperations.add(new DiffOperation(getMetricKeyForRuleType(defaultIssue.type()), 1.0));
         }
       }
 
-      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, defaultIssue, context, null, diffOperation);
+      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, defaultIssue, context, null, diffOperations);
       issueChangeWebhook.onChange(
         new IssueChangeWebhook.IssueChangeData(
           searchResponseData.getIssues().stream().map(IssueDto::toDefaultIssue).collect(MoreCollectors.toList(searchResponseData.getIssues().size())),
@@ -138,5 +138,20 @@ public class DoTransitionAction implements IssuesWsAction {
       return searchResponseData;
     }
     return new SearchResponseData(issueDto);
+  }
+
+  private static String getMetricKeyForRuleType(RuleType type) {
+    // TODO reuse IssueCounter.TYPE_TO_METRIC_KEY
+    switch (type) {
+      case CODE_SMELL:
+        return CoreMetrics.CODE_SMELLS_KEY;
+      case BUG:
+        return CoreMetrics.BUGS_KEY;
+      case VULNERABILITY:
+        return CoreMetrics.VULNERABILITIES_KEY;
+      default:
+        throw new IllegalArgumentException("Unsupported rule type: " + type);
+    }
+
   }
 }

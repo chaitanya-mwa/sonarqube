@@ -40,6 +40,7 @@ import org.sonar.server.issue.IssueFinder;
 import org.sonar.server.issue.IssueUpdater;
 import org.sonar.server.user.UserSession;
 
+import static java.util.Collections.emptyList;
 import static org.sonarqube.ws.client.issue.IssuesWsParameters.ACTION_SET_TAGS;
 import static org.sonarqube.ws.client.issue.IssuesWsParameters.PARAM_ISSUE;
 import static org.sonarqube.ws.client.issue.IssuesWsParameters.PARAM_TAGS;
@@ -105,7 +106,7 @@ public class SetTagsAction implements IssuesWsAction {
       DefaultIssue issue = issueDto.toDefaultIssue();
       IssueChangeContext context = IssueChangeContext.createUser(new Date(), userSession.getLogin());
       if (issueFieldsSetter.setTags(issue, tags, context)) {
-        return issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, null);
+        return issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, emptyList());
       }
       return new SearchResponseData(issueDto);
     }

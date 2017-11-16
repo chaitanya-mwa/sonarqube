@@ -48,6 +48,7 @@ import org.sonar.server.user.UserSession;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.emptyToNull;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 import static org.sonar.server.ws.WsUtils.checkFound;
 import static org.sonarqube.ws.client.issue.IssuesWsParameters.ACTION_ASSIGN;
@@ -121,7 +122,7 @@ public class AssignAction implements IssuesWsAction {
       }
       IssueChangeContext context = IssueChangeContext.createUser(new Date(system2.now()), userSession.getLogin());
       if (issueFieldsSetter.assign(issue, user, context)) {
-        return issueUpdater.saveIssueAndPreloadSearchResponseData(dbSession, issue, context, null, null);
+        return issueUpdater.saveIssueAndPreloadSearchResponseData(dbSession, issue, context, null, emptyList());
       }
       return new SearchResponseData(issueDto);
     }
