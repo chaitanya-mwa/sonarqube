@@ -27,6 +27,6 @@ import org.sonar.db.component.ComponentDto;
 @ServerSide
 public interface LiveMeasureComputer {
 
-  void refresh(DbSession dbSession, ComponentDto component, Collection<DiffOperation> diffOperations);
+  void refresh(DbSession dbSession, ComponentDto component, Collection<IssueCountOperation> issueCountOperations);
 
 }

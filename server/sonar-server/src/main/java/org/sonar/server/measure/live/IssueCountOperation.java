@@ -19,13 +19,13 @@
  */
 package org.sonar.server.measure.live;
 
-public class DiffOperation {
+public class IssueCountOperation {
   private final String metricKey;
   private final double valueIncrement;
   private final double leakVariationIncrement;
   private final long issueCreatedAt;
 
-  public DiffOperation(String metricKey, double valueIncrement, double leakVariationIncrement, long issueCreatedAt) {
+  public IssueCountOperation(String metricKey, double valueIncrement, double leakVariationIncrement, long issueCreatedAt) {
     this.metricKey = metricKey;
     this.valueIncrement = valueIncrement;
     this.leakVariationIncrement = leakVariationIncrement;

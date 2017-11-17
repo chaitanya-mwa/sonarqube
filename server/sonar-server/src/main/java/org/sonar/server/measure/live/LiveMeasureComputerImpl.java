@@ -48,8 +48,8 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
   }
 
   @Override
-  public void refresh(DbSession dbSession, ComponentDto component, Collection<DiffOperation> diffOperations) {
-    if (diffOperations.isEmpty()) {
+  public void refresh(DbSession dbSession, ComponentDto component, Collection<IssueCountOperation> issueCountOperations) {
+    if (issueCountOperations.isEmpty()) {
       return;
     }
 
@@ -60,16 +60,16 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
     }
     Long beginningOfLeakPeriod = lastAnalysis.get().getPeriodDate();
 
-    Set<String> metricKeys = diffOperations.stream().map(DiffOperation::getMetricKey).collect(MoreCollectors.toHashSet());
+    Set<String> metricKeys = issueCountOperations.stream().map(IssueCountOperation::getMetricKey).collect(MoreCollectors.toHashSet());
     List<MetricDto> metrics = dbClient.metricDao().selectByKeys(dbSession, metricKeys);
 
     ChangedPath path = new ChangedPath(dbSession, component, metrics);
-    for (DiffOperation diffOperation : diffOperations) {
-      Collection<LiveMeasureDto> measures = path.getMeasuresByMetric(diffOperation.getMetricKey());
+    for (IssueCountOperation issueCountOperation : issueCountOperations) {
+      Collection<LiveMeasureDto> measures = path.getMeasuresByMetric(issueCountOperation.getMetricKey());
       for (LiveMeasureDto m : measures) {
-        m.setValue(sum(m.getValue(), diffOperation.getValueIncrement()));
-        if (beginningOfLeakPeriod == null || diffOperation.getIssueCreatedAt() >= beginningOfLeakPeriod) {
-          m.setVariation(sum(m.getVariation(), diffOperation.getLeakVariationIncrement()));
+        m.setValue(sum(m.getValue(), issueCountOperation.getValueIncrement()));
+        if (beginningOfLeakPeriod == null || issueCountOperation.getIssueCreatedAt() >= beginningOfLeakPeriod) {
+          m.setVariation(sum(m.getVariation(), issueCountOperation.getLeakVariationIncrement()));
         }
       }
     }

@@ -43,7 +43,7 @@ import org.sonar.server.issue.IssueFinder;
 import org.sonar.server.issue.IssueUpdater;
 import org.sonar.server.issue.TransitionService;
 import org.sonar.server.issue.webhook.IssueChangeWebhook;
-import org.sonar.server.measure.live.DiffOperation;
+import org.sonar.server.measure.live.IssueCountOperation;
 import org.sonar.server.user.UserSession;
 
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -115,22 +115,22 @@ public class DoTransitionAction implements IssuesWsAction {
     transitionService.checkTransitionPermission(transitionKey, defaultIssue);
     if (transitionService.doTransition(defaultIssue, context, transitionKey)) {
       String targetStatus = defaultIssue.status();
-      Collection<DiffOperation> diffOperations = new ArrayList<>();
+      Collection<IssueCountOperation> issueCountOperations = new ArrayList<>();
 
       if (initialStatus.equals(Issue.STATUS_OPEN) || initialStatus.equals(Issue.STATUS_CONFIRMED) || initialStatus.equals(Issue.STATUS_REOPENED)) {
         if (targetStatus.equals(Issue.STATUS_RESOLVED) || targetStatus.equals(Issue.STATUS_CLOSED)) {
-          diffOperations.add(new DiffOperation(getMetricKeyForRuleType(defaultIssue.type()), -1.0, -1.0, issueDto.getIssueCreationTime()));
-          diffOperations.add(new DiffOperation(getNewMetricKeyForRuleType(defaultIssue.type()), 0.0, -1.0, issueDto.getIssueCreationTime()));
+          issueCountOperations.add(new IssueCountOperation(getMetricKeyForRuleType(defaultIssue.type()), -1.0, -1.0, issueDto.getIssueCreationTime()));
+          issueCountOperations.add(new IssueCountOperation(getNewMetricKeyForRuleType(defaultIssue.type()), 0.0, -1.0, issueDto.getIssueCreationTime()));
         }
 
       } else if (initialStatus.equals(Issue.STATUS_RESOLVED) || initialStatus.equals(Issue.STATUS_CLOSED)) {
         if (targetStatus.equals(Issue.STATUS_OPEN) || targetStatus.equals(Issue.STATUS_CONFIRMED) || targetStatus.equals(Issue.STATUS_REOPENED)) {
-          diffOperations.add(new DiffOperation(getMetricKeyForRuleType(defaultIssue.type()), 1.0, 1.0, issueDto.getIssueCreationTime()));
-          diffOperations.add(new DiffOperation(getNewMetricKeyForRuleType(defaultIssue.type()), 0.0, 1.0, issueDto.getIssueCreationTime()));
+          issueCountOperations.add(new IssueCountOperation(getMetricKeyForRuleType(defaultIssue.type()), 1.0, 1.0, issueDto.getIssueCreationTime()));
+          issueCountOperations.add(new IssueCountOperation(getNewMetricKeyForRuleType(defaultIssue.type()), 0.0, 1.0, issueDto.getIssueCreationTime()));
         }
       }
 
-      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, defaultIssue, context, null, diffOperations);
+      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, defaultIssue, context, null, issueCountOperations);
       issueChangeWebhook.onChange(
         new IssueChangeWebhook.IssueChangeData(
           searchResponseData.getIssues().stream().map(IssueDto::toDefaultIssue).collect(MoreCollectors.toList(searchResponseData.getIssues().size())),

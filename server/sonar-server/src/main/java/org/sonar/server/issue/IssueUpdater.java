@@ -33,7 +33,7 @@ import org.sonar.db.issue.IssueDto;
 import org.sonar.db.rule.RuleDefinitionDto;
 import org.sonar.server.issue.notification.IssueChangeNotification;
 import org.sonar.server.issue.ws.SearchResponseData;
-import org.sonar.server.measure.live.DiffOperation;
+import org.sonar.server.measure.live.IssueCountOperation;
 import org.sonar.server.measure.live.LiveMeasureComputer;
 import org.sonar.server.notification.NotificationManager;
 
@@ -56,13 +56,13 @@ public class IssueUpdater {
   }
 
   public SearchResponseData saveIssueAndPreloadSearchResponseData(DbSession dbSession, DefaultIssue issue, IssueChangeContext context, @Nullable String comment,
-    Collection<DiffOperation> diffOperations) {
+    Collection<IssueCountOperation> issueCountOperations) {
     Optional<RuleDefinitionDto> rule = getRuleByKey(dbSession, issue.getRuleKey());
     ComponentDto project = dbClient.componentDao().selectOrFailByUuid(dbSession, issue.projectUuid());
     ComponentDto component = dbClient.componentDao().selectOrFailByUuid(dbSession, issue.componentUuid());
     IssueDto issueDto = saveIssue(dbSession, issue, context, comment, rule, project, component);
 
-    liveMeasureComputer.refresh(dbSession, component, diffOperations);
+    liveMeasureComputer.refresh(dbSession, component, issueCountOperations);
 
     SearchResponseData preloadedSearchResponseData = new SearchResponseData(issueDto);
     rule.ifPresent(r -> preloadedSearchResponseData.setRules(singletonList(r)));

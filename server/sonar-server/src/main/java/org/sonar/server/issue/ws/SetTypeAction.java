@@ -41,7 +41,7 @@ import org.sonar.server.issue.IssueFieldsSetter;
 import org.sonar.server.issue.IssueFinder;
 import org.sonar.server.issue.IssueUpdater;
 import org.sonar.server.issue.webhook.IssueChangeWebhook;
-import org.sonar.server.measure.live.DiffOperation;
+import org.sonar.server.measure.live.IssueCountOperation;
 import org.sonar.server.user.UserSession;
 
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -120,11 +120,11 @@ public class SetTypeAction implements IssuesWsAction {
 
     IssueChangeContext context = IssueChangeContext.createUser(new Date(system2.now()), userSession.getLogin());
     if (issueFieldsSetter.setType(issue, ruleType, context)) {
-      List<DiffOperation> operations = new ArrayList<>();
-      operations.add(new DiffOperation(getMetricKeyForRuleType(initialRuleType), -1.0, -1.0, issueDto.getIssueCreationTime()));
-      operations.add(new DiffOperation(getNewMetricKeyForRuleType(initialRuleType), 0.0, -1.0, issueDto.getIssueCreationTime()));
-      operations.add(new DiffOperation(getMetricKeyForRuleType(issue.type()), 1.0, 1.0, issueDto.getIssueCreationTime()));
-      operations.add(new DiffOperation(getNewMetricKeyForRuleType(issue.type()), 0.0, 1.0, issueDto.getIssueCreationTime()));
+      List<IssueCountOperation> operations = new ArrayList<>();
+      operations.add(new IssueCountOperation(getMetricKeyForRuleType(initialRuleType), -1.0, -1.0, issueDto.getIssueCreationTime()));
+      operations.add(new IssueCountOperation(getNewMetricKeyForRuleType(initialRuleType), 0.0, -1.0, issueDto.getIssueCreationTime()));
+      operations.add(new IssueCountOperation(getMetricKeyForRuleType(issue.type()), 1.0, 1.0, issueDto.getIssueCreationTime()));
+      operations.add(new IssueCountOperation(getNewMetricKeyForRuleType(issue.type()), 0.0, 1.0, issueDto.getIssueCreationTime()));
 
       SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, operations);
       issueChangeWebhook.onChange(
