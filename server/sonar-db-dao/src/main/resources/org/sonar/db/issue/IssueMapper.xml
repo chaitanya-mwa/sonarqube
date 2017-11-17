@@ -246,5 +246,18 @@
     p.module_uuid_path like  #{likeModuleUuidPath, jdbcType=VARCHAR} escape '/' and
     i.status &lt;&gt; 'CLOSED'
   </select>
+
+  <select id="maxIssueSeverity" resultType="String">
+    SELECT DISTINCT(severity)
+    FROM issues i
+    INNER JOIN projects c ON c.project_uuid = i.project_uuid AND c.uuid = i.component_uuid
+    WHERE i.status != 'CLOSED'
+    AND i.issue_type = #{type, jdbcType=INTEGER}
+    AND i.kee != #{excludedFromCalculation, jdbcType=VARCHAR}
+    AND (
+      c.uuid_path like #{likeUuidPath, jdbcType=VARCHAR} escape '/'
+      OR c.uuid = #{uuid, jdbcType=VARCHAR}
+    )
+  </select>
 </mapper>
 

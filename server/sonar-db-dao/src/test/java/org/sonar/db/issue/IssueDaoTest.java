@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonar.api.issue.Issue;
 import org.sonar.api.rule.RuleKey;
+import org.sonar.api.rules.RuleType;
 import org.sonar.api.utils.System2;
 import org.sonar.db.DbTester;
 import org.sonar.db.RowNotFoundException;
@@ -43,6 +44,7 @@ import org.sonar.db.rule.RuleTesting;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.sonar.db.component.ComponentTesting.newDirectory;
 import static org.sonar.db.component.ComponentTesting.newFileDto;
 import static org.sonar.db.component.ComponentTesting.newModuleDto;
 
@@ -232,6 +234,48 @@ public class IssueDaoTest {
     assertThat(fp.getStatus()).isNotNull();
     assertThat(fp.getBranchName()).isEqualTo("feature/foo");
     assertThat(fp.getIssueCreationDate()).isNotNull();
+  }
+
+  @Test
+  public void maxIssueSeverity() {
+    RuleDefinitionDto rule = db.rules().insert();
+    ComponentDto project = db.components().insertPrivateProject();
+    ComponentDto module = db.components().insertComponent(newModuleDto(project));
+    ComponentDto subModule = db.components().insertComponent(newModuleDto(module));
+    ComponentDto directory = db.components().insertComponent(newDirectory(subModule, "src"));
+
+    ComponentDto file1 = newFileDto(project, directory);
+    db.components().insertComponent(file1);
+    db.getDbClient().componentDao().selectByKey(db.getSession(), file1.getKey());
+
+    ComponentDto file2 = newFileDto(project, directory);
+    db.components().insertComponent(file2);
+
+    db.issues().insert(rule, project, file1, i -> i.setType(RuleType.CODE_SMELL).setSeverity("BLOCKER"));
+    db.issues().insert(rule, project, file1, i -> i.setType(RuleType.VULNERABILITY).setSeverity("BLOCKER"));
+    IssueDto excludedFromQuery = db.issues().insert(rule, project, file1, i -> i.setType(RuleType.BUG).setSeverity("BLOCKER"));
+    db.issues().insert(rule, project, file1, i -> i.setType(RuleType.BUG).setSeverity("MAJOR"));
+    db.issues().insert(rule, project, file1, i -> i.setType(RuleType.BUG).setSeverity("MINOR"));
+
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, project, excludedFromQuery)).isEqualTo("MAJOR");
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, file1, excludedFromQuery)).isEqualTo("MAJOR");
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, file2, excludedFromQuery)).isEqualTo("INFO");
+
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.VULNERABILITY, project, excludedFromQuery)).isEqualTo("BLOCKER");
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.VULNERABILITY, file1, excludedFromQuery)).isEqualTo("BLOCKER");
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.VULNERABILITY, file2, excludedFromQuery)).isEqualTo("INFO");
+  }
+
+  @Test
+  public void maxIssueSeverity_with_no_other_issues() {
+    RuleDefinitionDto rule = db.rules().insert();
+    ComponentDto project = db.components().insertPrivateProject();
+    ComponentDto file = db.components().insertComponent(newFileDto(project));
+
+    IssueDto excludedFromQuery = db.issues().insert(rule, project, file, i -> i.setType(RuleType.BUG).setSeverity("BLOCKER"));
+
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, project, excludedFromQuery)).isEqualTo("INFO");
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, file, excludedFromQuery)).isEqualTo("INFO");
   }
 
   private static IssueDto newIssueDto(String key) {

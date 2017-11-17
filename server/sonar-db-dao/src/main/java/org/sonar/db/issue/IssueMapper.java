@@ -46,4 +46,7 @@ public interface IssueMapper {
     @Param("projectUuid") String projectUuid,
     @Param("likeModuleUuidPath") String likeModuleUuidPath,
     ResultHandler<IssueDto> handler);
+
+  Set<String> maxIssueSeverity(@Param("type") int type, @Param("likeUuidPath") String likeUuidPath, @Param("uuid") String uuid, @Param("excludedFromCalculation") String excludedFromCalculation);
+
 }
