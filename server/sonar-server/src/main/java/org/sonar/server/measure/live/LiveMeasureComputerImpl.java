@@ -19,12 +19,15 @@
  */
 package org.sonar.server.measure.live;
 
+import com.google.common.collect.ArrayTable;
+import com.google.common.collect.Table;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
@@ -56,24 +59,21 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
     Long beginningOfLeakPeriod = lastAnalysis.get().getPeriodDate();
 
     Set<String> metricKeys = diffOperations.stream().map(DiffOperation::getMetricKey).collect(MoreCollectors.toHashSet());
-    Map<String, Integer> metricIdsPerKeys = dbClient.metricDao().selectByKeys(dbSession, metricKeys).stream()
-      .collect(MoreCollectors.uniqueIndex(MetricDto::getKey, MetricDto::getId));
+    List<MetricDto> metrics = dbClient.metricDao().selectByKeys(dbSession, metricKeys);
 
-    List<String> componentUuids = new ArrayList<>();
-    componentUuids.add(component.uuid());
-    componentUuids.addAll(component.getUuidPathAsList());
-
-    List<LiveMeasureDto> dbMeasures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, componentUuids, metricIdsPerKeys.values());
-    for (LiveMeasureDto m : dbMeasures) {
-      for (DiffOperation diffOperation : diffOperations) {
-        if (m.getMetricId()==metricIdsPerKeys.get(diffOperation.getMetricKey())) {
-          m.setValue(sum(m.getValue(), diffOperation.getValueIncrement()));
-          if (beginningOfLeakPeriod == null || diffOperation.getIssueCreatedAt() >= beginningOfLeakPeriod) {
-            m.setVariation(sum(m.getVariation(), diffOperation.getLeakVariationIncrement()));
-          }
+    ChangedPath path = new ChangedPath(dbSession, component, metrics);
+    for (DiffOperation diffOperation : diffOperations) {
+      Collection<LiveMeasureDto> measures = path.getMeasuresByMetric(diffOperation.getMetricKey());
+      for (LiveMeasureDto m : measures) {
+        m.setValue(sum(m.getValue(), diffOperation.getValueIncrement()));
+        if (beginningOfLeakPeriod == null || diffOperation.getIssueCreatedAt() >= beginningOfLeakPeriod) {
+          m.setVariation(sum(m.getVariation(), diffOperation.getLeakVariationIncrement()));
         }
       }
-      dbClient.liveMeasureDao().update(dbSession, m);
+    }
+
+    for (LiveMeasureDto measure : path.getMeasures()) {
+      dbClient.liveMeasureDao().insertOrUpdate(dbSession, measure);
     }
     dbSession.commit();
   }
@@ -82,4 +82,44 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
     return d1 == null ? d2 : (d1 + d2);
   }
 
+  private class ChangedPath {
+
+    // component uuid -> metric key -> measure
+    private final Table<String, String, LiveMeasureDto> table;
+
+    ChangedPath(DbSession dbSession, ComponentDto component, Collection<MetricDto> metrics) {
+      Map<Integer, MetricDto> metricsPerId = metrics.stream().collect(MoreCollectors.uniqueIndex(MetricDto::getId));
+
+      List<String> componentUuids = new ArrayList<>();
+      componentUuids.add(component.uuid());
+      componentUuids.addAll(component.getUuidPathAsList());
+
+      table = ArrayTable.create(componentUuids, metricsPerId.values().stream().map(MetricDto::getKey).collect(Collectors.toList()));
+      List<LiveMeasureDto> dbMeasures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, componentUuids, metricsPerId.keySet());
+      for (LiveMeasureDto dbMeasure : dbMeasures) {
+        table.put(dbMeasure.getComponentUuid(), metricsPerId.get(dbMeasure.getMetricId()).getKey(), dbMeasure);
+      }
+
+      for (String componentUuid : componentUuids) {
+        for (MetricDto metric : metricsPerId.values()) {
+          if (!table.contains(componentUuid, metric.getKey())) {
+            LiveMeasureDto dto = new LiveMeasureDto();
+            dto.setValue(0.0);
+            dto.setComponentUuid(componentUuid);
+            dto.setProjectUuid(component.projectUuid());
+            dto.setMetricId(metric.getId());
+            table.put(componentUuid, metric.getKey(), dto);
+          }
+        }
+      }
+    }
+
+    Collection<LiveMeasureDto> getMeasuresByMetric(String metricKey) {
+      return table.column(metricKey).values();
+    }
+
+    Collection<LiveMeasureDto> getMeasures() {
+      return table.values();
+    }
+  }
 }

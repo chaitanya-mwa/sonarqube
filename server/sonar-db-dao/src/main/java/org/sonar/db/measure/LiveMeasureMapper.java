@@ -40,7 +40,7 @@ public interface LiveMeasureMapper {
     @Param("dto") LiveMeasureDto dto,
     @Param("now") long now);
 
-  void update(
+  int update(
     @Param("dto") LiveMeasureDto dto,
     @Param("now") long now);
 

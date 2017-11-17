@@ -62,12 +62,24 @@ public class LiveMeasureDao implements Dao {
     mapper(dbSession).insert(dto, system2.now());
   }
 
-  public void deleteByProjectUuid(DbSession dbSession, String projectUuid) {
-    mapper(dbSession).deleteByProjectUuid(projectUuid);
+  public boolean update(DbSession dbSession, LiveMeasureDto dto) {
+    return mapper(dbSession).update(dto, system2.now()) == 1;
   }
 
-  public void update(DbSession dbSession, LiveMeasureDto dto) {
-    mapper(dbSession).update(dto, system2.now());
+  /**
+   * Insert if the dto does not have UUID, else update.
+   * Important: it does not check db.
+   */
+  public void insertOrUpdate(DbSession dbSession, LiveMeasureDto dto) {
+    if (dto.getUuid() == null) {
+      insert(dbSession, dto);
+    } else {
+      update(dbSession, dto);
+    }
+  }
+
+  public void deleteByProjectUuid(DbSession dbSession, String projectUuid) {
+    mapper(dbSession).deleteByProjectUuid(projectUuid);
   }
 
   private static LiveMeasureMapper mapper(DbSession dbSession) {

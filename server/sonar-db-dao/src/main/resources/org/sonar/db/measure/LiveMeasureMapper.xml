@@ -66,6 +66,7 @@
   <select id="selectTreeByQuery" parameterType="map" resultType="org.sonar.db.measure.LiveMeasureDto" fetchSize="${_scrollFetchSize}" resultSetType="FORWARD_ONLY">
     select <include refid="columns"/> from live_measures lm
     inner join projects p on p.uuid = lm.component_uuid
+    <!-- TODO do we really need another join on projects ? Using lm.project_uuid should be enough -->
     <include refid="org.sonar.db.component.ComponentMapper.selectDescendantsJoins"/>
     <where>
       <if test="query.getMetricIds() != null">
