@@ -46,6 +46,7 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
     this.dbClient = dbClient;
   }
 
+  @Override
   public void recalculateQualityGate(DbSession dbSession, ComponentDto project, Collection<LiveMeasureDto> modifiedMeasures) {
     Optional<Long> qGateId = dbClient.projectQgateAssociationDao().selectQGateIdByComponentId(dbSession, project.getId());
     if (!qGateId.isPresent()) {

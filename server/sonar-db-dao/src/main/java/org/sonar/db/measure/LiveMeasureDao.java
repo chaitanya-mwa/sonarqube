@@ -22,9 +22,9 @@ package org.sonar.db.measure;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.apache.ibatis.session.ResultHandler;
 import org.sonar.api.utils.System2;
-import org.sonar.core.util.Uuids;
 import org.sonar.db.Dao;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
@@ -58,7 +58,7 @@ public class LiveMeasureDao implements Dao {
   }
 
   public void insert(DbSession dbSession, LiveMeasureDto dto) {
-    dto.setUuid(Uuids.create());
+    Objects.requireNonNull(dto.getUuid(), "LiveMeasureDto should have a uuid");
     mapper(dbSession).insert(dto, system2.now());
   }
 

@@ -19,31 +19,24 @@
  */
 package org.sonar.server.measure.live;
 
-import com.google.common.collect.ArrayTable;
-import com.google.common.collect.Table;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
 import org.sonar.db.component.SnapshotDto;
-import org.sonar.db.measure.LiveMeasureDto;
-import org.sonar.db.metric.MetricDto;
+
+import static java.util.Collections.emptyList;
 
 public class LiveMeasureComputerImpl implements LiveMeasureComputer {
 
   private final DbClient dbClient;
+  private final MeasureMatrixLoader matrixLoader;
   private final LiveQualityGateComputer qualityGateComputer;
 
-  public LiveMeasureComputerImpl(DbClient dbClient, LiveQualityGateComputer qualityGateComputer) {
+  public LiveMeasureComputerImpl(DbClient dbClient, MeasureMatrixLoader matrixLoader, LiveQualityGateComputer qualityGateComputer) {
     this.dbClient = dbClient;
+    this.matrixLoader = matrixLoader;
     this.qualityGateComputer = qualityGateComputer;
   }
 
@@ -58,70 +51,21 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
       // project has been deleted at the same time ?
       return;
     }
-    Long beginningOfLeakPeriod = lastAnalysis.get().getPeriodDate();
+    Optional<Long> beginningOfLeakPeriod = lastAnalysis.map(SnapshotDto::getPeriodDate);
 
-    Set<String> metricKeys = issueCountOperations.stream().map(IssueCountOperation::getMetricKey).collect(MoreCollectors.toHashSet());
-    List<MetricDto> metrics = dbClient.metricDao().selectByKeys(dbSession, metricKeys);
+    MeasureMatrix matrix = matrixLoader.load(dbSession, component, /* TODO */emptyList());
 
-    ChangedPath path = new ChangedPath(dbSession, component, metrics);
-    for (IssueCountOperation issueCountOperation : issueCountOperations) {
-      Collection<LiveMeasureDto> measures = path.getMeasuresByMetric(issueCountOperation.getMetricKey());
-      for (LiveMeasureDto m : measures) {
-        m.setValue(sum(m.getValue(), issueCountOperation.getValueIncrement()));
-        if (beginningOfLeakPeriod == null || issueCountOperation.getIssueCreatedAt() >= beginningOfLeakPeriod) {
-          m.setVariation(sum(m.getVariation(), issueCountOperation.getLeakVariationIncrement()));
+    matrix.getBottomUpComponentUuids().forEach(componentUuid -> {
+      for (IssueCountOperation op : issueCountOperations) {
+        matrix.incrementValue(componentUuid, op.getMetricKey(), op.getValueIncrement());
+        if (!beginningOfLeakPeriod.isPresent() || op.getIssueCreatedAt() >= beginningOfLeakPeriod.get()) {
+          matrix.incrementVariation(componentUuid, op.getMetricKey(), op.getLeakVariationIncrement());
         }
       }
-    }
+    });
 
-    for (LiveMeasureDto measure : path.getMeasures()) {
-      dbClient.liveMeasureDao().insertOrUpdate(dbSession, measure);
-    }
+    // persist the measures that have been created or updated
+    matrix.getTouched().forEach(m -> dbClient.liveMeasureDao().insertOrUpdate(dbSession, m));
     dbSession.commit();
-  }
-
-  private static double sum(@Nullable Double d1, double d2) {
-    return d1 == null ? d2 : (d1 + d2);
-  }
-
-  private class ChangedPath {
-
-    // component uuid -> metric key -> measure
-    private final Table<String, String, LiveMeasureDto> table;
-
-    ChangedPath(DbSession dbSession, ComponentDto component, Collection<MetricDto> metrics) {
-      Map<Integer, MetricDto> metricsPerId = metrics.stream().collect(MoreCollectors.uniqueIndex(MetricDto::getId));
-
-      List<String> componentUuids = new ArrayList<>();
-      componentUuids.add(component.uuid());
-      componentUuids.addAll(component.getUuidPathAsList());
-
-      table = ArrayTable.create(componentUuids, metricsPerId.values().stream().map(MetricDto::getKey).collect(Collectors.toList()));
-      List<LiveMeasureDto> dbMeasures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, componentUuids, metricsPerId.keySet());
-      for (LiveMeasureDto dbMeasure : dbMeasures) {
-        table.put(dbMeasure.getComponentUuid(), metricsPerId.get(dbMeasure.getMetricId()).getKey(), dbMeasure);
-      }
-
-      for (String componentUuid : componentUuids) {
-        for (MetricDto metric : metricsPerId.values()) {
-          if (!table.contains(componentUuid, metric.getKey())) {
-            LiveMeasureDto dto = new LiveMeasureDto();
-            dto.setValue(0.0);
-            dto.setComponentUuid(componentUuid);
-            dto.setProjectUuid(component.projectUuid());
-            dto.setMetricId(metric.getId());
-            table.put(componentUuid, metric.getKey(), dto);
-          }
-        }
-      }
-    }
-
-    Collection<LiveMeasureDto> getMeasuresByMetric(String metricKey) {
-      return table.column(metricKey).values();
-    }
-
-    Collection<LiveMeasureDto> getMeasures() {
-      return table.values();
-    }
   }
 }
