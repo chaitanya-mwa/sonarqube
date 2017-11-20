@@ -259,11 +259,11 @@ public class IssueDaoTest {
 
     assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, project, excludedFromQuery)).isEqualTo("MAJOR");
     assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, file1, excludedFromQuery)).isEqualTo("MAJOR");
-    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, file2, excludedFromQuery)).isEqualTo("INFO");
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, file2, excludedFromQuery)).isNull();
 
     assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.VULNERABILITY, project, excludedFromQuery)).isEqualTo("BLOCKER");
     assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.VULNERABILITY, file1, excludedFromQuery)).isEqualTo("BLOCKER");
-    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.VULNERABILITY, file2, excludedFromQuery)).isEqualTo("INFO");
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.VULNERABILITY, file2, excludedFromQuery)).isNull();
   }
 
   @Test
@@ -274,8 +274,8 @@ public class IssueDaoTest {
 
     IssueDto excludedFromQuery = db.issues().insert(rule, project, file, i -> i.setType(RuleType.BUG).setSeverity("BLOCKER"));
 
-    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, project, excludedFromQuery)).isEqualTo("INFO");
-    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, file, excludedFromQuery)).isEqualTo("INFO");
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, project, excludedFromQuery)).isNull();
+    assertThat(underTest.maxIssueSeverity(db.getSession(), RuleType.BUG, file, excludedFromQuery)).isNull();
   }
 
   private static IssueDto newIssueDto(String key) {

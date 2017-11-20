@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.ibatis.session.ResultHandler;
@@ -127,6 +128,7 @@ public class IssueDao implements Dao {
     mapper(session).update(dto);
   }
 
+  @CheckForNull
   public String maxIssueSeverity(DbSession session, RuleType type, ComponentDto component, IssueDto excludedFromCalculation) {
     String likeUuidPath = buildLikeValue(component.getUuidPath() + component.uuid() + UUID_PATH_SEPARATOR, WildcardPosition.AFTER);
     return mapper(session).maxIssueSeverity(type.getDbConstant(), likeUuidPath, component.uuid(), excludedFromCalculation.getKey()).stream().sorted(Comparator.comparing(severity -> {
@@ -146,7 +148,7 @@ public class IssueDao implements Dao {
         return 1;
       }
       throw new IllegalStateException("Unexpected severity "+severity);
-    }).reversed()).findFirst().orElse(Severity.INFO);
+    }).reversed()).findFirst().orElse(null);
   }
 
   private static IssueMapper mapper(DbSession session) {
