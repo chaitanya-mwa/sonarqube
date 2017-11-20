@@ -40,6 +40,10 @@ public class LiveMeasureDto {
   private byte[] data;
   @Nullable
   private Double variation;
+  @Nullable
+  private String alertStatus;
+  @Nullable
+  private String alertText;
 
   public String getUuid() {
     return uuid;
@@ -132,6 +136,26 @@ public class LiveMeasureDto {
 
   public LiveMeasureDto setVariation(@Nullable Double variation) {
     this.variation = variation;
+    return this;
+  }
+
+  @CheckForNull
+  public String getAlertStatus() {
+    return alertStatus;
+  }
+
+  public LiveMeasureDto setAlertStatus(@Nullable String alertStatus) {
+    this.alertStatus = alertStatus;
+    return this;
+  }
+
+  @CheckForNull
+  public String getAlertText() {
+    return alertText;
+  }
+
+  public LiveMeasureDto setAlertText(@Nullable String alertText) {
+    this.alertText = alertText;
     return this;
   }
 

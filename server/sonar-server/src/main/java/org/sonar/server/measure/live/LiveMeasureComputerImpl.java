@@ -40,9 +40,11 @@ import org.sonar.db.metric.MetricDto;
 public class LiveMeasureComputerImpl implements LiveMeasureComputer {
 
   private final DbClient dbClient;
+  private final LiveQualityGateComputer qualityGateComputer;
 
-  public LiveMeasureComputerImpl(DbClient dbClient) {
+  public LiveMeasureComputerImpl(DbClient dbClient, LiveQualityGateComputer qualityGateComputer) {
     this.dbClient = dbClient;
+    this.qualityGateComputer = qualityGateComputer;
   }
 
   @Override

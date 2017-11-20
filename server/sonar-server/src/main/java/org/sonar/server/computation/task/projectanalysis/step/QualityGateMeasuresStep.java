@@ -289,7 +289,7 @@ public class QualityGateMeasuresStep implements ComputationStep {
     }
   }
 
-  static class MetricEvaluationResult {
+  public static class MetricEvaluationResult {
     final EvaluationResult evaluationResult;
     final Condition condition;
 
