@@ -66,6 +66,11 @@ public class MeasureToMeasureDto {
     if (measure.hasVariation()) {
       out.setVariation(measure.getVariation());
     }
+    if (measure.hasQualityGateStatus()) {
+      out.setGateStatus(measure.getQualityGateStatus().getStatus().name());
+      out.setGateText(measure.getQualityGateStatus().getText());
+    }
+
     out.setValue(valueAsDouble(measure));
     out.setData(data(measure));
     return out;

@@ -40,7 +40,7 @@ public class PopulateLiveMeasures extends DataChange {
     long now = system2.now();
     MassUpdate massUpdate = context.prepareMassUpdate();
     // TODO reentrancy
-    massUpdate.select("SELECT p.uuid, p.project_uuid, pm.metric_id, pm.value, pm.text_value, pm.variation_value_1, pm.measure_data " +
+    massUpdate.select("SELECT p.uuid, p.project_uuid, pm.metric_id, pm.value, pm.text_value, pm.variation_value_1, pm.measure_data, pm.alert_status, pm.alert_text " +
       "FROM project_measures pm " +
       "INNER JOIN projects p on p.uuid = pm.component_uuid " +
       "INNER JOIN snapshots s on s.uuid = pm.analysis_uuid " +
@@ -48,8 +48,8 @@ public class PopulateLiveMeasures extends DataChange {
       .setBoolean(1, true);
 
     massUpdate.update("INSERT INTO live_measures "
-      + "(uuid, component_uuid, project_uuid, metric_id, value, text_value, variation, measure_data, created_at, updated_at) "
-      + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+      + "(uuid, component_uuid, project_uuid, metric_id, value, text_value, variation, measure_data, gate_status, gate_text, created_at, updated_at) "
+      + "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     massUpdate.rowPluralName("live measures");
     massUpdate.execute((row, update) -> {
@@ -61,8 +61,10 @@ public class PopulateLiveMeasures extends DataChange {
       update.setString(6, row.getString(5));
       update.setDouble(7, row.getNullableDouble(6));
       update.setBytes(8, row.getNullableBytes(7));
-      update.setLong(9, now);
-      update.setLong(10, now);
+      update.setString(9, row.getString(8));
+      update.setString(10, row.getString(9));
+      update.setLong(11, now);
+      update.setLong(12, now);
       return true;
     });
   }

@@ -42,9 +42,9 @@ public class LiveMeasureDto {
   @Nullable
   private Double variation;
   @Nullable
-  private String alertStatus;
+  private String gateStatus;
   @Nullable
-  private String alertText;
+  private String gateText;
 
   public LiveMeasureDto(String uuid) {
     this.uuid = uuid;
@@ -144,22 +144,22 @@ public class LiveMeasureDto {
   }
 
   @CheckForNull
-  public String getAlertStatus() {
-    return alertStatus;
+  public String getGateStatus() {
+    return gateStatus;
   }
 
-  public LiveMeasureDto setAlertStatus(@Nullable String alertStatus) {
-    this.alertStatus = alertStatus;
+  public LiveMeasureDto setGateStatus(@Nullable String s) {
+    this.gateStatus = s;
     return this;
   }
 
   @CheckForNull
-  public String getAlertText() {
-    return alertText;
+  public String getGateText() {
+    return gateText;
   }
 
-  public LiveMeasureDto setAlertText(@Nullable String alertText) {
-    this.alertText = alertText;
+  public LiveMeasureDto setGateText(@Nullable String s) {
+    this.gateText = s;
     return this;
   }
 
@@ -191,6 +191,8 @@ public class LiveMeasureDto {
     sb.append(", textValue='").append(textValue).append('\'');
     sb.append(", data=").append(Arrays.toString(data));
     sb.append(", variation=").append(variation);
+    sb.append(", gateStatus='").append(gateStatus).append('\'');
+    sb.append(", gateText='").append(gateText).append('\'');
     sb.append('}');
     return sb.toString();
   }

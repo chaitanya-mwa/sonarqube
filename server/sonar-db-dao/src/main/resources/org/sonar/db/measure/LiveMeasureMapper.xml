@@ -11,7 +11,9 @@
     lm.value as value,
     lm.text_value as textValue,
     lm.measure_data as data,
-    lm.variation as variation
+    lm.variation as variation,
+    lm.gate_status as gateStatus,
+    lm.gate_text as gateText
   </sql>
 
   <insert id="insert" parameterType="map" useGeneratedKeys="false">
@@ -24,6 +26,8 @@
     text_value,
     variation,
     measure_data,
+    gate_status,
+    gate_text,
     created_at,
     updated_at
     ) values (
@@ -35,6 +39,8 @@
     #{dto.textValue, jdbcType=VARCHAR},
     #{dto.variation, jdbcType=DOUBLE},
     #{dto.data, jdbcType=BINARY},
+    #{dto.gateStatus, jdbcType=VARCHAR},
+    #{dto.gateText, jdbcType=VARCHAR},
     #{now, jdbcType=BIGINT},
     #{now, jdbcType=BIGINT}
     )
@@ -44,6 +50,8 @@
     update live_measures set
     value = #{dto.value, jdbcType=DOUBLE},
     variation = #{dto.variation, jdbcType=DOUBLE},
+    gate_status = #{dto.gateStatus, jdbcType=VARCHAR},
+    gate_text = #{dto.gateText, jdbcType=VARCHAR},
     updated_at = #{now, jdbcType=BIGINT}
     where uuid = #{dto.uuid, jdbcType=VARCHAR}
   </update>

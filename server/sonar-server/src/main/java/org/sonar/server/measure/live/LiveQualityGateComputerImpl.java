@@ -75,7 +75,7 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
         if (modifiedMetricIds.contains((int) condition.getMetricId())) {
           return recalculateQualityGateCondition(condition, modifiedLiveMeasuresPerMetricId.get((int) condition.getMetricId()));
         }
-        return unmodifiedLiveMeasuresPerMetricId.get((int) condition.getMetricId()).getAlertStatus();
+        return unmodifiedLiveMeasuresPerMetricId.get((int) condition.getMetricId()).getGateStatus();
       });
   }
 

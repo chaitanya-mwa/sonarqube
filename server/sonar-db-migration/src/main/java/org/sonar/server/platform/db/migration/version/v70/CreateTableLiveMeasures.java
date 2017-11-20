@@ -85,6 +85,16 @@ public class CreateTableLiveMeasures extends DdlChange {
       .addColumn(newBlobColumnDefBuilder()
         .setColumnName("measure_data")
         .build())
+      .addColumn(newVarcharColumnDefBuilder()
+        .setColumnName("gate_status")
+        .setIsNullable(true)
+        .setLimit(5)
+        .build())
+      .addColumn(newVarcharColumnDefBuilder()
+        .setColumnName("gate_text")
+        .setIsNullable(true)
+        .setLimit(4_000)
+        .build())
       .addColumn(newBigIntegerColumnDefBuilder()
         .setColumnName("created_at")
         .setIsNullable(false)
@@ -93,16 +103,14 @@ public class CreateTableLiveMeasures extends DdlChange {
         .setColumnName("updated_at")
         .setIsNullable(false)
         .build())
-      .build()
-    );
+      .build());
 
     context.execute(new CreateIndexBuilder(getDialect())
       .addColumn(projectColumn)
       .setUnique(false)
       .setTable(TABLE_NAME)
       .setName("live_measures_project")
-      .build()
-    );
+      .build());
 
     context.execute(new CreateIndexBuilder(getDialect())
       .addColumn(componentColumn)
@@ -110,7 +118,6 @@ public class CreateTableLiveMeasures extends DdlChange {
       .setUnique(true)
       .setTable(TABLE_NAME)
       .setName("live_measures_component")
-      .build()
-    );
+      .build());
   }
 }
