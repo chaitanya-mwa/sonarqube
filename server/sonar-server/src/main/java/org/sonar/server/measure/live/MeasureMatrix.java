@@ -74,7 +74,7 @@ public class MeasureMatrix {
   public void setValue(ComponentDto component, String metricKey, double value) {
     changeCell(component, metricKey, m -> {
       Double initialValue = m.getValue();
-      if (initialValue != null && initialValue == value) {
+      if (initialValue != null && Double.compare(initialValue, value) == 0) {
         return false;
       }
       Double initialVariation = m.getVariation();
@@ -110,7 +110,7 @@ public class MeasureMatrix {
 
   public void setVariation(ComponentDto component, String metricKey, double variation) {
     changeCell(component, metricKey, c -> {
-      if (c.getVariation() != null && c.getVariation() == variation) {
+      if (c.getVariation() != null && Double.compare(c.getVariation(), variation) == 0) {
         return false;
       }
       c.setVariation(variation);
