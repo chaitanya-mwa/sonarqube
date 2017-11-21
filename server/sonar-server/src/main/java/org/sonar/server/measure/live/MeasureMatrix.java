@@ -99,7 +99,7 @@ public class MeasureMatrix {
 
   public void setValue(ComponentDto component, String metricKey, RatingGrid.Rating value) {
     changeCell(component, metricKey, m -> {
-      if (Objects.equals(m.getDataAsString(), value.name())) {
+      if (m.getValue() != null && Double.compare(m.getValue(), (double) value.getIndex()) == 0) {
         return false;
       }
       m.setData(value.name());

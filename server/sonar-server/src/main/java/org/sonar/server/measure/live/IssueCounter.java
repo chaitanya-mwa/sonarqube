@@ -20,6 +20,7 @@
 package org.sonar.server.measure.live;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import org.sonar.api.rules.RuleType;
@@ -34,8 +35,9 @@ public class IssueCounter {
     this.groups = groups;
   }
 
-  public Optional<String> getMaxSeverity(RuleType ruleType) {
+  public Optional<String> getMaxSeverityOfUnresolved(RuleType ruleType) {
     OptionalInt max = groups.stream()
+      .filter(g -> g.getResolution() == null)
       .filter(g -> g.getRuleType() == ruleType.getDbConstant())
       .mapToInt(g -> SeverityUtil.getOrdinalFromSeverity(g.getSeverity()))
       .max();
@@ -45,16 +47,18 @@ public class IssueCounter {
     return Optional.empty();
   }
 
-  public double effort(RuleType type) {
+  public double effortOfUnresolved(RuleType type) {
     int typeAsInt = type.getDbConstant();
     return groups.stream()
+      .filter(g -> g.getResolution() == null)
       .filter(g -> typeAsInt == g.getRuleType())
       .mapToDouble(IssueGroup::getEffort)
       .sum();
   }
 
-  public long countBySeverity(String severity) {
+  public long countUnresolvedBySeverity(String severity) {
     return groups.stream()
+      .filter(g -> g.getResolution() == null)
       .filter(g -> severity.equals(g.getSeverity()))
       .mapToLong(IssueGroup::getCount)
       .sum();
@@ -62,14 +66,15 @@ public class IssueCounter {
 
   public long countByResolution(String resolution) {
     return groups.stream()
-      .filter(g -> resolution.equals(g.getResolution()))
+      .filter(g -> Objects.equals(resolution, g.getResolution()))
       .mapToLong(IssueGroup::getCount)
       .sum();
   }
 
-  public long countByType(RuleType type) {
+  public long countUnresolvedByType(RuleType type) {
     int typeAsInt = type.getDbConstant();
     return groups.stream()
+      .filter(g -> g.getResolution() == null)
       .filter(g -> typeAsInt == g.getRuleType())
       .mapToLong(IssueGroup::getCount)
       .sum();
@@ -77,14 +82,14 @@ public class IssueCounter {
 
   public long countByStatus(String status) {
     return groups.stream()
-      .filter(g -> status.equals(g.getStatus()))
+      .filter(g -> Objects.equals(status, g.getStatus()))
       .mapToLong(IssueGroup::getCount)
       .sum();
   }
 
-  public long countAll() {
+  public long countUnresolved() {
     return groups.stream()
-      // select a non-null axis
+      .filter(g -> g.getResolution() == null)
       .mapToLong(IssueGroup::getCount)
       .sum();
   }
