@@ -63,6 +63,10 @@ public class MeasureMatrix {
     }
   }
 
+  public ComponentDto getProject() {
+    return bottomUpComponents.get(bottomUpComponents.size() - 1);
+  }
+
   public Stream<ComponentDto> getBottomUpComponents() {
     return bottomUpComponents.stream();
   }
