@@ -255,7 +255,7 @@
     and i.project_uuid = #{baseComponent.projectUuid,jdbcType=VARCHAR}
     and p.project_uuid = #{baseComponent.projectUuid,jdbcType=VARCHAR}
     and (p.uuid_path like #{baseComponent.uuidPathLikeIncludingSelf,jdbcType=VARCHAR} escape '/' or p.uuid = #{baseComponent.uuid,jdbcType=VARCHAR})
-    group by i.issue_type, i.severity, i.resolution
+    group by i.issue_type, i.severity, i.resolution, i.status
   </select>
 
   <select id="selectGroupsOfComponentTreeOnLeak" resultType="org.sonar.db.issue.IssueGroup" parameterType="map">
@@ -267,7 +267,7 @@
     and p.project_uuid = #{baseComponent.projectUuid,jdbcType=VARCHAR}
     and (p.uuid_path like #{baseComponent.uuidPathLikeIncludingSelf,jdbcType=VARCHAR} escape '/' or p.uuid = #{baseComponent.uuid,jdbcType=VARCHAR})
     and i.issue_creation_date &gt;= #{createdAfter,jdbcType=BIGINT}
-    group by i.issue_type, i.severity, i.resolution
+    group by i.issue_type, i.severity, i.resolution, i.status
   </select>
 </mapper>
 
