@@ -35,8 +35,8 @@ import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
 import org.sonar.db.component.SnapshotDto;
-import org.sonar.db.measure.MeasureDto;
-import org.sonar.db.measure.MeasureQuery;
+import org.sonar.db.measure.LiveMeasureDto;
+import org.sonar.db.metric.MetricDto;
 import org.sonar.server.component.ComponentFinder;
 import org.sonar.server.component.ComponentFinder.ParamNames;
 import org.sonar.server.exceptions.BadRequestException;
@@ -154,15 +154,12 @@ public class ProjectStatusAction implements QualityGatesWsAction {
   }
 
   private Optional<String> getQualityGateDetailsMeasureData(DbSession dbSession, ComponentDto project) {
-    MeasureQuery measureQuery = MeasureQuery.builder()
-      .setProjectUuids(singletonList(project.projectUuid()))
-      .setMetricKey(CoreMetrics.QUALITY_GATE_DETAILS_KEY)
-      .build();
-    List<MeasureDto> measures = dbClient.measureDao().selectByQuery(dbSession, measureQuery);
+    MetricDto metricDto = dbClient.metricDao().selectByKey(dbSession, CoreMetrics.QUALITY_GATE_DETAILS_KEY);
+    List<LiveMeasureDto> measures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, singletonList(project.projectUuid()), singletonList(metricDto.getId()));
 
     return measures.isEmpty()
       ? Optional.absent()
-      : Optional.fromNullable(measures.get(0).getData());
+      : Optional.fromNullable(measures.get(0).getDataAsString());
   }
 
   private static ProjectStatusWsRequest toProjectStatusWsRequest(Request request) {
