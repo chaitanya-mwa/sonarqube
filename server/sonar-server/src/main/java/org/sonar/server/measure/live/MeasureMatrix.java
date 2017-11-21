@@ -26,9 +26,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.component.ComponentDto;
 import org.sonar.db.measure.LiveMeasureDto;
@@ -69,23 +68,48 @@ public class MeasureMatrix {
   }
 
   public void setValue(ComponentDto component, String metricKey, double value) {
-    changeCell(component, metricKey, m -> m.setValue(value));
+    changeCell(component, metricKey, m -> {
+      if (m.getValue() != null && m.getValue() == value) {
+        return false;
+      }
+      m.setValue(value);
+      return true;
+    });
   }
 
   public void setValue(ComponentDto component, String metricKey, String value) {
-    changeCell(component, metricKey, m -> m.setData(value));
+    changeCell(component, metricKey, m -> {
+      if (Objects.equals(m.getDataAsString(), value)) {
+        return false;
+      }
+      m.setData(value);
+      return true;
+    });
   }
 
   public void setValue(ComponentDto component, String metricKey, RatingGrid.Rating value) {
-    changeCell(component, metricKey, m -> m.setData(value.name()).setValue((double)value.getIndex()));
+    changeCell(component, metricKey, m -> {
+      if (Objects.equals(m.getDataAsString(), value.name())) {
+        return false;
+      }
+      m.setData(value.name());
+      m.setValue((double) value.getIndex());
+      return true;
+    });
   }
 
   public void setVariation(ComponentDto component, String metricKey, double variation) {
-    changeCell(component, metricKey, c -> c.setVariation(variation));
+    changeCell(component, metricKey, c -> {
+      if (c.getVariation() != null && c.getVariation() == variation) {
+        return false;
+      }
+      c.setVariation(variation);
+      return true;
+    });
   }
 
   public void setVariation(ComponentDto component, String metricKey, RatingGrid.Rating variation) {
-    setVariation(component, metricKey, (double)variation.getIndex());
+    setVariation(component, metricKey, (double) variation.getIndex());
   }
 
   public Stream<LiveMeasureDto> getTouched() {
@@ -96,7 +120,7 @@ public class MeasureMatrix {
       .map(MeasureCell::getDto);
   }
 
-  private void changeCell(ComponentDto component, String metricKey, Consumer<LiveMeasureDto> consumer) {
+  private void changeCell(ComponentDto component, String metricKey, Function<LiveMeasureDto, Boolean> changer) {
     MetricDto metric = requireNonNull(metricBysKeys.get(metricKey), "Metric " + metricKey + " not loaded");
     MeasureCell cell = table.get(component.uuid(), metricKey);
     if (cell == null) {
@@ -106,14 +130,10 @@ public class MeasureMatrix {
         .setMetricId(metric.getId());
       cell = new MeasureCell(measure, true);
       table.put(component.uuid(), metricKey, cell);
-    } else {
+      changer.apply(cell.getDto());
+    } else if (changer.apply(cell.getDto())) {
       cell.setTouched(true);
     }
-    consumer.accept(cell.getDto());
-  }
-
-  private static double sum(@Nullable Double d1, double d2) {
-    return d1 == null ? d2 : (d1 + d2);
   }
 
   private static class MeasureCell {
