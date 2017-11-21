@@ -37,7 +37,6 @@ import org.sonar.server.issue.IssueFinder;
 import org.sonar.server.issue.IssueUpdater;
 import org.sonar.server.user.UserSession;
 
-import static java.util.Collections.emptyList;
 import static org.sonar.api.web.UserRole.ISSUE_ADMIN;
 import static org.sonarqube.ws.client.issue.IssuesWsParameters.ACTION_SET_SEVERITY;
 import static org.sonarqube.ws.client.issue.IssuesWsParameters.PARAM_ISSUE;
@@ -108,7 +107,7 @@ public class SetSeverityAction implements IssuesWsAction {
 
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), userSession.getLogin());
     if (issueFieldsSetter.setManualSeverity(issue, severity, context)) {
-      return issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, emptyList());
+      return issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, true);
     }
     return new SearchResponseData(issueDto);
   }

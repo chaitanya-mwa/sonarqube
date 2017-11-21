@@ -19,10 +19,12 @@
  */
 package org.sonar.db.issue;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
+import org.sonar.db.component.ComponentDto;
 
 public interface IssueMapper {
 
@@ -47,6 +49,9 @@ public interface IssueMapper {
     @Param("likeModuleUuidPath") String likeModuleUuidPath,
     ResultHandler<IssueDto> handler);
 
-  Set<String> maxIssueSeverity(@Param("type") int type, @Param("likeUuidPath") String likeUuidPath, @Param("uuid") String uuid, @Param("excludedFromCalculation") String excludedFromCalculation);
+  Collection<IssueGroup> selectGroupsOfComponentTree(@Param("baseComponent") ComponentDto baseComponent);
 
+  Collection<IssueGroup> selectGroupsOfComponentTreeOnLeak(
+    @Param("baseComponent") ComponentDto baseComponent,
+    @Param("createdAfter") long createdAfter);
 }

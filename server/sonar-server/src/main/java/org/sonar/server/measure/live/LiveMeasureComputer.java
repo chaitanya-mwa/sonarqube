@@ -19,7 +19,6 @@
  */
 package org.sonar.server.measure.live;
 
-import java.util.Collection;
 import org.sonar.api.server.ServerSide;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
@@ -27,6 +26,6 @@ import org.sonar.db.component.ComponentDto;
 @ServerSide
 public interface LiveMeasureComputer {
 
-  void refresh(DbSession dbSession, ComponentDto component, Collection<IssueCountOperation> issueCountOperations);
+  void refresh(DbSession dbSession, ComponentDto component);
 
 }

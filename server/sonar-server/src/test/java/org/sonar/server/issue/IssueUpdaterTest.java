@@ -51,7 +51,6 @@ import org.sonar.server.organization.DefaultOrganizationProvider;
 import org.sonar.server.organization.TestDefaultOrganizationProvider;
 import org.sonar.server.rule.DefaultRuleFinder;
 
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -95,7 +94,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, emptyList());
+    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, false);
 
     IssueDto issueReloaded = dbClient.issueDao().selectByKey(dbTester.getSession(), issue.key()).get();
     assertThat(issueReloaded.getSeverity()).isEqualTo(BLOCKER);
@@ -110,7 +109,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, "increase severity", emptyList());
+    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, "increase severity", false);
 
     verify(notificationManager).scheduleForSending(notificationArgumentCaptor.capture());
     IssueChangeNotification issueChangeNotification = notificationArgumentCaptor.getValue();
@@ -136,7 +135,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, "increase severity", emptyList());
+    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, "increase severity", false);
 
     verify(notificationManager).scheduleForSending(notificationArgumentCaptor.capture());
     IssueChangeNotification issueChangeNotification = notificationArgumentCaptor.getValue();
@@ -155,7 +154,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, emptyList());
+    underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, false);
 
     verify(notificationManager).scheduleForSending(notificationArgumentCaptor.capture());
     assertThat(notificationArgumentCaptor.getValue().getFieldValue("ruleName")).isNull();
@@ -178,7 +177,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    SearchResponseData preloadedSearchResponseData = underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, emptyList());
+    SearchResponseData preloadedSearchResponseData = underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, false);
 
     assertThat(preloadedSearchResponseData.getIssues())
       .hasSize(1);
@@ -202,7 +201,7 @@ public class IssueUpdaterTest {
     IssueChangeContext context = IssueChangeContext.createUser(new Date(), "john");
     issueFieldsSetter.setSeverity(issue, BLOCKER, context);
 
-    SearchResponseData preloadedSearchResponseData = underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, emptyList());
+    SearchResponseData preloadedSearchResponseData = underTest.saveIssueAndPreloadSearchResponseData(dbTester.getSession(), issue, context, null, false);
 
     assertThat(preloadedSearchResponseData.getIssues())
       .hasSize(1);

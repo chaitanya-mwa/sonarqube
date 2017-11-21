@@ -20,9 +20,7 @@
 package org.sonar.server.issue.ws;
 
 import com.google.common.io.Resources;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.ws.Change;
 import org.sonar.api.server.ws.Request;
@@ -36,12 +34,10 @@ import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.issue.IssueDto;
-import org.sonar.server.computation.task.projectanalysis.issue.IssueCounter;
 import org.sonar.server.issue.IssueFieldsSetter;
 import org.sonar.server.issue.IssueFinder;
 import org.sonar.server.issue.IssueUpdater;
 import org.sonar.server.issue.webhook.IssueChangeWebhook;
-import org.sonar.server.measure.live.IssueCountOperation;
 import org.sonar.server.user.UserSession;
 
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -115,18 +111,12 @@ public class SetTypeAction implements IssuesWsAction {
   private SearchResponseData setType(DbSession session, String issueKey, RuleType ruleType) {
     IssueDto issueDto = issueFinder.getByKey(session, issueKey);
     DefaultIssue issue = issueDto.toDefaultIssue();
-    RuleType initialRuleType = issue.type();
     userSession.checkComponentUuidPermission(ISSUE_ADMIN, issue.projectUuid());
 
     IssueChangeContext context = IssueChangeContext.createUser(new Date(system2.now()), userSession.getLogin());
     if (issueFieldsSetter.setType(issue, ruleType, context)) {
-      List<IssueCountOperation> operations = new ArrayList<>();
-      operations.add(new IssueCountOperation(getMetricKeyForRuleType(initialRuleType), -1.0, -1.0, issueDto.getIssueCreationTime()));
-      operations.add(new IssueCountOperation(getNewMetricKeyForRuleType(initialRuleType), 0.0, -1.0, issueDto.getIssueCreationTime()));
-      operations.add(new IssueCountOperation(getMetricKeyForRuleType(issue.type()), 1.0, 1.0, issueDto.getIssueCreationTime()));
-      operations.add(new IssueCountOperation(getNewMetricKeyForRuleType(issue.type()), 0.0, 1.0, issueDto.getIssueCreationTime()));
 
-      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, operations);
+      SearchResponseData searchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(session, issue, context, null, true);
       issueChangeWebhook.onChange(
         new IssueChangeWebhook.IssueChangeData(
           searchResponseData.getIssues().stream().map(IssueDto::toDefaultIssue).collect(MoreCollectors.toList(searchResponseData.getIssues().size())),
@@ -136,13 +126,5 @@ public class SetTypeAction implements IssuesWsAction {
       return searchResponseData;
     }
     return new SearchResponseData(issueDto);
-  }
-
-  private static String getMetricKeyForRuleType(RuleType type) {
-    return IssueCounter.TYPE_TO_METRIC_KEY.get(type);
-  }
-
-  private static String getNewMetricKeyForRuleType(RuleType type) {
-    return IssueCounter.TYPE_TO_NEW_METRIC_KEY.get(type);
   }
 }

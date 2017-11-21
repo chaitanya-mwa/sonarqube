@@ -19,11 +19,14 @@
  */
 package org.sonar.server.measure.live;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.sonar.api.measures.CoreMetrics;
+import org.sonar.api.measures.Metric;
 import org.sonar.api.server.ServerSide;
 import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
@@ -44,18 +47,21 @@ public class MeasureMatrixLoader {
   }
 
   public MeasureMatrix load(DbSession dbSession, ComponentDto component, Collection<String> issueCountMetricKeys) {
-    List<MetricDto> metrics = dbClient.metricDao().selectByKeys(dbSession, /* TODO restrict list */metricsDag.getKeys());
+    List<MetricDto> metrics = dbClient.metricDao().selectByKeys(dbSession,
+      /* TODO restrict list */CoreMetrics.getMetrics().stream().map(Metric::getKey).collect(MoreCollectors.toArrayList()));
     Map<Integer, MetricDto> metricsPerId = metrics
       .stream()
       .collect(MoreCollectors.uniqueIndex(MetricDto::getId));
 
-    List<String> bottomUpComponentUuids = new ArrayList<>();
-    bottomUpComponentUuids.addAll(component.getUuidPathAsList());
-    bottomUpComponentUuids.add(component.uuid());
-    Collections.reverse(bottomUpComponentUuids);
+    List<ComponentDto> bottomUpComponents = new ArrayList<>();
+    bottomUpComponents.addAll(dbClient.componentDao().selectAncestors(dbSession, component));
+    bottomUpComponents.add(component);
+    Collections.reverse(bottomUpComponents);
 
-    MeasureMatrix matrix = new MeasureMatrix(bottomUpComponentUuids, metrics);
-    List<LiveMeasureDto> dbMeasures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, bottomUpComponentUuids, metricsPerId.keySet());
+    MeasureMatrix matrix = new MeasureMatrix(bottomUpComponents, metrics);
+    List<LiveMeasureDto> dbMeasures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession,
+      Lists.transform(bottomUpComponents, ComponentDto::uuid),
+      metricsPerId.keySet());
     matrix.init(dbMeasures);
 
     return matrix;

@@ -22,17 +22,13 @@ package org.sonar.db.issue;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.ibatis.session.ResultHandler;
-import org.sonar.api.rule.Severity;
-import org.sonar.api.rules.RuleType;
 import org.sonar.db.Dao;
 import org.sonar.db.DbSession;
 import org.sonar.db.RowNotFoundException;
@@ -42,7 +38,6 @@ import org.sonar.db.component.ComponentDto;
 import static com.google.common.collect.FluentIterable.from;
 import static org.sonar.db.DaoDatabaseUtils.buildLikeValue;
 import static org.sonar.db.DatabaseUtils.executeLargeInputs;
-import static org.sonar.db.component.ComponentDto.UUID_PATH_SEPARATOR;
 
 public class IssueDao implements Dao {
 
@@ -128,27 +123,12 @@ public class IssueDao implements Dao {
     mapper(session).update(dto);
   }
 
-  @CheckForNull
-  public String maxIssueSeverity(DbSession session, RuleType type, ComponentDto component, IssueDto excludedFromCalculation) {
-    String likeUuidPath = buildLikeValue(component.getUuidPath() + component.uuid() + UUID_PATH_SEPARATOR, WildcardPosition.AFTER);
-    return mapper(session).maxIssueSeverity(type.getDbConstant(), likeUuidPath, component.uuid(), excludedFromCalculation.getKey()).stream().sorted(Comparator.comparing(severity -> {
-      if (Severity.BLOCKER.equals(severity)) {
-        return 5;
-      }
-      if (Severity.CRITICAL.equals(severity)) {
-        return 4;
-      }
-      if (Severity.MAJOR.equals(severity)) {
-        return 3;
-      }
-      if (Severity.MINOR.equals(severity)) {
-        return 2;
-      }
-      if (Severity.INFO.equals(severity)) {
-        return 1;
-      }
-      throw new IllegalStateException("Unexpected severity "+severity);
-    }).reversed()).findFirst().orElse(null);
+  public Collection<IssueGroup> selectGroupsOfComponentTree(DbSession dbSession, ComponentDto baseComponent) {
+    return mapper(dbSession).selectGroupsOfComponentTree(baseComponent);
+  }
+
+  public Collection<IssueGroup> selectGroupsOfComponentTreeOnLeak(DbSession dbSession, ComponentDto baseComponent, long createdAfter) {
+    return mapper(dbSession).selectGroupsOfComponentTreeOnLeak(baseComponent, createdAfter);
   }
 
   private static IssueMapper mapper(DbSession session) {

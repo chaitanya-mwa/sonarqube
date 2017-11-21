@@ -17,34 +17,37 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.server.measure.live;
+package org.sonar.db.issue;
 
-public class IssueCountOperation {
-  private final String metricKey;
-  private final double valueIncrement;
-  private final double leakVariationIncrement;
-  private final long issueCreatedAt;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
-  public IssueCountOperation(String metricKey, double valueIncrement, double leakVariationIncrement, long issueCreatedAt) {
-    this.metricKey = metricKey;
-    this.valueIncrement = valueIncrement;
-    this.leakVariationIncrement = leakVariationIncrement;
-    this.issueCreatedAt = issueCreatedAt;
+public class IssueGroup {
+  private int ruleType;
+  private String severity;
+  @Nullable
+  private String resolution;
+  private double effort;
+  private long count;
+
+  public int getRuleType() {
+    return ruleType;
   }
 
-  public String getMetricKey() {
-    return metricKey;
+  public String getSeverity() {
+    return severity;
   }
 
-  public double getValueIncrement() {
-    return valueIncrement;
+  @CheckForNull
+  public String getResolution() {
+    return resolution;
   }
 
-  public double getLeakVariationIncrement() {
-    return leakVariationIncrement;
+  public double getEffort() {
+    return effort;
   }
 
-  public long getIssueCreatedAt() {
-    return issueCreatedAt;
+  public long getCount() {
+    return count;
   }
 }
