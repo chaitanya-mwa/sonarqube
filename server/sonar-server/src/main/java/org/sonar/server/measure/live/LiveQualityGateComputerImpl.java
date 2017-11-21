@@ -19,14 +19,17 @@
  */
 package org.sonar.server.measure.live;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+import org.apache.commons.lang.StringUtils;
 import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
@@ -38,8 +41,10 @@ import org.sonar.server.computation.task.projectanalysis.measure.Measure;
 import org.sonar.server.computation.task.projectanalysis.qualitygate.EvaluationResult;
 import org.sonar.server.computation.task.projectanalysis.qualitygate.QualityGateStatus;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.sonar.api.measures.CoreMetrics.ALERT_STATUS_KEY;
+import static org.sonar.api.measures.CoreMetrics.QUALITY_GATE_DETAILS_KEY;
 
 public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
 
@@ -63,48 +68,69 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
       .map(l -> (int) (long) l)
       .filter(metricId -> !modifiedMetricIds.contains(metricId))
       .collect(Collectors.toSet());
-    MetricDto qualityGateStatusMetric = dbClient.metricDao().selectByKey(dbSession, ALERT_STATUS_KEY);
-    List<MetricDto> metricDtos = dbClient.metricDao().selectByIds(dbSession, addToSet(modifiedMetricIds, unmodifiedMetricIds));
-    Map<Integer, MetricDto> metricDtosPerMetricId = metricDtos.stream().collect(MoreCollectors.uniqueIndex(MetricDto::getId));
+    List<MetricDto> metricDtos1 = dbClient.metricDao().selectByKeys(dbSession, asList(ALERT_STATUS_KEY, QUALITY_GATE_DETAILS_KEY));
+    List<MetricDto> metricDtos2 = dbClient.metricDao().selectByIds(dbSession, addToSet(modifiedMetricIds, unmodifiedMetricIds));
+    Map<Integer, MetricDto> metricDtosPerMetricId = Stream.concat(metricDtos1.stream(), metricDtos2.stream()).collect(MoreCollectors.uniqueIndex(MetricDto::getId));
+    Map<String, MetricDto> metricDtosPerMetricKey = Stream.concat(metricDtos1.stream(), metricDtos2.stream()).collect(MoreCollectors.uniqueIndex(MetricDto::getKey));
+    MetricDto qualityGateStatusMetric = metricDtosPerMetricKey.get(ALERT_STATUS_KEY);
+    MetricDto qualityGateDetailsMetric = metricDtosPerMetricKey.get(QUALITY_GATE_DETAILS_KEY);
 
     List<LiveMeasureDto> unmodifiedLiveMeasureDtos = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, singletonList(project.uuid()), addToSet(unmodifiedMetricIds, qualityGateStatusMetric.getId()));
     Map<Integer, LiveMeasureDto> modifiedLiveMeasuresPerMetricId = modifiedMeasures.stream().collect(MoreCollectors.uniqueIndex(LiveMeasureDto::getMetricId));
     Map<Integer, LiveMeasureDto> unmodifiedLiveMeasuresPerMetricId = unmodifiedLiveMeasureDtos.stream().collect(MoreCollectors.uniqueIndex(LiveMeasureDto::getMetricId));
 
-    QualityGateStatus qualityGateStatus = conditions.stream()
-      .map(condition -> {
-        int metricId = (int) condition.getMetricId();
-        if (modifiedMetricIds.contains(metricId)) {
-          MetricDto metricDto = metricDtosPerMetricId.get(metricId);
+    QualityGateDetailsDataBuilder builder = new QualityGateDetailsDataBuilder();
 
-          EvaluationResult evaluationResult = new LiveConditionEvaluator().evaluate(metricDto, condition, modifiedLiveMeasuresPerMetricId.get(metricId));
+    conditions.stream()
+      .forEach(condition -> {
+        condition.setMetricKey(metricDtosPerMetricId.get((int) condition.getMetricId()).getKey());
+        EvaluationResult evaluationResult = getEvaluationResult(condition, modifiedMetricIds, metricDtosPerMetricId, modifiedLiveMeasuresPerMetricId, unmodifiedLiveMeasuresPerMetricId);
+        MetricEvaluationResult evaluationResultWithMetric = new MetricEvaluationResult(evaluationResult, condition);
+        builder.addEvaluatedCondition(evaluationResultWithMetric);
+      });
 
-          return convert(evaluationResult.getLevel());
-        }
-        return convert(unmodifiedLiveMeasuresPerMetricId.get(metricId).getGateStatus());
-      })
-      .sorted(Comparator.comparing(status -> {
-        if (QualityGateStatus.ERROR == status) {
-          return 3;
-        }
-        if (QualityGateStatus.WARN == status) {
-          return 2;
-        }
-        return 1;
-      })).findFirst().orElseGet(() -> QualityGateStatus.OK);
+    Measure.Level globalLevel = builder.getGlobalLevel();
+    String globalLevelName = convert(globalLevel).name();
 
     LiveMeasureDto qualityGateStatusMeasure = unmodifiedLiveMeasuresPerMetricId.get(qualityGateStatusMetric.getId());
     if (qualityGateStatusMeasure == null) {
       LiveMeasureDto newQualityGateStatusMeasure = LiveMeasureDto.create()
-        .setData(qualityGateStatus.name())
+        .setData(globalLevelName)
         .setComponentUuid(project.uuid())
         .setProjectUuid(project.uuid())
         .setMetricId(qualityGateStatusMetric.getId());
       dbClient.liveMeasureDao().insert(dbSession, newQualityGateStatusMeasure);
     } else {
-      qualityGateStatusMeasure.setData(qualityGateStatus.name());
+      qualityGateStatusMeasure.setData(globalLevelName);
       dbClient.liveMeasureDao().update(dbSession, qualityGateStatusMeasure);
     }
+
+    String jsonDetails = new QualityGateDetailsData(globalLevel, builder.getEvaluatedConditions(), builder.isIgnoredConditions()).toJson();
+    LiveMeasureDto qualityGateDetailsMeasure = unmodifiedLiveMeasuresPerMetricId.get(qualityGateDetailsMetric.getId());
+    if (qualityGateDetailsMeasure == null) {
+      LiveMeasureDto newQualityGateDetailsMeasure = LiveMeasureDto.create()
+        .setData(jsonDetails)
+        .setComponentUuid(project.uuid())
+        .setProjectUuid(project.uuid())
+        .setMetricId(qualityGateDetailsMetric.getId());
+      dbClient.liveMeasureDao().insert(dbSession, newQualityGateDetailsMeasure);
+    } else {
+      qualityGateDetailsMeasure.setData(jsonDetails);
+      dbClient.liveMeasureDao().update(dbSession, qualityGateDetailsMeasure);
+    }
+  }
+
+  private EvaluationResult getEvaluationResult(QualityGateConditionDto condition, Set<Integer> modifiedMetricIds, Map<Integer, MetricDto> metricDtosPerMetricId, Map<Integer, LiveMeasureDto> modifiedLiveMeasuresPerMetricId, Map<Integer, LiveMeasureDto> unmodifiedLiveMeasuresPerMetricId) {
+    int metricId = (int) condition.getMetricId();
+    EvaluationResult evaluationResult;
+    if (modifiedMetricIds.contains(metricId)) {
+      MetricDto metricDto = metricDtosPerMetricId.get(metricId);
+      evaluationResult = new LiveConditionEvaluator().evaluate(metricDto, condition, modifiedLiveMeasuresPerMetricId.get(metricId));
+    } else {
+      LiveMeasureDto unmodifiedMeasure = unmodifiedLiveMeasuresPerMetricId.get(metricId);
+      evaluationResult = new EvaluationResult(convertLevel(unmodifiedMeasure.getGateStatus()), unmodifiedMeasure.getTextValue());
+    }
+    return evaluationResult;
   }
 
   private QualityGateStatus convert(Measure.Level level) {
@@ -115,6 +141,16 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
       return QualityGateStatus.WARN;
     }
     return QualityGateStatus.OK;
+  }
+
+  private Measure.Level convertLevel(String gateStatus) {
+    if (Measure.Level.ERROR.name().equals(gateStatus)) {
+      return Measure.Level.ERROR;
+    }
+    if (Measure.Level.WARN.name().equals(gateStatus)) {
+      return Measure.Level.WARN;
+    }
+    return Measure.Level.OK;
   }
 
   private QualityGateStatus convert(String gateStatus) {
@@ -137,5 +173,61 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
     HashSet<X> copy = new HashSet<>(a);
     copy.addAll(b);
     return copy;
+  }
+
+  public static final class QualityGateDetailsDataBuilder {
+    private Measure.Level globalLevel = Measure.Level.OK;
+    private List<String> labels = new ArrayList<>();
+    private List<EvaluatedCondition> evaluatedConditions = new ArrayList<>();
+    private boolean ignoredConditions;
+
+    public Measure.Level getGlobalLevel() {
+      return globalLevel;
+    }
+
+    public void addLabel(@Nullable String label) {
+      if (StringUtils.isNotBlank(label)) {
+        labels.add(label);
+      }
+    }
+
+    public List<String> getLabels() {
+      return labels;
+    }
+
+    public void addEvaluatedCondition(MetricEvaluationResult metricEvaluationResult) {
+      Measure.Level level = metricEvaluationResult.evaluationResult.getLevel();
+      if (Measure.Level.WARN == level && this.globalLevel != Measure.Level.ERROR) {
+        globalLevel = Measure.Level.WARN;
+
+      } else if (Measure.Level.ERROR == level) {
+        globalLevel = Measure.Level.ERROR;
+      }
+      evaluatedConditions.add(
+        new EvaluatedCondition(metricEvaluationResult.condition, level, metricEvaluationResult.evaluationResult.getValue()));
+    }
+
+    public List<EvaluatedCondition> getEvaluatedConditions() {
+      return evaluatedConditions;
+    }
+
+    public boolean isIgnoredConditions() {
+      return ignoredConditions;
+    }
+
+    public QualityGateDetailsDataBuilder setIgnoredConditions(boolean ignoredConditions) {
+      this.ignoredConditions = ignoredConditions;
+      return this;
+    }
+  }
+
+  public static class MetricEvaluationResult {
+    final EvaluationResult evaluationResult;
+    final QualityGateConditionDto condition;
+
+    public MetricEvaluationResult(EvaluationResult evaluationResult, QualityGateConditionDto condition) {
+      this.evaluationResult = evaluationResult;
+      this.condition = condition;
+    }
   }
 }

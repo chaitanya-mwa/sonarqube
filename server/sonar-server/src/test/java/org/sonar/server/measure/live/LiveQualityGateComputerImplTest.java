@@ -101,6 +101,7 @@ public class LiveQualityGateComputerImplTest {
     dbTester.qualityGates().associateProjectToQualityGate(project, qualityGate);
     QualityGateConditionDto condition = new QualityGateConditionDto().setQualityGateId(qualityGate.getId())
       .setMetricId(bugsMetric.getId())
+      .setMetricKey(bugsMetric.getKey())
       .setOperator(operator)
       .setWarningThreshold(warningThreshold)
       .setErrorThreshold(errorThreshold);
@@ -111,7 +112,11 @@ public class LiveQualityGateComputerImplTest {
     underTest.recalculateQualityGate(dbTester.getSession(), project, Collections.singletonList(liveMeasureDto));
 
     MetricDto qualityGateStatusMetric = dbTester.getDbClient().metricDao().selectByKey(dbTester.getSession(), ALERT_STATUS_KEY);
-    List<LiveMeasureDto> qualityGateMeasure = dbTester.getDbClient().liveMeasureDao().selectByComponentUuids(dbTester.getSession(), Collections.singleton(project.uuid()), Collections.singleton(qualityGateStatusMetric.getId()));
-    assertThat(qualityGateMeasure).extracting(LiveMeasureDto::getDataAsString).containsExactly(expected.name());
+    List<LiveMeasureDto> qualityGateStatusMeasure = dbTester.getDbClient().liveMeasureDao().selectByComponentUuids(dbTester.getSession(), Collections.singleton(project.uuid()), Collections.singleton(qualityGateStatusMetric.getId()));
+    assertThat(qualityGateStatusMeasure).extracting(LiveMeasureDto::getDataAsString).containsExactly(expected.name());
+
+    MetricDto qualityGateDetailsMetric = dbTester.getDbClient().metricDao().selectByKey(dbTester.getSession(), QUALITY_GATE_DETAILS_KEY);
+    List<LiveMeasureDto> qualityGateDetailsMeasure = dbTester.getDbClient().liveMeasureDao().selectByComponentUuids(dbTester.getSession(), Collections.singleton(project.uuid()), Collections.singleton(qualityGateDetailsMetric.getId()));
+    assertThat(qualityGateDetailsMeasure.stream().findFirst().get().getDataAsString()).isEqualTo("{\"level\":\""+expected+"\",\"conditions\":[{\"metric\":\""+ BUGS_KEY + "\",\"op\":\"GT\",\"warning\":\""+warningThreshold+"\",\"error\":\""+errorThreshold+"\",\"actual\":\""+((int) numberBugs)+"\",\"level\":\""+expected+"\"}],\"ignoredConditions\":false}");
   }
 }
