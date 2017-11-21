@@ -21,6 +21,7 @@ package org.sonar.server.measure.live;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +51,6 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
   public void recalculateQualityGate(DbSession dbSession, ComponentDto project, Collection<LiveMeasureDto> modifiedMeasures) {
     Optional<Long> qGateId = dbClient.projectQgateAssociationDao().selectQGateIdByComponentId(dbSession, project.getId());
     if (!qGateId.isPresent()) {
-      // No quality gate? No calculation to do!
       return;
     }
 
@@ -58,25 +58,54 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
 
     Set<Integer> modifiedMetricIds = modifiedMeasures.stream().map(LiveMeasureDto::getMetricId).collect(Collectors.toSet());
     Set<Integer> unmodifiedMetricIds = conditions.stream().map(QualityGateConditionDto::getMetricId)
+      .map(l -> (int) (long) l)
       .filter(metricId -> !modifiedMetricIds.contains(metricId))
-      .map(l -> (int) (long) l).collect(Collectors.toSet());
+      .collect(Collectors.toSet());
     MetricDto qualityGateStatusMetric = dbClient.metricDao().selectByKey(dbSession, ALERT_STATUS_KEY);
 
     List<LiveMeasureDto> unmodifiedLiveMeasureDtos = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, singletonList(project.uuid()), addToSet(unmodifiedMetricIds, qualityGateStatusMetric.getId()));
     ImmutableMap<Integer, LiveMeasureDto> modifiedLiveMeasuresPerMetricId = modifiedMeasures.stream().collect(MoreCollectors.uniqueIndex(LiveMeasureDto::getMetricId));
     ImmutableMap<Integer, LiveMeasureDto> unmodifiedLiveMeasuresPerMetricId = unmodifiedLiveMeasureDtos.stream().collect(MoreCollectors.uniqueIndex(LiveMeasureDto::getMetricId));
-    LiveMeasureDto qualityGateStatusMeasure = unmodifiedLiveMeasuresPerMetricId.get(qualityGateStatusMetric.getId());
-    if (qualityGateStatusMeasure == null) {
-      throw new IllegalStateException("Expected exactly one quality gate status for component " + project.getKey());
-    }
 
-    conditions.stream()
+    QualityGateStatus qualityGateStatus = conditions.stream()
       .map(condition -> {
         if (modifiedMetricIds.contains((int) condition.getMetricId())) {
           return recalculateQualityGateCondition(condition, modifiedLiveMeasuresPerMetricId.get((int) condition.getMetricId()));
         }
-        return unmodifiedLiveMeasuresPerMetricId.get((int) condition.getMetricId()).getGateStatus();
-      });
+        return convert(unmodifiedLiveMeasuresPerMetricId.get((int) condition.getMetricId()).getGateStatus());
+      })
+      .sorted(Comparator.comparing(status -> {
+        if (QualityGateStatus.ERROR == status) {
+          return 3;
+        }
+        if (QualityGateStatus.WARN == status) {
+          return 2;
+        }
+        return 1;
+      })).findFirst().orElseGet(() -> QualityGateStatus.OK);
+
+    LiveMeasureDto qualityGateStatusMeasure = unmodifiedLiveMeasuresPerMetricId.get(qualityGateStatusMetric.getId());
+    if (qualityGateStatusMeasure == null) {
+      LiveMeasureDto newQualityGateStatusMeasure = LiveMeasureDto.create()
+        .setData(qualityGateStatus.name())
+        .setComponentUuid(project.uuid())
+        .setProjectUuid(project.uuid())
+        .setMetricId(qualityGateStatusMetric.getId());
+      dbClient.liveMeasureDao().insert(dbSession, newQualityGateStatusMeasure);
+    } else {
+      qualityGateStatusMeasure.setData(qualityGateStatus.name());
+      dbClient.liveMeasureDao().update(dbSession, qualityGateStatusMeasure);
+    }
+  }
+
+  private QualityGateStatus convert(String gateStatus) {
+    if (QualityGateStatus.ERROR.name().equals(gateStatus)) {
+      return QualityGateStatus.ERROR;
+    }
+    if (QualityGateStatus.WARN.name().equals(gateStatus)) {
+        return QualityGateStatus.WARN;
+    }
+    return QualityGateStatus.OK;
   }
 
   private <X> Set<X> addToSet(Set<X> set, X item) {
@@ -85,7 +114,7 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
     return copy;
   }
 
-  private String recalculateQualityGateCondition(QualityGateConditionDto condition, LiveMeasureDto value) {
-    return QualityGateStatus.ERROR.name(); // FIXME implement
+  private QualityGateStatus recalculateQualityGateCondition(QualityGateConditionDto condition, LiveMeasureDto value) {
+    return QualityGateStatus.ERROR; // FIXME implement
   }
 }

@@ -1,0 +1,25 @@
+|| domain || key || name ||
+|Issues|blocker_violations|Blocker Issues|
+|Issues|confirmed_issues|Confirmed Issues|
+|Issues|critical_violations|Critical Issues|
+|Issues|false_positive_issues|False Positive Issues|
+|Issues|info_violations|Info Issues|
+|Issues|major_violations|Major Issues|
+|Issues|minor_violations|Minor Issues|
+|Issues|new_blocker_violations|New Blocker Issues|
+|Issues|new_critical_violations|New Critical Issues|
+|Issues|new_info_violations|New Info Issues|
+|Issues|new_major_violations|New Major Issues|
+|Issues|new_minor_violations|New Minor Issues|
+|Issues|new_violations|New Issues|
+|Issues|open_issues|Open Issues|
+|Issues|violations|Issues|
+|Maintainability|code_smells|Code Smells|
+|Maintainability|effort_to_reach_maintainability_rating_a|Effort to Reach Maintainability Rating A|
+|Maintainability|new_code_smells|New Code Smells|
+|Maintainability|new_maintainability_rating|Maintainability Rating on New Code|
+|Maintainability|new_technical_debt|Added Technical Debt|
+|Maintainability|sqale_rating|Maintainability Rating|
+|Reliability|bugs|Bugs|
+|Reliability|new_bugs|New Bugs|
+|Security|new_vulnerabilities|New Vulnerabilities|
