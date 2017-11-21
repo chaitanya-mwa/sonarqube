@@ -91,7 +91,8 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
 
       matrix.setValue(c, CoreMetrics.FALSE_POSITIVE_ISSUES_KEY, issueCounter.countByResolution(Issue.RESOLUTION_FALSE_POSITIVE));
       matrix.setValue(c, CoreMetrics.WONT_FIX_ISSUES_KEY, issueCounter.countByResolution(Issue.RESOLUTION_WONT_FIX));
-
+      // TODO confirmed_issues, open_issues, reopened_issues
+      // TODO sqale_index, new_technical_debt, sqale_rating, new_maintainability_rating, sqale_debt_ratio ?, new_sqale_debt_ratio ?, effort_to_reach_maintainability_rating_a
       matrix.setValue(c, CoreMetrics.RELIABILITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverity(RuleType.BUG).orElse(Severity.INFO)));
       matrix.setValue(c, CoreMetrics.SECURITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverity(RuleType.VULNERABILITY).orElse(Severity.INFO)));
 

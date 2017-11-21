@@ -69,8 +69,14 @@ public class MeasureMatrix {
 
   public void setValue(ComponentDto component, String metricKey, double value) {
     changeCell(component, metricKey, m -> {
-      if (m.getValue() != null && m.getValue() == value) {
+      Double initialValue = m.getValue();
+      if (initialValue != null && initialValue == value) {
         return false;
+      }
+      Double initialVariation = m.getVariation();
+      if (initialValue != null && initialVariation != null) {
+        double leakInitialValue = initialValue - initialVariation;
+        m.setVariation(value - leakInitialValue);
       }
       m.setValue(value);
       return true;
