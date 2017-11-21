@@ -45,6 +45,14 @@ public class IssueCounter {
     return Optional.empty();
   }
 
+  public double effort(RuleType type) {
+    int typeAsInt = type.getDbConstant();
+    return groups.stream()
+      .filter(g -> typeAsInt == g.getRuleType())
+      .mapToDouble(IssueGroup::getEffort)
+      .sum();
+  }
+
   public long countBySeverity(String severity) {
     return groups.stream()
       .filter(g -> severity.equals(g.getSeverity()))

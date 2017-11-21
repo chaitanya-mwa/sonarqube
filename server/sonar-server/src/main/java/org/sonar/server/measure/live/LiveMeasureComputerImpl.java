@@ -94,7 +94,12 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
       matrix.setValue(c, CoreMetrics.OPEN_ISSUES_KEY, issueCounter.countByStatus(Issue.STATUS_OPEN));
       matrix.setValue(c, CoreMetrics.REOPENED_ISSUES_KEY, issueCounter.countByStatus(Issue.STATUS_REOPENED));
       matrix.setValue(c, CoreMetrics.CONFIRMED_ISSUES_KEY, issueCounter.countByStatus(Issue.STATUS_CONFIRMED));
-      // TODO sqale_index, new_technical_debt, sqale_rating, new_maintainability_rating, sqale_debt_ratio ?, new_sqale_debt_ratio ?, effort_to_reach_maintainability_rating_a
+
+      matrix.setValue(c, CoreMetrics.TECHNICAL_DEBT_KEY, issueCounter.effort(RuleType.CODE_SMELL));
+      matrix.setValue(c, CoreMetrics.RELIABILITY_REMEDIATION_EFFORT_KEY, issueCounter.effort(RuleType.BUG));
+      matrix.setValue(c, CoreMetrics.SECURITY_REMEDIATION_EFFORT_KEY, issueCounter.effort(RuleType.VULNERABILITY));
+
+      // TODO new_technical_debt, sqale_rating, new_maintainability_rating, sqale_debt_ratio ?, new_sqale_debt_ratio ?, effort_to_reach_maintainability_rating_a
       matrix.setValue(c, CoreMetrics.RELIABILITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverity(RuleType.BUG).orElse(Severity.INFO)));
       matrix.setValue(c, CoreMetrics.SECURITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverity(RuleType.VULNERABILITY).orElse(Severity.INFO)));
 
@@ -110,6 +115,11 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
         matrix.setVariation(c, CoreMetrics.NEW_MAJOR_VIOLATIONS_KEY, issueLeakCounter.countBySeverity(Severity.MAJOR));
         matrix.setVariation(c, CoreMetrics.NEW_MINOR_VIOLATIONS_KEY, issueLeakCounter.countBySeverity(Severity.MINOR));
         matrix.setVariation(c, CoreMetrics.NEW_INFO_VIOLATIONS_KEY, issueLeakCounter.countBySeverity(Severity.INFO));
+
+        matrix.setVariation(c, CoreMetrics.NEW_TECHNICAL_DEBT_KEY, issueLeakCounter.effort(RuleType.CODE_SMELL));
+        matrix.setVariation(c, CoreMetrics.NEW_RELIABILITY_REMEDIATION_EFFORT_KEY, issueLeakCounter.effort(RuleType.BUG));
+        matrix.setVariation(c, CoreMetrics.NEW_SECURITY_REMEDIATION_EFFORT_KEY, issueLeakCounter.effort(RuleType.VULNERABILITY));
+
 
         matrix.setVariation(c, CoreMetrics.NEW_RELIABILITY_RATING_KEY, RATING_BY_SEVERITY.get(issueLeakCounter.getMaxSeverity(RuleType.BUG).orElse(Severity.INFO)));
         matrix.setVariation(c, CoreMetrics.NEW_SECURITY_RATING_KEY, RATING_BY_SEVERITY.get(issueLeakCounter.getMaxSeverity(RuleType.VULNERABILITY).orElse(Severity.INFO)));
