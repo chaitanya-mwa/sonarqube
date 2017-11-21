@@ -39,12 +39,12 @@ public class LiveQualityGateComputerImplTest {
 
   @Test
   public void recalculation_1bugs() throws Exception {
-    checkQualityGateChange(1d, "GT", "1", "2", QualityGateStatus.WARN);
+    checkQualityGateChange(1d, "GT", "1", "2", QualityGateStatus.OK);
   }
 
   @Test
   public void recalculation_2bugs() throws Exception {
-    checkQualityGateChange(2d, "GT", "1", "2", QualityGateStatus.ERROR);
+    checkQualityGateChange(2d, "GT", "1", "2", QualityGateStatus.WARN);
   }
 
   @Test
@@ -68,7 +68,7 @@ public class LiveQualityGateComputerImplTest {
 
     dbTester.measures().insertMetric(metric -> metric.setKey(QUALITY_GATE_DETAILS_KEY));
     dbTester.measures().insertMetric(metric -> metric.setKey(ALERT_STATUS_KEY));
-    dbTester.measures().insertMetric(metric -> metric.setKey(BUGS_KEY));
+    dbTester.measures().insertMetric(metric -> metric.setKey(BUGS_KEY).setValueType("INT"));
     MetricDto bugsMetric = dbTester.getDbClient().metricDao().selectByKey(dbTester.getSession(), BUGS_KEY);
 
     LiveMeasureDto liveMeasureDto = new LiveMeasureDto(UuidFactoryFast.getInstance().create())

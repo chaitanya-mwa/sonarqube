@@ -17,43 +17,47 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.server.computation.task.projectanalysis.qualitygate;
+package org.sonar.server.measure.live;
 
 import java.util.Optional;
 import javax.annotation.CheckForNull;
 import org.apache.commons.lang.StringUtils;
+import org.sonar.db.measure.LiveMeasureDto;
+import org.sonar.db.metric.MetricDto;
+import org.sonar.db.qualitygate.QualityGateConditionDto;
 import org.sonar.server.computation.task.projectanalysis.measure.Measure;
 import org.sonar.server.computation.task.projectanalysis.metric.Metric;
+import org.sonar.server.computation.task.projectanalysis.qualitygate.EvaluationResult;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Optional.of;
 
-public final class ConditionEvaluator {
+public final class LiveConditionEvaluator {
 
   /**
    * Evaluates the condition for the specified measure
    */
-  public EvaluationResult evaluate(Condition condition, Measure measure) {
-    checkArgument(condition.getMetric().getType() != Metric.MetricType.DATA, "Conditions on MetricType DATA are not supported");
+  public EvaluationResult evaluate(MetricDto metric, QualityGateConditionDto condition, LiveMeasureDto measure) {
+    checkArgument(!metric.getValueType().toString().equals(Metric.MetricType.DATA.toString()), "Conditions on MetricType DATA are not supported");
 
-    Comparable measureComparable = parseMeasure(condition, measure);
+    Comparable measureComparable = parseMeasure(condition, metric, measure);
     if (measureComparable == null) {
       return new EvaluationResult(Measure.Level.OK, null);
     }
 
-    return evaluateCondition(condition, measureComparable, Measure.Level.ERROR)
-      .orElseGet(() -> evaluateCondition(condition, measureComparable, Measure.Level.WARN)
+    return evaluateCondition(condition, metric, measureComparable, Measure.Level.ERROR)
+      .orElseGet(() -> evaluateCondition(condition, metric, measureComparable, Measure.Level.WARN)
         .orElseGet(() -> new EvaluationResult(Measure.Level.OK, measureComparable)));
   }
 
-  private static Optional<EvaluationResult> evaluateCondition(Condition condition, Comparable<?> measureComparable, Measure.Level alertLevel) {
+  private static Optional<EvaluationResult> evaluateCondition(QualityGateConditionDto condition, MetricDto metric, Comparable<?> measureComparable, Measure.Level alertLevel) {
     String conditionValue = getValueToEval(condition, alertLevel);
     if (StringUtils.isEmpty(conditionValue)) {
       return Optional.empty();
     }
 
     try {
-      Comparable conditionComparable = parseConditionValue(condition.getMetric(), conditionValue);
+      Comparable conditionComparable = parseConditionValue(metric, conditionValue);
       if (doesReachThresholds(measureComparable, conditionComparable, condition)) {
         return of(new EvaluationResult(alertLevel, measureComparable));
       }
@@ -61,11 +65,11 @@ public final class ConditionEvaluator {
     } catch (NumberFormatException badValueFormat) {
       throw new IllegalArgumentException(String.format(
         "Quality Gate: Unable to parse value '%s' to compare against %s",
-        conditionValue, condition.getMetric().getName()));
+        conditionValue, metric.getKey()));
     }
   }
 
-  private static String getValueToEval(Condition condition, Measure.Level alertLevel) {
+  private static String getValueToEval(QualityGateConditionDto condition, Measure.Level alertLevel) {
     if (Measure.Level.ERROR.equals(alertLevel)) {
       return condition.getErrorThreshold();
     } else if (Measure.Level.WARN.equals(alertLevel)) {
@@ -75,37 +79,37 @@ public final class ConditionEvaluator {
     }
   }
 
-  private static boolean doesReachThresholds(Comparable measureValue, Comparable criteriaValue, Condition condition) {
+  private static boolean doesReachThresholds(Comparable measureValue, Comparable criteriaValue, QualityGateConditionDto condition) {
     int comparison = measureValue.compareTo(criteriaValue);
     switch (condition.getOperator()) {
-      case EQUALS:
+      case "EQ":
         return comparison == 0;
-      case NOT_EQUALS:
+      case "NE":
         return comparison != 0;
-      case GREATER_THAN:
+      case "GT":
         return comparison > 0;
-      case LESS_THAN:
+      case "LT":
         return comparison < 0;
       default:
         throw new IllegalArgumentException(String.format("Unsupported operator '%s'", condition.getOperator()));
     }
   }
 
-  public static Comparable parseConditionValue(Metric metric, String value) {
-    switch (metric.getType().getValueType()) {
-      case BOOLEAN:
+  private static Comparable parseConditionValue(MetricDto metric, String value) {
+    switch (metric.getValueType()) {
+      case "BOOLEAN":
         return Integer.parseInt(value) == 1;
-      case INT:
+      case "INT":
         return parseInteger(value);
-      case LONG:
+      case "LONG":
         return Long.parseLong(value);
-      case DOUBLE:
+      case "DOUBLE":
         return Double.parseDouble(value);
-      case STRING:
-      case LEVEL:
+      case "STRING":
+      case "LEVEL":
         return value;
       default:
-        throw new IllegalArgumentException(String.format("Unsupported value type %s. Can not convert condition value", metric.getType().getValueType()));
+        throw new IllegalArgumentException(String.format("Unsupported value type %s. Can not convert condition value", metric.getValueType()));
     }
   }
 
@@ -114,56 +118,52 @@ public final class ConditionEvaluator {
   }
 
   @CheckForNull
-  private static Comparable parseMeasure(Condition condition, Measure measure) {
-    if (condition.hasPeriod()) {
-      return parseMeasureFromVariation(condition, measure);
+  private static Comparable parseMeasure(QualityGateConditionDto condition, MetricDto metric, LiveMeasureDto measure) {
+    if (condition.getPeriod() != null) {
+      return parseMeasureFromVariation(condition, metric, measure);
     }
-    switch (measure.getValueType()) {
-      case BOOLEAN:
-        return measure.getBooleanValue();
-      case INT:
-        return measure.getIntValue();
-      case LONG:
-        return measure.getLongValue();
-      case DOUBLE:
-        return measure.getDoubleValue();
-      case STRING:
-        return measure.getStringValue();
-      case LEVEL:
-        return measure.getLevelValue().name();
-      case NO_VALUE:
-        return null;
+    switch (metric.getValueType()) {
+      case "BOOLEAN":
+        return measure.getValue() == 1;
+      case "INT":
+        return (int) (double) measure.getValue();
+      case "LONG":
+        return (long) (double) measure.getValue();
+      case "DOUBLE":
+        return measure.getValue();
+      case "NO_VALUE":
+      case "STRING":
+      case "LEVEL":
       default:
-        throw new IllegalArgumentException(
-          String.format("Unsupported measure ValueType %s. Can not parse measure to a Comparable", measure.getValueType()));
+        throw new IllegalArgumentException("Conditions are not supported for metric type " + metric.getValueType());
     }
   }
 
   @CheckForNull
-  private static Comparable parseMeasureFromVariation(Condition condition, Measure measure) {
+  private static Comparable parseMeasureFromVariation(QualityGateConditionDto condition, MetricDto metric, LiveMeasureDto measure) {
     Optional<Double> periodValue = getPeriodValue(measure);
     if (periodValue.isPresent()) {
-      switch (condition.getMetric().getType().getValueType()) {
-        case BOOLEAN:
+      switch (metric.getValueType()) {
+        case "BOOLEAN":
           return periodValue.get().intValue() == 1;
-        case INT:
+        case "INT":
           return periodValue.get().intValue();
-        case LONG:
+        case "LONG":
           return periodValue.get().longValue();
-        case DOUBLE:
+        case "DOUBLE":
           return periodValue.get();
-        case NO_VALUE:
-        case STRING:
-        case LEVEL:
+        case "NO_VALUE":
+        case "STRING":
+        case "LEVEL":
         default:
-          throw new IllegalArgumentException("Period conditions are not supported for metric type " + condition.getMetric().getType());
+          throw new IllegalArgumentException("Period conditions are not supported for metric type " + metric.getValueType());
       }
     }
     return null;
   }
 
-  private static Optional<Double> getPeriodValue(Measure measure) {
-    return measure.hasVariation() ? Optional.of(measure.getVariation()) : Optional.empty();
+  private static Optional<Double> getPeriodValue(LiveMeasureDto measure) {
+    return measure.getVariation() == null ? Optional.empty() : Optional.of(measure.getVariation());
   }
 
 }

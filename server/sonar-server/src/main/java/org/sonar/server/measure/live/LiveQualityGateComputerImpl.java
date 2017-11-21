@@ -19,11 +19,11 @@
  */
 package org.sonar.server.measure.live;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,6 +34,8 @@ import org.sonar.db.component.ComponentDto;
 import org.sonar.db.measure.LiveMeasureDto;
 import org.sonar.db.metric.MetricDto;
 import org.sonar.db.qualitygate.QualityGateConditionDto;
+import org.sonar.server.computation.task.projectanalysis.measure.Measure;
+import org.sonar.server.computation.task.projectanalysis.qualitygate.EvaluationResult;
 import org.sonar.server.computation.task.projectanalysis.qualitygate.QualityGateStatus;
 
 import static java.util.Collections.singletonList;
@@ -62,17 +64,24 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
       .filter(metricId -> !modifiedMetricIds.contains(metricId))
       .collect(Collectors.toSet());
     MetricDto qualityGateStatusMetric = dbClient.metricDao().selectByKey(dbSession, ALERT_STATUS_KEY);
+    List<MetricDto> metricDtos = dbClient.metricDao().selectByIds(dbSession, addToSet(modifiedMetricIds, unmodifiedMetricIds));
+    Map<Integer, MetricDto> metricDtosPerMetricId = metricDtos.stream().collect(MoreCollectors.uniqueIndex(MetricDto::getId));
 
     List<LiveMeasureDto> unmodifiedLiveMeasureDtos = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, singletonList(project.uuid()), addToSet(unmodifiedMetricIds, qualityGateStatusMetric.getId()));
-    ImmutableMap<Integer, LiveMeasureDto> modifiedLiveMeasuresPerMetricId = modifiedMeasures.stream().collect(MoreCollectors.uniqueIndex(LiveMeasureDto::getMetricId));
-    ImmutableMap<Integer, LiveMeasureDto> unmodifiedLiveMeasuresPerMetricId = unmodifiedLiveMeasureDtos.stream().collect(MoreCollectors.uniqueIndex(LiveMeasureDto::getMetricId));
+    Map<Integer, LiveMeasureDto> modifiedLiveMeasuresPerMetricId = modifiedMeasures.stream().collect(MoreCollectors.uniqueIndex(LiveMeasureDto::getMetricId));
+    Map<Integer, LiveMeasureDto> unmodifiedLiveMeasuresPerMetricId = unmodifiedLiveMeasureDtos.stream().collect(MoreCollectors.uniqueIndex(LiveMeasureDto::getMetricId));
 
     QualityGateStatus qualityGateStatus = conditions.stream()
       .map(condition -> {
-        if (modifiedMetricIds.contains((int) condition.getMetricId())) {
-          return recalculateQualityGateCondition(condition, modifiedLiveMeasuresPerMetricId.get((int) condition.getMetricId()));
+        int metricId = (int) condition.getMetricId();
+        if (modifiedMetricIds.contains(metricId)) {
+          MetricDto metricDto = metricDtosPerMetricId.get(metricId);
+
+          EvaluationResult evaluationResult = new LiveConditionEvaluator().evaluate(metricDto, condition, modifiedLiveMeasuresPerMetricId.get(metricId));
+
+          return convert(evaluationResult.getLevel());
         }
-        return convert(unmodifiedLiveMeasuresPerMetricId.get((int) condition.getMetricId()).getGateStatus());
+        return convert(unmodifiedLiveMeasuresPerMetricId.get(metricId).getGateStatus());
       })
       .sorted(Comparator.comparing(status -> {
         if (QualityGateStatus.ERROR == status) {
@@ -98,6 +107,16 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
     }
   }
 
+  private QualityGateStatus convert(Measure.Level level) {
+    if (level == Measure.Level.ERROR) {
+      return QualityGateStatus.ERROR;
+    }
+    if (level == Measure.Level.WARN) {
+      return QualityGateStatus.WARN;
+    }
+    return QualityGateStatus.OK;
+  }
+
   private QualityGateStatus convert(String gateStatus) {
     if (QualityGateStatus.ERROR.name().equals(gateStatus)) {
       return QualityGateStatus.ERROR;
@@ -114,7 +133,9 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
     return copy;
   }
 
-  private QualityGateStatus recalculateQualityGateCondition(QualityGateConditionDto condition, LiveMeasureDto value) {
-    return QualityGateStatus.ERROR; // FIXME implement
+  private <X> Set<X> addToSet(Set<X> a, Set<X> b) {
+    HashSet<X> copy = new HashSet<>(a);
+    copy.addAll(b);
+    return copy;
   }
 }
