@@ -80,7 +80,7 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
     MetricDto qualityGateStatusMetric = metricDtosPerMetricKey.get(ALERT_STATUS_KEY);
     MetricDto qualityGateDetailsMetric = metricDtosPerMetricKey.get(QUALITY_GATE_DETAILS_KEY);
 
-    List<LiveMeasureDto> unmodifiedLiveMeasureDtos = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, singletonList(project.uuid()), addToSet(unmodifiedMetricIds, qualityGateStatusMetric.getId()));
+    List<LiveMeasureDto> unmodifiedLiveMeasureDtos = dbClient.liveMeasureDao().selectByComponentUuids(dbSession, singletonList(project.uuid()), addToSet(addToSet(unmodifiedMetricIds, qualityGateStatusMetric.getId()), qualityGateDetailsMetric.getId()));
     Map<Integer, LiveMeasureDto> modifiedLiveMeasuresPerMetricId = modifiedMeasures.stream().collect(MoreCollectors.uniqueIndex(LiveMeasureDto::getMetricId));
     Map<Integer, LiveMeasureDto> unmodifiedLiveMeasuresPerMetricId = unmodifiedLiveMeasureDtos.stream().collect(MoreCollectors.uniqueIndex(LiveMeasureDto::getMetricId));
 

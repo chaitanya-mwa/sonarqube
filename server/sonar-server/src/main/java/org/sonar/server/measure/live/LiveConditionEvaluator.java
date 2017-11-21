@@ -108,6 +108,8 @@ public final class LiveConditionEvaluator {
       case "STRING":
       case "LEVEL":
         return value;
+      case "RATING":
+        return Integer.parseInt(value);
       default:
         throw new IllegalArgumentException(String.format("Unsupported value type %s. Can not convert condition value", metric.getValueType()));
     }
@@ -126,14 +128,17 @@ public final class LiveConditionEvaluator {
       case "BOOLEAN":
         return measure.getValue() == 1;
       case "INT":
-        return (int) (double) measure.getValue();
+        return measure.getValue().intValue();
       case "LONG":
-        return (long) (double) measure.getValue();
+        return measure.getValue().intValue();
       case "DOUBLE":
         return measure.getValue();
-      case "NO_VALUE":
       case "STRING":
       case "LEVEL":
+        return measure.getTextValue();
+      case "RATING":
+        return measure.getValue().intValue();
+      case "NO_VALUE":
       default:
         throw new IllegalArgumentException("Conditions are not supported for metric type " + metric.getValueType());
     }
@@ -152,6 +157,8 @@ public final class LiveConditionEvaluator {
           return periodValue.get().longValue();
         case "DOUBLE":
           return periodValue.get();
+        case "RATING":
+          return periodValue.get().intValue();
         case "NO_VALUE":
         case "STRING":
         case "LEVEL":
