@@ -22,9 +22,9 @@ package org.sonar.db.measure;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import org.apache.ibatis.session.ResultHandler;
 import org.sonar.api.utils.System2;
+import org.sonar.core.util.Uuids;
 import org.sonar.db.Dao;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
@@ -46,8 +46,7 @@ public class LiveMeasureDao implements Dao {
 
     return executeLargeInputs(
       largeComponentUuids,
-      componentUuids ->
-        mapper(dbSession).selectByComponentUuids(componentUuids, metricIds));
+      componentUuids -> mapper(dbSession).selectByComponentUuids(componentUuids, metricIds));
   }
 
   public void selectTreeByQuery(DbSession dbSession, ComponentDto baseComponent, MeasureTreeQuery query, ResultHandler<LiveMeasureDto> resultHandler) {
@@ -58,7 +57,10 @@ public class LiveMeasureDao implements Dao {
   }
 
   public void insert(DbSession dbSession, LiveMeasureDto dto) {
-    Objects.requireNonNull(dto.getUuid(), "LiveMeasureDto should have a uuid");
+    if (dto.getUuid() != null) {
+      throw new IllegalArgumentException("Inserting a LiveMeasureDto that has already a uuid");
+    }
+    dto.setUuid(Uuids.create());
     mapper(dbSession).insert(dto, system2.now());
   }
 
@@ -66,15 +68,9 @@ public class LiveMeasureDao implements Dao {
     return mapper(dbSession).update(dto, system2.now()) == 1;
   }
 
-  /**
-   * Insert if the dto does not have UUID, else update.
-   * Important: it does not check db.
-   */
   public void insertOrUpdate(DbSession dbSession, LiveMeasureDto dto) {
-    if (dto.getUuid() == null) {
+    if (!update(dbSession, dto)) {
       insert(dbSession, dto);
-    } else {
-      update(dbSession, dto);
     }
   }
 

@@ -99,7 +99,7 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
 
     LiveMeasureDto qualityGateStatusMeasure = unmodifiedLiveMeasuresPerMetricId.get(qualityGateStatusMetric.getId());
     if (qualityGateStatusMeasure == null) {
-      LiveMeasureDto newQualityGateStatusMeasure = LiveMeasureDto.create()
+      LiveMeasureDto newQualityGateStatusMeasure = new LiveMeasureDto()
         .setData(globalLevelName)
         .setComponentUuid(project.uuid())
         .setProjectUuid(project.uuid())
@@ -113,16 +113,15 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
     String jsonDetails = new QualityGateDetailsData(globalLevel, builder.getEvaluatedConditions(), builder.isIgnoredConditions()).toJson();
     LiveMeasureDto qualityGateDetailsMeasure = unmodifiedLiveMeasuresPerMetricId.get(qualityGateDetailsMetric.getId());
     if (qualityGateDetailsMeasure == null) {
-      LiveMeasureDto newQualityGateDetailsMeasure = LiveMeasureDto.create()
+      qualityGateDetailsMeasure = new LiveMeasureDto()
         .setData(jsonDetails)
         .setComponentUuid(project.uuid())
         .setProjectUuid(project.uuid())
         .setMetricId(qualityGateDetailsMetric.getId());
-      dbClient.liveMeasureDao().insert(dbSession, newQualityGateDetailsMeasure);
     } else {
       qualityGateDetailsMeasure.setData(jsonDetails);
-      dbClient.liveMeasureDao().update(dbSession, qualityGateDetailsMeasure);
     }
+    dbClient.liveMeasureDao().insertOrUpdate(dbSession, qualityGateDetailsMeasure);
   }
 
   private EvaluationResult getEvaluationResult(QualityGateConditionDto condition, Set<Integer> modifiedMetricIds, Map<Integer, MetricDto> metricDtosPerMetricId, Map<Integer, LiveMeasureDto> modifiedLiveMeasuresPerMetricId, Map<Integer, LiveMeasureDto> unmodifiedLiveMeasuresPerMetricId, DbSession dbSession) {

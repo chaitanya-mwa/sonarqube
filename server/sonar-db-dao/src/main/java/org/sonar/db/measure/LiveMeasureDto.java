@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import org.sonar.core.util.Uuids;
 
 public class LiveMeasureDto {
 
@@ -46,12 +45,8 @@ public class LiveMeasureDto {
   @Nullable
   private String gateText;
 
-  public LiveMeasureDto(String uuid) {
-    this.uuid = uuid;
-  }
-
-  public LiveMeasureDto() {
-    // required for myBatis, do not use
+  void setUuid(String s) {
+    this.uuid = s;
   }
 
   public String getUuid() {
@@ -164,23 +159,6 @@ public class LiveMeasureDto {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    LiveMeasureDto that = (LiveMeasureDto) o;
-    return uuid.equals(that.uuid);
-  }
-
-  @Override
-  public int hashCode() {
-    return uuid.hashCode();
-  }
-
-  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("LiveMeasureDto{");
     sb.append("uuid='").append(uuid).append('\'');
@@ -195,9 +173,5 @@ public class LiveMeasureDto {
     sb.append(", gateText='").append(gateText).append('\'');
     sb.append('}');
     return sb.toString();
-  }
-
-  public static LiveMeasureDto create() {
-    return new LiveMeasureDto(Uuids.create());
   }
 }

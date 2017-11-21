@@ -46,7 +46,7 @@
     )
   </insert>
 
-  <update id="update" parameterType="map" useGeneratedKeys="false">
+  <update id="update" parameterType="map">
     update live_measures set
     value = #{dto.value, jdbcType=DOUBLE},
     variation = #{dto.variation, jdbcType=DOUBLE},

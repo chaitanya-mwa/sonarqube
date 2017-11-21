@@ -59,7 +59,7 @@ public class MeasureToMeasureDto {
   }
 
   public LiveMeasureDto toLiveMeasureDto(Measure measure, Metric metric, Component component) {
-    LiveMeasureDto out = LiveMeasureDto.create();
+    LiveMeasureDto out = new LiveMeasureDto();
     out.setMetricId(metric.getId());
     out.setComponentUuid(component.getUuid());
     out.setProjectUuid(analysisMetadataHolder.getProject().getUuid());

@@ -25,7 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.sonar.api.utils.System2;
 import org.sonar.api.utils.internal.TestSystem2;
-import org.sonar.core.util.UuidFactoryFast;
 import org.sonar.db.DbTester;
 import org.sonar.db.component.ComponentDto;
 import org.sonar.db.measure.LiveMeasureDto;
@@ -91,7 +90,7 @@ public class LiveQualityGateComputerImplTest {
     dbTester.measures().insertMetric(metric -> metric.setKey(BUGS_KEY).setValueType("INT"));
     MetricDto bugsMetric = dbTester.getDbClient().metricDao().selectByKey(dbTester.getSession(), BUGS_KEY);
 
-    LiveMeasureDto liveMeasureDto = new LiveMeasureDto(UuidFactoryFast.getInstance().create())
+    LiveMeasureDto liveMeasureDto = new LiveMeasureDto()
       .setProjectUuid(project.uuid())
       .setComponentUuid(file1.uuid())
       .setMetricId(bugsMetric.getId())

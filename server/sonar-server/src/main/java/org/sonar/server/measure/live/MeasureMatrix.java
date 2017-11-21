@@ -134,7 +134,7 @@ public class MeasureMatrix {
     MetricDto metric = requireNonNull(metricBysKeys.get(metricKey), "Metric " + metricKey + " not loaded");
     MeasureCell cell = table.get(component.uuid(), metricKey);
     if (cell == null) {
-      LiveMeasureDto measure = LiveMeasureDto.create()
+      LiveMeasureDto measure = new LiveMeasureDto()
         .setComponentUuid(component.uuid())
         .setProjectUuid(component.projectUuid())
         .setMetricId(metric.getId());
