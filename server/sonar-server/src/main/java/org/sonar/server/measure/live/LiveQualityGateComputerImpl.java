@@ -37,9 +37,11 @@ import org.sonar.db.component.ComponentDto;
 import org.sonar.db.measure.LiveMeasureDto;
 import org.sonar.db.metric.MetricDto;
 import org.sonar.db.qualitygate.QualityGateConditionDto;
+import org.sonar.db.qualitygate.QualityGateDto;
 import org.sonar.server.computation.task.projectanalysis.measure.Measure;
 import org.sonar.server.computation.task.projectanalysis.qualitygate.EvaluationResult;
 import org.sonar.server.computation.task.projectanalysis.qualitygate.QualityGateStatus;
+import org.sonar.server.qualitygate.QualityGateFinder;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -49,19 +51,22 @@ import static org.sonar.api.measures.CoreMetrics.QUALITY_GATE_DETAILS_KEY;
 public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
 
   private final DbClient dbClient;
+  private final QualityGateFinder qualityGateFinder;
 
-  public LiveQualityGateComputerImpl(DbClient dbClient) {
+  public LiveQualityGateComputerImpl(DbClient dbClient, QualityGateFinder qualityGateFinder) {
     this.dbClient = dbClient;
+    this.qualityGateFinder = qualityGateFinder;
   }
 
   @Override
   public void recalculateQualityGate(DbSession dbSession, ComponentDto project, Collection<LiveMeasureDto> modifiedMeasures) {
-    Optional<Long> qGateId = dbClient.projectQgateAssociationDao().selectQGateIdByComponentId(dbSession, project.getId());
-    if (!qGateId.isPresent()) {
+    Optional<QualityGateFinder.QualityGateData> qualityGateOptional = qualityGateFinder.getQualityGate(dbSession, project.getId());
+    if (!qualityGateOptional.isPresent()) {
       return;
     }
+    QualityGateDto qualityGate = qualityGateOptional.get().getQualityGate();
 
-    Collection<QualityGateConditionDto> conditions = dbClient.gateConditionDao().selectForQualityGate(dbSession, qGateId.get());
+    Collection<QualityGateConditionDto> conditions = dbClient.gateConditionDao().selectForQualityGate(dbSession, qualityGate.getId());
 
     Set<Integer> modifiedMetricIds = modifiedMeasures.stream().map(LiveMeasureDto::getMetricId).collect(Collectors.toSet());
     Set<Integer> unmodifiedMetricIds = conditions.stream().map(QualityGateConditionDto::getMetricId)

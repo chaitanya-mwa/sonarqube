@@ -34,6 +34,7 @@ import org.sonar.db.organization.OrganizationDto;
 import org.sonar.db.qualitygate.QualityGateConditionDto;
 import org.sonar.db.qualitygate.QualityGateDto;
 import org.sonar.server.computation.task.projectanalysis.qualitygate.QualityGateStatus;
+import org.sonar.server.qualitygate.QualityGateFinder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.sonar.api.measures.CoreMetrics.ALERT_STATUS_KEY;
@@ -108,7 +109,7 @@ public class LiveQualityGateComputerImplTest {
     dbTester.getDbClient().gateConditionDao().insert(condition, dbTester.getSession());
     dbTester.commit();
 
-    LiveQualityGateComputerImpl underTest = new LiveQualityGateComputerImpl(dbTester.getDbClient());
+    LiveQualityGateComputerImpl underTest = new LiveQualityGateComputerImpl(dbTester.getDbClient(), new QualityGateFinder(dbTester.getDbClient()));
     underTest.recalculateQualityGate(dbTester.getSession(), project, Collections.singletonList(liveMeasureDto));
 
     MetricDto qualityGateStatusMetric = dbTester.getDbClient().metricDao().selectByKey(dbTester.getSession(), ALERT_STATUS_KEY);
