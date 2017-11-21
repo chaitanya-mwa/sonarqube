@@ -247,17 +247,27 @@
     i.status &lt;&gt; 'CLOSED'
   </select>
 
-  <select id="maxIssueSeverity" resultType="String">
-    SELECT DISTINCT(severity)
-    FROM issues i
-    INNER JOIN projects c ON c.project_uuid = i.project_uuid AND c.uuid = i.component_uuid
-    WHERE i.status != 'CLOSED'
-    AND i.issue_type = #{type, jdbcType=INTEGER}
-    AND i.kee != #{excludedFromCalculation, jdbcType=VARCHAR}
-    AND (
-      c.uuid_path like #{likeUuidPath, jdbcType=VARCHAR} escape '/'
-      OR c.uuid = #{uuid, jdbcType=VARCHAR}
-    )
+  <select id="selectGroupsOfComponentTree" resultType="org.sonar.db.issue.IssueGroup" parameterType="map">
+    select i.issue_type as ruleType, i.severity as severity, i.resolution as resolution, sum(i.effort) as effort, count(*) as "count"
+    from issues i
+    inner join projects p on p.uuid = i.component_uuid
+    where i.status !='CLOSED'
+    and i.project_uuid = #{baseComponent.projectUuid,jdbcType=VARCHAR}
+    and p.project_uuid = #{baseComponent.projectUuid,jdbcType=VARCHAR}
+    and (p.uuid_path like #{baseComponent.uuidPathLikeIncludingSelf,jdbcType=VARCHAR} escape '/' or p.uuid = #{baseComponent.uuid,jdbcType=VARCHAR})
+    group by i.issue_type, i.severity, i.resolution
+  </select>
+
+  <select id="selectGroupsOfComponentTreeOnLeak" resultType="org.sonar.db.issue.IssueGroup" parameterType="map">
+    select i.issue_type as ruleType, i.severity as severity, i.resolution as resolution, sum(i.effort) as effort, count(*) as "count"
+    from issues i
+    inner join projects p on p.uuid = i.component_uuid
+    where i.status !='CLOSED'
+    and i.project_uuid = #{baseComponent.projectUuid,jdbcType=VARCHAR}
+    and p.project_uuid = #{baseComponent.projectUuid,jdbcType=VARCHAR}
+    and (p.uuid_path like #{baseComponent.uuidPathLikeIncludingSelf,jdbcType=VARCHAR} escape '/' or p.uuid = #{baseComponent.uuid,jdbcType=VARCHAR})
+    and i.issue_creation_date &gt;= #{createdAfter,jdbcType=BIGINT}
+    group by i.issue_type, i.severity, i.resolution
   </select>
 </mapper>
 

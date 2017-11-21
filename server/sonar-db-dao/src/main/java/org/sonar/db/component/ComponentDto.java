@@ -30,6 +30,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.sonar.api.resources.Scopes;
+import org.sonar.db.DaoDatabaseUtils;
+import org.sonar.db.WildcardPosition;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
@@ -157,6 +159,10 @@ public class ComponentDto {
     checkArgument(!Strings.isNullOrEmpty(parent.getUuidPath()));
     checkArgument(!Strings.isNullOrEmpty(parent.uuid()));
     return parent.getUuidPath() + parent.uuid() + UUID_PATH_SEPARATOR;
+  }
+
+  public String getUuidPathLikeIncludingSelf() {
+    return DaoDatabaseUtils.buildLikeValue(formatUuidPathFromParent(this), WildcardPosition.AFTER);
   }
 
   public Long getId() {

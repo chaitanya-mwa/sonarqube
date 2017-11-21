@@ -40,7 +40,6 @@ import org.sonarqube.ws.client.issue.IssuesWsParameters;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static java.util.Collections.emptyList;
 import static org.sonar.core.util.Uuids.UUID_EXAMPLE_01;
 import static org.sonarqube.ws.client.issue.IssuesWsParameters.PARAM_ISSUE;
 import static org.sonarqube.ws.client.issue.IssuesWsParameters.PARAM_TEXT;
@@ -99,7 +98,7 @@ public class AddCommentAction implements IssuesWsAction {
       IssueChangeContext context = IssueChangeContext.createUser(new Date(system2.now()), userSession.getLogin());
       DefaultIssue defaultIssue = issueDto.toDefaultIssue();
       issueFieldsSetter.addComment(defaultIssue, wsRequest.getText(), context);
-      SearchResponseData preloadedSearchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(dbSession, defaultIssue, context, wsRequest.getText(), emptyList());
+      SearchResponseData preloadedSearchResponseData = issueUpdater.saveIssueAndPreloadSearchResponseData(dbSession, defaultIssue, context, wsRequest.getText(), false);
       responseWriter.write(defaultIssue.key(), preloadedSearchResponseData, request, response);
     }
   }

@@ -19,16 +19,40 @@
  */
 package org.sonar.server.measure.live;
 
-import java.util.Collection;
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import java.util.Optional;
+import org.sonar.api.issue.Issue;
+import org.sonar.api.measures.CoreMetrics;
+import org.sonar.api.rule.Severity;
+import org.sonar.api.rules.RuleType;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
 import org.sonar.db.component.SnapshotDto;
+import org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid;
 
 import static java.util.Collections.emptyList;
+import static org.sonar.api.rule.Severity.BLOCKER;
+import static org.sonar.api.rule.Severity.CRITICAL;
+import static org.sonar.api.rule.Severity.INFO;
+import static org.sonar.api.rule.Severity.MAJOR;
+import static org.sonar.api.rule.Severity.MINOR;
+import static org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid.Rating.A;
+import static org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid.Rating.B;
+import static org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid.Rating.C;
+import static org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid.Rating.D;
+import static org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid.Rating.E;
 
 public class LiveMeasureComputerImpl implements LiveMeasureComputer {
+
+  // duplication of ReliabilityAndSecurityRatingMeasuresVisitor
+  private static final Map<String, RatingGrid.Rating> RATING_BY_SEVERITY = ImmutableMap.of(
+    BLOCKER, E,
+    CRITICAL, D,
+    MAJOR, C,
+    MINOR, B,
+    INFO, A);
 
   private final DbClient dbClient;
   private final MeasureMatrixLoader matrixLoader;
@@ -41,11 +65,7 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
   }
 
   @Override
-  public void refresh(DbSession dbSession, ComponentDto component, Collection<IssueCountOperation> issueCountOperations) {
-    if (issueCountOperations.isEmpty()) {
-      return;
-    }
-
+  public void refresh(DbSession dbSession, ComponentDto component) {
     Optional<SnapshotDto> lastAnalysis = dbClient.snapshotDao().selectLastAnalysisByRootComponentUuid(dbSession, component.projectUuid());
     if (!lastAnalysis.isPresent()) {
       // project has been deleted at the same time ?
@@ -55,12 +75,40 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
 
     MeasureMatrix matrix = matrixLoader.load(dbSession, component, /* TODO */emptyList());
 
-    matrix.getBottomUpComponentUuids().forEach(componentUuid -> {
-      for (IssueCountOperation op : issueCountOperations) {
-        matrix.incrementValue(componentUuid, op.getMetricKey(), op.getValueIncrement());
-        if (!beginningOfLeakPeriod.isPresent() || op.getIssueCreatedAt() >= beginningOfLeakPeriod.get()) {
-          matrix.incrementVariation(componentUuid, op.getMetricKey(), op.getLeakVariationIncrement());
-        }
+    matrix.getBottomUpComponents().forEach(c -> {
+      IssueCounter issueCounter = new IssueCounter(dbClient.issueDao().selectGroupsOfComponentTree(dbSession, c));
+      matrix.setValue(c, CoreMetrics.CODE_SMELLS_KEY, issueCounter.countByType(RuleType.CODE_SMELL));
+      matrix.setValue(c, CoreMetrics.BUGS_KEY, issueCounter.countByType(RuleType.BUG));
+      matrix.setValue(c, CoreMetrics.VULNERABILITIES_KEY, issueCounter.countByType(RuleType.VULNERABILITY));
+
+      matrix.setValue(c, CoreMetrics.VIOLATIONS_KEY, issueCounter.countAll());
+      matrix.setValue(c, CoreMetrics.BLOCKER_VIOLATIONS_KEY, issueCounter.countBySeverity(Severity.BLOCKER));
+      matrix.setValue(c, CoreMetrics.CRITICAL_VIOLATIONS_KEY, issueCounter.countBySeverity(Severity.CRITICAL));
+      matrix.setValue(c, CoreMetrics.MAJOR_VIOLATIONS_KEY, issueCounter.countBySeverity(Severity.MAJOR));
+      matrix.setValue(c, CoreMetrics.MINOR_VIOLATIONS_KEY, issueCounter.countBySeverity(Severity.MINOR));
+      matrix.setValue(c, CoreMetrics.INFO_VIOLATIONS_KEY, issueCounter.countBySeverity(Severity.INFO));
+
+      matrix.setValue(c, CoreMetrics.FALSE_POSITIVE_ISSUES_KEY, issueCounter.countByResolution(Issue.RESOLUTION_FALSE_POSITIVE));
+      matrix.setValue(c, CoreMetrics.WONT_FIX_ISSUES_KEY, issueCounter.countByResolution(Issue.RESOLUTION_WONT_FIX));
+
+      matrix.setValue(c, CoreMetrics.RELIABILITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverity(RuleType.BUG).orElse(Severity.INFO)));
+      matrix.setValue(c, CoreMetrics.SECURITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverity(RuleType.VULNERABILITY).orElse(Severity.INFO)));
+
+      if (beginningOfLeakPeriod.isPresent()) {
+        IssueCounter issueLeakCounter = new IssueCounter(dbClient.issueDao().selectGroupsOfComponentTreeOnLeak(dbSession, c, beginningOfLeakPeriod.get()));
+        matrix.setVariation(c, CoreMetrics.NEW_CODE_SMELLS_KEY, issueLeakCounter.countByType(RuleType.CODE_SMELL));
+        matrix.setVariation(c, CoreMetrics.NEW_BUGS_KEY, issueLeakCounter.countByType(RuleType.BUG));
+        matrix.setVariation(c, CoreMetrics.NEW_VULNERABILITIES_KEY, issueLeakCounter.countByType(RuleType.VULNERABILITY));
+
+        matrix.setVariation(c, CoreMetrics.NEW_VIOLATIONS_KEY, issueLeakCounter.countAll());
+        matrix.setVariation(c, CoreMetrics.NEW_BLOCKER_VIOLATIONS_KEY, issueLeakCounter.countBySeverity(Severity.BLOCKER));
+        matrix.setVariation(c, CoreMetrics.NEW_CRITICAL_VIOLATIONS_KEY, issueLeakCounter.countBySeverity(Severity.CRITICAL));
+        matrix.setVariation(c, CoreMetrics.NEW_MAJOR_VIOLATIONS_KEY, issueLeakCounter.countBySeverity(Severity.MAJOR));
+        matrix.setVariation(c, CoreMetrics.NEW_MINOR_VIOLATIONS_KEY, issueLeakCounter.countBySeverity(Severity.MINOR));
+        matrix.setVariation(c, CoreMetrics.NEW_INFO_VIOLATIONS_KEY, issueLeakCounter.countBySeverity(Severity.INFO));
+
+        matrix.setVariation(c, CoreMetrics.NEW_RELIABILITY_RATING_KEY, RATING_BY_SEVERITY.get(issueLeakCounter.getMaxSeverity(RuleType.BUG).orElse(Severity.INFO)));
+        matrix.setVariation(c, CoreMetrics.NEW_SECURITY_RATING_KEY, RATING_BY_SEVERITY.get(issueLeakCounter.getMaxSeverity(RuleType.VULNERABILITY).orElse(Severity.INFO)));
       }
     });
 
