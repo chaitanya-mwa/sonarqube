@@ -21,6 +21,7 @@ package org.sonar.server.measure.live;
 
 import java.util.Collection;
 import java.util.Optional;
+import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
@@ -66,6 +67,10 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
 
     // persist the measures that have been created or updated
     matrix.getTouched().forEach(m -> dbClient.liveMeasureDao().insertOrUpdate(dbSession, m));
+
+    ComponentDto project = dbClient.componentDao().selectByUuid(dbSession, component.projectUuid()).get();
+    qualityGateComputer.recalculateQualityGate(dbSession, project, matrix.getTouched().collect(MoreCollectors.toList()));
+
     dbSession.commit();
   }
 }
