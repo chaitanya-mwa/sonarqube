@@ -248,7 +248,7 @@
   </select>
 
   <select id="selectGroupsOfComponentTree" resultType="org.sonar.db.issue.IssueGroup" parameterType="map">
-    select i.issue_type as ruleType, i.severity as severity, i.resolution as resolution, sum(i.effort) as effort, count(*) as "count"
+    select i.issue_type as ruleType, i.severity as severity, i.resolution as resolution, i.status as status, sum(i.effort) as effort, count(*) as "count"
     from issues i
     inner join projects p on p.uuid = i.component_uuid
     where i.status !='CLOSED'
@@ -259,7 +259,7 @@
   </select>
 
   <select id="selectGroupsOfComponentTreeOnLeak" resultType="org.sonar.db.issue.IssueGroup" parameterType="map">
-    select i.issue_type as ruleType, i.severity as severity, i.resolution as resolution, sum(i.effort) as effort, count(*) as "count"
+    select i.issue_type as ruleType, i.severity as severity, i.resolution as resolution, i.status as status, sum(i.effort) as effort, count(*) as "count"
     from issues i
     inner join projects p on p.uuid = i.component_uuid
     where i.status !='CLOSED'

@@ -27,6 +27,7 @@ public class IssueGroup {
   private String severity;
   @Nullable
   private String resolution;
+  private String status;
   private double effort;
   private long count;
 
@@ -41,6 +42,10 @@ public class IssueGroup {
   @CheckForNull
   public String getResolution() {
     return resolution;
+  }
+
+  public String getStatus() {
+    return status;
   }
 
   public double getEffort() {

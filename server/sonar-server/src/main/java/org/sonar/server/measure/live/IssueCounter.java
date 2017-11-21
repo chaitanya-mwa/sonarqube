@@ -67,6 +67,13 @@ public class IssueCounter {
       .sum();
   }
 
+  public long countByStatus(String status) {
+    return groups.stream()
+      .filter(g -> status.equals(g.getStatus()))
+      .mapToLong(IssueGroup::getCount)
+      .sum();
+  }
+
   public long countAll() {
     return groups.stream()
       // select a non-null axis
