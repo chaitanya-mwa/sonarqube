@@ -117,7 +117,7 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
     matrix.getTouched().forEach(m -> dbClient.liveMeasureDao().insertOrUpdate(dbSession, m));
 
     ComponentDto project = dbClient.componentDao().selectByUuid(dbSession, component.projectUuid()).get();
-    qualityGateComputer.recalculateQualityGate(dbSession, project, matrix.getTouched().collect(MoreCollectors.toList()));
+    qualityGateComputer.recalculateQualityGate(dbSession, project, matrix.getTouched().filter(measure -> measure.getComponentUuid().equals(project.uuid())).collect(MoreCollectors.toList()));
 
     dbSession.commit();
   }
