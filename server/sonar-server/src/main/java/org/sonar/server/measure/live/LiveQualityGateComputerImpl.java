@@ -70,7 +70,7 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
 
     Set<Integer> modifiedMetricIds = modifiedMeasures.stream().map(LiveMeasureDto::getMetricId).collect(Collectors.toSet());
     Set<Integer> unmodifiedMetricIds = conditions.stream().map(QualityGateConditionDto::getMetricId)
-      .map(l -> (int) (long) l)
+      .map(Long::intValue)
       .filter(metricId -> !modifiedMetricIds.contains(metricId))
       .collect(Collectors.toSet());
     List<MetricDto> metricDtos1 = dbClient.metricDao().selectByKeys(dbSession, asList(ALERT_STATUS_KEY, QUALITY_GATE_DETAILS_KEY));

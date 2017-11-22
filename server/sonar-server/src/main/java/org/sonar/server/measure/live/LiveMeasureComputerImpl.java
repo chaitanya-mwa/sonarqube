@@ -22,12 +22,13 @@ package org.sonar.server.measure.live;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.sonar.api.issue.Issue;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.rule.Severity;
 import org.sonar.api.rules.RuleType;
 import org.sonar.api.utils.log.Loggers;
-import org.sonar.core.util.stream.MoreCollectors;
+import org.sonar.api.utils.log.Profiler;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
@@ -68,74 +69,92 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
 
   @Override
   public void refresh(DbSession dbSession, ComponentDto component) {
-    long started = System.currentTimeMillis();
+    Profiler largeProfiler = Profiler.create(Loggers.get(getClass()));
+    largeProfiler.start();
+    Profiler profiler = Profiler.create(Loggers.get(getClass()));
+    profiler.start();
     Optional<SnapshotDto> lastAnalysis = dbClient.snapshotDao().selectLastAnalysisByRootComponentUuid(dbSession, component.projectUuid());
     if (!lastAnalysis.isPresent()) {
       // project has been deleted at the same time ?
       return;
     }
     Optional<Long> beginningOfLeakPeriod = lastAnalysis.map(SnapshotDto::getPeriodDate);
+    profiler.stopInfo("- load last snapshot");
 
+    profiler.start();
     MeasureMatrix matrix = matrixLoader.load(dbSession, component, /* TODO */emptyList());
+    profiler.stopInfo("- load matrix");
 
     matrix.getBottomUpComponents().forEach(c -> {
-      IssueCounter issueCounter = new IssueCounter(dbClient.issueDao().selectGroupsOfComponentTree(dbSession, c));
-      matrix.setValue(c, CoreMetrics.CODE_SMELLS_KEY, issueCounter.countUnresolvedByType(RuleType.CODE_SMELL));
-      matrix.setValue(c, CoreMetrics.BUGS_KEY, issueCounter.countUnresolvedByType(RuleType.BUG));
-      matrix.setValue(c, CoreMetrics.VULNERABILITIES_KEY, issueCounter.countUnresolvedByType(RuleType.VULNERABILITY));
+      profiler.start();
+      Profiler smallProfiler = Profiler.create(Loggers.get(getClass())).start();
+      IssueCounter issueCounter = new IssueCounter(dbClient.issueDao().selectGroupsOfComponentTreeOnLeak(dbSession, c, beginningOfLeakPeriod.orElse(Long.MAX_VALUE)));
+      smallProfiler.stopInfo("-- select all issues");
+      matrix.setValue(c, CoreMetrics.CODE_SMELLS_KEY, issueCounter.countUnresolvedByType(RuleType.CODE_SMELL, false));
+      matrix.setValue(c, CoreMetrics.BUGS_KEY, issueCounter.countUnresolvedByType(RuleType.BUG, false));
+      matrix.setValue(c, CoreMetrics.VULNERABILITIES_KEY, issueCounter.countUnresolvedByType(RuleType.VULNERABILITY, false));
 
-      matrix.setValue(c, CoreMetrics.VIOLATIONS_KEY, issueCounter.countUnresolved());
-      matrix.setValue(c, CoreMetrics.BLOCKER_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.BLOCKER));
-      matrix.setValue(c, CoreMetrics.CRITICAL_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.CRITICAL));
-      matrix.setValue(c, CoreMetrics.MAJOR_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.MAJOR));
-      matrix.setValue(c, CoreMetrics.MINOR_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.MINOR));
-      matrix.setValue(c, CoreMetrics.INFO_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.INFO));
+      matrix.setValue(c, CoreMetrics.VIOLATIONS_KEY, issueCounter.countUnresolved(false));
+      matrix.setValue(c, CoreMetrics.BLOCKER_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.BLOCKER, false));
+      matrix.setValue(c, CoreMetrics.CRITICAL_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.CRITICAL, false));
+      matrix.setValue(c, CoreMetrics.MAJOR_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.MAJOR, false));
+      matrix.setValue(c, CoreMetrics.MINOR_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.MINOR, false));
+      matrix.setValue(c, CoreMetrics.INFO_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.INFO, false));
 
-      matrix.setValue(c, CoreMetrics.FALSE_POSITIVE_ISSUES_KEY, issueCounter.countByResolution(Issue.RESOLUTION_FALSE_POSITIVE));
-      matrix.setValue(c, CoreMetrics.WONT_FIX_ISSUES_KEY, issueCounter.countByResolution(Issue.RESOLUTION_WONT_FIX));
-      matrix.setValue(c, CoreMetrics.OPEN_ISSUES_KEY, issueCounter.countByStatus(Issue.STATUS_OPEN));
-      matrix.setValue(c, CoreMetrics.REOPENED_ISSUES_KEY, issueCounter.countByStatus(Issue.STATUS_REOPENED));
-      matrix.setValue(c, CoreMetrics.CONFIRMED_ISSUES_KEY, issueCounter.countByStatus(Issue.STATUS_CONFIRMED));
+      matrix.setValue(c, CoreMetrics.FALSE_POSITIVE_ISSUES_KEY, issueCounter.countByResolution(Issue.RESOLUTION_FALSE_POSITIVE, false));
+      matrix.setValue(c, CoreMetrics.WONT_FIX_ISSUES_KEY, issueCounter.countByResolution(Issue.RESOLUTION_WONT_FIX, false));
+      matrix.setValue(c, CoreMetrics.OPEN_ISSUES_KEY, issueCounter.countByStatus(Issue.STATUS_OPEN, false));
+      matrix.setValue(c, CoreMetrics.REOPENED_ISSUES_KEY, issueCounter.countByStatus(Issue.STATUS_REOPENED, false));
+      matrix.setValue(c, CoreMetrics.CONFIRMED_ISSUES_KEY, issueCounter.countByStatus(Issue.STATUS_CONFIRMED, false));
 
-      matrix.setValue(c, CoreMetrics.TECHNICAL_DEBT_KEY, issueCounter.effortOfUnresolved(RuleType.CODE_SMELL));
-      matrix.setValue(c, CoreMetrics.RELIABILITY_REMEDIATION_EFFORT_KEY, issueCounter.effortOfUnresolved(RuleType.BUG));
-      matrix.setValue(c, CoreMetrics.SECURITY_REMEDIATION_EFFORT_KEY, issueCounter.effortOfUnresolved(RuleType.VULNERABILITY));
+      matrix.setValue(c, CoreMetrics.TECHNICAL_DEBT_KEY, issueCounter.effortOfUnresolved(RuleType.CODE_SMELL, false));
+      matrix.setValue(c, CoreMetrics.RELIABILITY_REMEDIATION_EFFORT_KEY, issueCounter.effortOfUnresolved(RuleType.BUG, false));
+      matrix.setValue(c, CoreMetrics.SECURITY_REMEDIATION_EFFORT_KEY, issueCounter.effortOfUnresolved(RuleType.VULNERABILITY, false));
 
-      // TODO new_technical_debt, sqale_rating, new_maintainability_rating, sqale_debt_ratio, new_sqale_debt_ratio, effort_to_reach_maintainability_rating_a
-      matrix.setValue(c, CoreMetrics.RELIABILITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverityOfUnresolved(RuleType.BUG).orElse(Severity.INFO)));
-      matrix.setValue(c, CoreMetrics.SECURITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverityOfUnresolved(RuleType.VULNERABILITY).orElse(Severity.INFO)));
+      // TODO new_technical_debt, sqale_rating, new_maintainability_rating, sqale_debt_ratio, new_sqale_debt_ratio,
+      // effort_to_reach_maintainability_rating_a
+      matrix.setValue(c, CoreMetrics.RELIABILITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverityOfUnresolved(RuleType.BUG, false).orElse(Severity.INFO)));
+      matrix.setValue(c, CoreMetrics.SECURITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverityOfUnresolved(RuleType.VULNERABILITY, false).orElse(Severity.INFO)));
 
       if (beginningOfLeakPeriod.isPresent()) {
-        IssueCounter issueLeakCounter = new IssueCounter(dbClient.issueDao().selectGroupsOfComponentTreeOnLeak(dbSession, c, beginningOfLeakPeriod.get()));
-        matrix.setVariation(c, CoreMetrics.NEW_CODE_SMELLS_KEY, issueLeakCounter.countUnresolvedByType(RuleType.CODE_SMELL));
-        matrix.setVariation(c, CoreMetrics.NEW_BUGS_KEY, issueLeakCounter.countUnresolvedByType(RuleType.BUG));
-        matrix.setVariation(c, CoreMetrics.NEW_VULNERABILITIES_KEY, issueLeakCounter.countUnresolvedByType(RuleType.VULNERABILITY));
+        matrix.setVariation(c, CoreMetrics.NEW_CODE_SMELLS_KEY, issueCounter.countUnresolvedByType(RuleType.CODE_SMELL, true));
+        matrix.setVariation(c, CoreMetrics.NEW_BUGS_KEY, issueCounter.countUnresolvedByType(RuleType.BUG, true));
+        matrix.setVariation(c, CoreMetrics.NEW_VULNERABILITIES_KEY, issueCounter.countUnresolvedByType(RuleType.VULNERABILITY, true));
 
-        matrix.setVariation(c, CoreMetrics.NEW_VIOLATIONS_KEY, issueLeakCounter.countUnresolved());
-        matrix.setVariation(c, CoreMetrics.NEW_BLOCKER_VIOLATIONS_KEY, issueLeakCounter.countUnresolvedBySeverity(Severity.BLOCKER));
-        matrix.setVariation(c, CoreMetrics.NEW_CRITICAL_VIOLATIONS_KEY, issueLeakCounter.countUnresolvedBySeverity(Severity.CRITICAL));
-        matrix.setVariation(c, CoreMetrics.NEW_MAJOR_VIOLATIONS_KEY, issueLeakCounter.countUnresolvedBySeverity(Severity.MAJOR));
-        matrix.setVariation(c, CoreMetrics.NEW_MINOR_VIOLATIONS_KEY, issueLeakCounter.countUnresolvedBySeverity(Severity.MINOR));
-        matrix.setVariation(c, CoreMetrics.NEW_INFO_VIOLATIONS_KEY, issueLeakCounter.countUnresolvedBySeverity(Severity.INFO));
+        matrix.setVariation(c, CoreMetrics.NEW_VIOLATIONS_KEY, issueCounter.countUnresolved(true));
+        matrix.setVariation(c, CoreMetrics.NEW_BLOCKER_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.BLOCKER, true));
+        matrix.setVariation(c, CoreMetrics.NEW_CRITICAL_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.CRITICAL, true));
+        matrix.setVariation(c, CoreMetrics.NEW_MAJOR_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.MAJOR, true));
+        matrix.setVariation(c, CoreMetrics.NEW_MINOR_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.MINOR, true));
+        matrix.setVariation(c, CoreMetrics.NEW_INFO_VIOLATIONS_KEY, issueCounter.countUnresolvedBySeverity(Severity.INFO, true));
 
-        matrix.setVariation(c, CoreMetrics.NEW_TECHNICAL_DEBT_KEY, issueLeakCounter.effortOfUnresolved(RuleType.CODE_SMELL));
-        matrix.setVariation(c, CoreMetrics.NEW_RELIABILITY_REMEDIATION_EFFORT_KEY, issueLeakCounter.effortOfUnresolved(RuleType.BUG));
-        matrix.setVariation(c, CoreMetrics.NEW_SECURITY_REMEDIATION_EFFORT_KEY, issueLeakCounter.effortOfUnresolved(RuleType.VULNERABILITY));
+        matrix.setVariation(c, CoreMetrics.NEW_TECHNICAL_DEBT_KEY, issueCounter.effortOfUnresolved(RuleType.CODE_SMELL, true));
+        matrix.setVariation(c, CoreMetrics.NEW_RELIABILITY_REMEDIATION_EFFORT_KEY, issueCounter.effortOfUnresolved(RuleType.BUG, true));
+        matrix.setVariation(c, CoreMetrics.NEW_SECURITY_REMEDIATION_EFFORT_KEY, issueCounter.effortOfUnresolved(RuleType.VULNERABILITY, true));
 
-
-        matrix.setVariation(c, CoreMetrics.NEW_RELIABILITY_RATING_KEY, RATING_BY_SEVERITY.get(issueLeakCounter.getMaxSeverityOfUnresolved(RuleType.BUG).orElse(Severity.INFO)));
-        matrix.setVariation(c, CoreMetrics.NEW_SECURITY_RATING_KEY, RATING_BY_SEVERITY.get(issueLeakCounter.getMaxSeverityOfUnresolved(RuleType.VULNERABILITY).orElse(Severity.INFO)));
+        matrix.setVariation(c, CoreMetrics.NEW_RELIABILITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverityOfUnresolved(RuleType.BUG, true).orElse(Severity.INFO)));
+        matrix.setVariation(c, CoreMetrics.NEW_SECURITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverityOfUnresolved(RuleType.VULNERABILITY, true).orElse(Severity.INFO)));
       }
+      profiler.stopInfo("- compute component " + c.name());
     });
 
+    profiler.start();
     // persist the measures that have been created or updated
-    matrix.getTouched().forEach(m -> dbClient.liveMeasureDao().insertOrUpdate(dbSession, m));
+    AtomicInteger touched = new AtomicInteger();
+    matrix.getTouched().forEach(m -> {
+      dbClient.liveMeasureDao().insertOrUpdate(dbSession, m);
+      touched.incrementAndGet();
+    });
+    profiler.stopInfo("- persist " + touched.get() + " touched measures");
 
-    ComponentDto project = matrix.getProject();
-    qualityGateComputer.recalculateQualityGate(dbSession, project, matrix.getTouched().filter(measure -> measure.getComponentUuid().equals(project.uuid())).collect(MoreCollectors.toList()));
+    // profiler.start();
+    // ComponentDto project = matrix.getProject();
+    // qualityGateComputer.recalculateQualityGate(dbSession, project, matrix.getTouched().filter(measure ->
+    // measure.getComponentUuid().equals(project.uuid())).collect(MoreCollectors.toList()));
+    // profiler.stopInfo("compute gate");
 
     dbSession.commit();
 
-    Loggers.get(getClass()).info("Live measures refreshed in " + (System.currentTimeMillis() - started) + " ms");
+    largeProfiler.stopInfo("------- Live measures refreshed -------------");
   }
 }

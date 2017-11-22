@@ -30,6 +30,7 @@ public class IssueGroup {
   private String status;
   private double effort;
   private long count;
+  private boolean inLeak;
 
   public int getRuleType() {
     return ruleType;
@@ -54,5 +55,9 @@ public class IssueGroup {
 
   public long getCount() {
     return count;
+  }
+
+  public boolean isInLeak() {
+    return inLeak;
   }
 }

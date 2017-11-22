@@ -123,10 +123,6 @@ public class IssueDao implements Dao {
     mapper(session).update(dto);
   }
 
-  public Collection<IssueGroup> selectGroupsOfComponentTree(DbSession dbSession, ComponentDto baseComponent) {
-    return mapper(dbSession).selectGroupsOfComponentTree(baseComponent);
-  }
-
   public Collection<IssueGroup> selectGroupsOfComponentTreeOnLeak(DbSession dbSession, ComponentDto baseComponent, long createdAfter) {
     return mapper(dbSession).selectGroupsOfComponentTreeOnLeak(baseComponent, createdAfter);
   }

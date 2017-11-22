@@ -35,10 +35,11 @@ public class IssueCounter {
     this.groups = groups;
   }
 
-  public Optional<String> getMaxSeverityOfUnresolved(RuleType ruleType) {
+  public Optional<String> getMaxSeverityOfUnresolved(RuleType ruleType, boolean onlyInLeak) {
     OptionalInt max = groups.stream()
       .filter(g -> g.getResolution() == null)
       .filter(g -> g.getRuleType() == ruleType.getDbConstant())
+      .filter(g -> !onlyInLeak || g.isInLeak())
       .mapToInt(g -> SeverityUtil.getOrdinalFromSeverity(g.getSeverity()))
       .max();
     if (max.isPresent()) {
@@ -47,48 +48,54 @@ public class IssueCounter {
     return Optional.empty();
   }
 
-  public double effortOfUnresolved(RuleType type) {
+  public double effortOfUnresolved(RuleType type, boolean onlyInLeak) {
     int typeAsInt = type.getDbConstant();
     return groups.stream()
       .filter(g -> g.getResolution() == null)
       .filter(g -> typeAsInt == g.getRuleType())
+      .filter(g -> !onlyInLeak || g.isInLeak())
       .mapToDouble(IssueGroup::getEffort)
       .sum();
   }
 
-  public long countUnresolvedBySeverity(String severity) {
+  public long countUnresolvedBySeverity(String severity, boolean onlyInLeak) {
     return groups.stream()
       .filter(g -> g.getResolution() == null)
       .filter(g -> severity.equals(g.getSeverity()))
+      .filter(g -> !onlyInLeak || g.isInLeak())
       .mapToLong(IssueGroup::getCount)
       .sum();
   }
 
-  public long countByResolution(String resolution) {
+  public long countByResolution(String resolution, boolean onlyInLeak) {
     return groups.stream()
       .filter(g -> Objects.equals(resolution, g.getResolution()))
+      .filter(g -> !onlyInLeak || g.isInLeak())
       .mapToLong(IssueGroup::getCount)
       .sum();
   }
 
-  public long countUnresolvedByType(RuleType type) {
+  public long countUnresolvedByType(RuleType type, boolean onlyInLeak) {
     int typeAsInt = type.getDbConstant();
     return groups.stream()
+      .filter(g -> !onlyInLeak || g.isInLeak())
       .filter(g -> g.getResolution() == null)
       .filter(g -> typeAsInt == g.getRuleType())
       .mapToLong(IssueGroup::getCount)
       .sum();
   }
 
-  public long countByStatus(String status) {
+  public long countByStatus(String status, boolean onlyInLeak) {
     return groups.stream()
+      .filter(g -> !onlyInLeak || g.isInLeak())
       .filter(g -> Objects.equals(status, g.getStatus()))
       .mapToLong(IssueGroup::getCount)
       .sum();
   }
 
-  public long countUnresolved() {
+  public long countUnresolved(boolean onlyInLeak) {
     return groups.stream()
+      .filter(g -> !onlyInLeak || g.isInLeak())
       .filter(g -> g.getResolution() == null)
       .mapToLong(IssueGroup::getCount)
       .sum();

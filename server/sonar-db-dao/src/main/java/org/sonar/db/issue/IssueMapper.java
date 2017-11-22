@@ -49,8 +49,6 @@ public interface IssueMapper {
     @Param("likeModuleUuidPath") String likeModuleUuidPath,
     ResultHandler<IssueDto> handler);
 
-  Collection<IssueGroup> selectGroupsOfComponentTree(@Param("baseComponent") ComponentDto baseComponent);
-
   Collection<IssueGroup> selectGroupsOfComponentTreeOnLeak(
     @Param("baseComponent") ComponentDto baseComponent,
     @Param("createdAfter") long createdAfter);
