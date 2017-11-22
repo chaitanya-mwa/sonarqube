@@ -29,6 +29,7 @@ import org.sonar.api.rule.Severity;
 import org.sonar.api.rules.RuleType;
 import org.sonar.api.utils.log.Loggers;
 import org.sonar.api.utils.log.Profiler;
+import org.sonar.core.util.stream.MoreCollectors;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
@@ -133,7 +134,8 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
         matrix.setVariation(c, CoreMetrics.NEW_SECURITY_REMEDIATION_EFFORT_KEY, issueCounter.effortOfUnresolved(RuleType.VULNERABILITY, true));
 
         matrix.setVariation(c, CoreMetrics.NEW_RELIABILITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverityOfUnresolved(RuleType.BUG, true).orElse(Severity.INFO)));
-        matrix.setVariation(c, CoreMetrics.NEW_SECURITY_RATING_KEY, RATING_BY_SEVERITY.get(issueCounter.getMaxSeverityOfUnresolved(RuleType.VULNERABILITY, true).orElse(Severity.INFO)));
+        matrix.setVariation(c, CoreMetrics.NEW_SECURITY_RATING_KEY,
+          RATING_BY_SEVERITY.get(issueCounter.getMaxSeverityOfUnresolved(RuleType.VULNERABILITY, true).orElse(Severity.INFO)));
       }
       profiler.stopInfo("- compute component " + c.name());
     });
@@ -147,11 +149,11 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
     });
     profiler.stopInfo("- persist " + touched.get() + " touched measures");
 
-    // profiler.start();
-    // ComponentDto project = matrix.getProject();
-    // qualityGateComputer.recalculateQualityGate(dbSession, project, matrix.getTouched().filter(measure ->
-    // measure.getComponentUuid().equals(project.uuid())).collect(MoreCollectors.toList()));
-    // profiler.stopInfo("compute gate");
+    profiler.start();
+    ComponentDto project = matrix.getProject();
+    qualityGateComputer.recalculateQualityGate(dbSession, project,
+      matrix.getTouched().filter(measure -> measure.getComponentUuid().equals(project.uuid())).collect(MoreCollectors.toList()));
+    profiler.stopInfo("compute gate");
 
     dbSession.commit();
 
