@@ -89,7 +89,7 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
     conditions.stream()
       .forEach(condition -> {
         condition.setMetricKey(metricDtosPerMetricId.get((int) condition.getMetricId()).getKey());
-        EvaluationResult evaluationResult = getEvaluationResult(condition, modifiedMetricIds, metricDtosPerMetricId, modifiedLiveMeasuresPerMetricId, unmodifiedLiveMeasuresPerMetricId);
+        EvaluationResult evaluationResult = getEvaluationResult(condition, modifiedMetricIds, metricDtosPerMetricId, modifiedLiveMeasuresPerMetricId, unmodifiedLiveMeasuresPerMetricId, dbSession);
         MetricEvaluationResult evaluationResultWithMetric = new MetricEvaluationResult(evaluationResult, condition);
         builder.addEvaluatedCondition(evaluationResultWithMetric);
       });
@@ -125,15 +125,23 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
     }
   }
 
-  private EvaluationResult getEvaluationResult(QualityGateConditionDto condition, Set<Integer> modifiedMetricIds, Map<Integer, MetricDto> metricDtosPerMetricId, Map<Integer, LiveMeasureDto> modifiedLiveMeasuresPerMetricId, Map<Integer, LiveMeasureDto> unmodifiedLiveMeasuresPerMetricId) {
+  private EvaluationResult getEvaluationResult(QualityGateConditionDto condition, Set<Integer> modifiedMetricIds, Map<Integer, MetricDto> metricDtosPerMetricId, Map<Integer, LiveMeasureDto> modifiedLiveMeasuresPerMetricId, Map<Integer, LiveMeasureDto> unmodifiedLiveMeasuresPerMetricId, DbSession dbSession) {
     int metricId = (int) condition.getMetricId();
     EvaluationResult evaluationResult;
     if (modifiedMetricIds.contains(metricId)) {
       MetricDto metricDto = metricDtosPerMetricId.get(metricId);
-      evaluationResult = new LiveConditionEvaluator().evaluate(metricDto, condition, modifiedLiveMeasuresPerMetricId.get(metricId));
+      LiveMeasureDto modifiedMeasure = modifiedLiveMeasuresPerMetricId.get(metricId);
+      evaluationResult = new LiveConditionEvaluator().evaluate(metricDto, condition, modifiedMeasure);
+      modifiedMeasure.setGateStatus(convert(evaluationResult.getLevel()).name());
+      modifiedMeasure.setGateText("FIXME quality gate text");
+      dbClient.liveMeasureDao().update(dbSession, modifiedMeasure);
     } else {
       LiveMeasureDto unmodifiedMeasure = unmodifiedLiveMeasuresPerMetricId.get(metricId);
-      evaluationResult = new EvaluationResult(convertLevel(unmodifiedMeasure.getGateStatus()), unmodifiedMeasure.getTextValue());
+      if (unmodifiedMeasure == null) {
+        evaluationResult = new EvaluationResult(Measure.Level.OK, null);
+      } else {
+        evaluationResult = new EvaluationResult(convertLevel(unmodifiedMeasure.getGateStatus()), unmodifiedMeasure.getTextValue());
+      }
     }
     return evaluationResult;
   }
