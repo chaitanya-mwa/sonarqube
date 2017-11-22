@@ -20,11 +20,12 @@
 package org.sonar.server.measure.live;
 
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
+import com.google.common.collect.Ordering;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.measures.Metric;
 import org.sonar.api.server.ServerSide;
@@ -39,24 +40,27 @@ import org.sonar.db.metric.MetricDto;
 public class MeasureMatrixLoader {
 
   private final DbClient dbClient;
-  private final MetricsDag metricsDag;
 
-  public MeasureMatrixLoader(DbClient dbClient, MetricsDag metricsDag) {
+  public MeasureMatrixLoader(DbClient dbClient) {
     this.dbClient = dbClient;
-    this.metricsDag = metricsDag;
   }
 
-  public MeasureMatrix load(DbSession dbSession, ComponentDto component, Collection<String> issueCountMetricKeys) {
+  public MeasureMatrix load(DbSession dbSession, Collection<ComponentDto> componentsInSameProject) {
     List<MetricDto> metrics = dbClient.metricDao().selectByKeys(dbSession,
       /* TODO restrict list */CoreMetrics.getMetrics().stream().map(Metric::getKey).collect(MoreCollectors.toArrayList()));
     Map<Integer, MetricDto> metricsPerId = metrics
       .stream()
       .collect(MoreCollectors.uniqueIndex(MetricDto::getId));
 
-    List<ComponentDto> bottomUpComponents = new ArrayList<>();
-    bottomUpComponents.addAll(dbClient.componentDao().selectAncestors(dbSession, component));
-    bottomUpComponents.add(component);
-    Collections.reverse(bottomUpComponents);
+    Set<String> componentUuids = new HashSet<>();
+    for (ComponentDto component : componentsInSameProject) {
+      componentUuids.add(component.uuid());
+      componentUuids.addAll(component.getUuidPathAsList());
+    }
+    List<ComponentDto> bottomUpComponents = Ordering
+      .explicit("FIL", "UTS", "DIR", "BRC", "TRK")
+      .onResultOf(ComponentDto::qualifier)
+      .sortedCopy(dbClient.componentDao().selectByUuids(dbSession, componentUuids));
 
     MeasureMatrix matrix = new MeasureMatrix(bottomUpComponents, metrics);
     List<LiveMeasureDto> dbMeasures = dbClient.liveMeasureDao().selectByComponentUuids(dbSession,

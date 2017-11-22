@@ -19,6 +19,8 @@
  */
 package org.sonar.server.measure.live;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.sonar.api.server.ServerSide;
 import org.sonar.db.DbSession;
 import org.sonar.db.component.ComponentDto;
@@ -26,6 +28,10 @@ import org.sonar.db.component.ComponentDto;
 @ServerSide
 public interface LiveMeasureComputer {
 
-  void refresh(DbSession dbSession, ComponentDto component);
+  void refresh(DbSession dbSession, Collection<ComponentDto> touchedComponents);
+
+  default void refresh(DbSession dbSession, ComponentDto touchedComponent) {
+    refresh(dbSession, Collections.singletonList(touchedComponent));
+  }
 
 }

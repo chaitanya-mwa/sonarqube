@@ -126,7 +126,7 @@ public class BulkChangeActionTest {
   private ComponentDto file;
   private UserDto user;
 
-  private WsActionTester tester = new WsActionTester(new BulkChangeAction(system2, userSession, dbClient, issueStorage, notificationManager, actions, issueChangeWebhook));
+  private WsActionTester tester = new WsActionTester(new BulkChangeAction(system2, userSession, dbClient, issueStorage, notificationManager, actions, issueChangeWebhook, null));
 
   @Before
   public void setUp() throws Exception {

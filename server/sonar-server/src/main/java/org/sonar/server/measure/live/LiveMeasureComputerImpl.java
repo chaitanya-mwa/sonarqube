@@ -20,6 +20,7 @@
 package org.sonar.server.measure.live;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,7 +37,6 @@ import org.sonar.db.component.ComponentDto;
 import org.sonar.db.component.SnapshotDto;
 import org.sonar.server.computation.task.projectanalysis.qualitymodel.RatingGrid;
 
-import static java.util.Collections.emptyList;
 import static org.sonar.api.rule.Severity.BLOCKER;
 import static org.sonar.api.rule.Severity.CRITICAL;
 import static org.sonar.api.rule.Severity.INFO;
@@ -69,12 +69,16 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
   }
 
   @Override
-  public void refresh(DbSession dbSession, ComponentDto component) {
+  public void refresh(DbSession dbSession, Collection<ComponentDto> components) {
+    if (components.isEmpty()) {
+      return;
+    }
+
     Profiler largeProfiler = Profiler.create(Loggers.get(getClass()));
     largeProfiler.start();
     Profiler profiler = Profiler.create(Loggers.get(getClass()));
     profiler.start();
-    Optional<SnapshotDto> lastAnalysis = dbClient.snapshotDao().selectLastAnalysisByRootComponentUuid(dbSession, component.projectUuid());
+    Optional<SnapshotDto> lastAnalysis = dbClient.snapshotDao().selectLastAnalysisByRootComponentUuid(dbSession, components.iterator().next().projectUuid());
     if (!lastAnalysis.isPresent()) {
       // project has been deleted at the same time ?
       return;
@@ -83,7 +87,7 @@ public class LiveMeasureComputerImpl implements LiveMeasureComputer {
     profiler.stopInfo("- load last snapshot");
 
     profiler.start();
-    MeasureMatrix matrix = matrixLoader.load(dbSession, component, /* TODO */emptyList());
+    MeasureMatrix matrix = matrixLoader.load(dbSession, components);
     profiler.stopInfo("- load matrix");
 
     matrix.getBottomUpComponents().forEach(c -> {

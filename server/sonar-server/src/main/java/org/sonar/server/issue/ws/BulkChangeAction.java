@@ -60,6 +60,7 @@ import org.sonar.server.issue.SetTypeAction;
 import org.sonar.server.issue.TransitionAction;
 import org.sonar.server.issue.notification.IssueChangeNotification;
 import org.sonar.server.issue.webhook.IssueChangeWebhook;
+import org.sonar.server.measure.live.LiveMeasureComputer;
 import org.sonar.server.notification.NotificationManager;
 import org.sonar.server.user.UserSession;
 import org.sonarqube.ws.Issues;
@@ -110,9 +111,10 @@ public class BulkChangeAction implements IssuesWsAction {
   private final NotificationManager notificationService;
   private final List<Action> actions;
   private final IssueChangeWebhook issueChangeWebhook;
+  private final LiveMeasureComputer liveMeasureComputer;
 
   public BulkChangeAction(System2 system2, UserSession userSession, DbClient dbClient, IssueStorage issueStorage, NotificationManager notificationService, List<Action> actions,
-    IssueChangeWebhook issueChangeWebhook) {
+                          IssueChangeWebhook issueChangeWebhook, LiveMeasureComputer liveMeasureComputer) {
     this.system2 = system2;
     this.userSession = userSession;
     this.dbClient = dbClient;
@@ -120,6 +122,7 @@ public class BulkChangeAction implements IssuesWsAction {
     this.notificationService = notificationService;
     this.actions = actions;
     this.issueChangeWebhook = issueChangeWebhook;
+    this.liveMeasureComputer = liveMeasureComputer;
   }
 
   @Override
@@ -204,6 +207,12 @@ public class BulkChangeAction implements IssuesWsAction {
         .filter(bulkChange(issueChangeContext, bulkChangeData, result))
         .collect(MoreCollectors.toList());
       issueStorage.save(items);
+
+      try (DbSession dbSession = dbClient.openSession(false)) {
+        // FIXME group by projects (ideally in LiveMeasureComputer)
+        liveMeasureComputer.refresh(dbSession, bulkChangeData.componentsByUuid.values());
+      }
+
       items.forEach(sendNotification(issueChangeContext, bulkChangeData));
       buildWebhookIssueChange(bulkChangeData.propertiesByActions)
         .ifPresent(issueChange -> issueChangeWebhook.onChange(

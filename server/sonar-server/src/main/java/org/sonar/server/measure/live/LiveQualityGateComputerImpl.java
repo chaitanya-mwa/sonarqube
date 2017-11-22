@@ -86,7 +86,7 @@ public class LiveQualityGateComputerImpl implements LiveQualityGateComputer {
 
     QualityGateDetailsDataBuilder builder = new QualityGateDetailsDataBuilder();
 
-    conditions.stream()
+    conditions
       .forEach(condition -> {
         condition.setMetricKey(metricDtosPerMetricId.get((int) condition.getMetricId()).getKey());
         EvaluationResult evaluationResult = getEvaluationResult(condition, modifiedMetricIds, metricDtosPerMetricId, modifiedLiveMeasuresPerMetricId, unmodifiedLiveMeasuresPerMetricId, dbSession);
