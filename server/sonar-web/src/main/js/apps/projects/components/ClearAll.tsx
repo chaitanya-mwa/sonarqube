@@ -1,7 +1,7 @@
 /*
  * SonarQube
  * Copyright (C) 2009-2017 SonarSource SA
- * mailto:info AT sonarsource DOT com
+ * mailto:contact AT sonarsource DOT com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,8 +18,26 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import * as React from 'react';
-import AllProjects from './AllProjects';
+import { translate } from '../../../helpers/l10n';
 
-export default function FavoriteProjectsContainer(props: any) {
-  return <AllProjects isFavorite={true} {...props} />;
+interface Props {
+  onClearAll: () => void;
+}
+
+export default class ClearAll extends React.PureComponent<Props> {
+  handleClick = (event: React.SyntheticEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.currentTarget.blur();
+    this.props.onClearAll();
+  };
+
+  render() {
+    return (
+      <div className="projects-facets-reset">
+        <button className="button-red" onClick={this.handleClick}>
+          {translate('clear_all_filters')}
+        </button>
+      </div>
+    );
+  }
 }

@@ -21,7 +21,6 @@ import OrganizationPageContainer from './components/OrganizationPage';
 import OrganizationPageExtension from '../../app/components/extensions/OrganizationPageExtension';
 import OrganizationContainer from './components/OrganizationContainer';
 import OrganizationProjects from './components/OrganizationProjects';
-import OrganizationFavoriteProjects from './components/OrganizationFavoriteProjects';
 import OrganizationRules from './components/OrganizationRules';
 import OrganizationAdminContainer from './components/OrganizationAdmin';
 import OrganizationEdit from './components/OrganizationEdit';
@@ -33,7 +32,7 @@ import OrganizationProjectsManagement from './components/OrganizationProjectsMan
 import OrganizationDelete from './components/OrganizationDelete';
 import qualityGatesRoutes from '../quality-gates/routes';
 import qualityProfilesRoutes from '../quality-profiles/routes';
-import issuesRoutes from '../issues/routes';
+import Issues from '../issues/Issues';
 
 const routes = [
   {
@@ -51,22 +50,12 @@ const routes = [
       {
         path: 'projects',
         component: OrganizationContainer,
-        childRoutes: [
-          {
-            indexRoute: {
-              component: OrganizationProjects
-            }
-          },
-          {
-            path: 'favorite',
-            component: OrganizationFavoriteProjects
-          }
-        ]
+        childRoutes: [{ indexRoute: { component: OrganizationProjects } }]
       },
       {
         path: 'issues',
         component: OrganizationContainer,
-        childRoutes: issuesRoutes
+        childRoutes: [{ indexRoute: { component: Issues } }]
       },
       {
         path: 'members',

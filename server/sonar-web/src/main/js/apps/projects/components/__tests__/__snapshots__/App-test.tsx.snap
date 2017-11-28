@@ -3,6 +3,7 @@
 exports[`renders 1`] = `
 <div
   className="layout-page projects-page"
+  id="projects-page"
 >
   <HelmetWrapper
     defer={true}
@@ -30,9 +31,9 @@ exports[`renders 1`] = `
                 "isLoggedIn": true,
               }
             }
-            isFavorite={false}
             loading={false}
             onPerspectiveChange={[Function]}
+            onQueryChange={[Function]}
             onSortChange={[Function]}
             projects={
               Array [
@@ -128,6 +129,7 @@ exports[`renders 1`] = `
 exports[`renders 2`] = `
 <div
   className="layout-page projects-page"
+  id="projects-page"
 >
   <HelmetWrapper
     defer={true}
@@ -155,9 +157,9 @@ exports[`renders 2`] = `
                 "isLoggedIn": true,
               }
             }
-            isFavorite={false}
             loading={false}
             onPerspectiveChange={[Function]}
+            onQueryChange={[Function]}
             onSortChange={[Function]}
             projects={
               Array [

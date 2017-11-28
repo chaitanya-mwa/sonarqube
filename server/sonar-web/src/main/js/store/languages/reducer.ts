@@ -1,7 +1,7 @@
 /*
  * SonarQube
- * Copyright (C) 2009-2016 SonarSource SA
- * mailto:contact AT sonarsource DOT com
+ * Copyright (C) 2009-2017 SonarSource SA
+ * mailto:info AT sonarsource DOT com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,10 +17,23 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import * as React from 'react';
-import { shallow } from 'enzyme';
-import NewCoverageFilter from '../NewCoverageFilter';
+import { keyBy } from 'lodash';
+import { RECEIVE_LANGUAGES } from './actions';
 
-it('renders', () => {
-  expect(shallow(<NewCoverageFilter onQueryChange={jest.fn()} query={{}} />)).toMatchSnapshot();
-});
+export interface Languages {
+  [key: string]: { key: string; name: string };
+}
+
+const reducer = (state: Languages = {}, action: any = {}) => {
+  if (action.type === RECEIVE_LANGUAGES) {
+    return keyBy(action.languages, 'key');
+  }
+
+  return state;
+};
+
+export default reducer;
+
+export const getLanguages = (state: Languages) => state;
+
+export const getLanguageByKey = (state: Languages, key: string) => state[key];

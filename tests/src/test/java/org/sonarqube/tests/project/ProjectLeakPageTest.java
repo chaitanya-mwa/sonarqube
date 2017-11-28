@@ -71,7 +71,7 @@ public class ProjectLeakPageTest {
     // Check the facets and project cards
     ProjectsPage page = tester.openBrowser().openProjects(organization.getKey());
     page.changePerspective("Leak");
-    assertThat(url()).endsWith("/projects?view=leak");
+    assertThat(url()).contains("view=leak");
     page.shouldHaveTotal(2);
     page.getProjectByKey(projectKey2)
       .shouldHaveMeasure("new_reliability_rating", "0A")

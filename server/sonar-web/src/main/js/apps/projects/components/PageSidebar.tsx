@@ -18,10 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import * as React from 'react';
-import { Link } from 'react-router';
 import { flatMap } from 'lodash';
-import FavoriteFilter from './FavoriteFilter';
-import LanguagesFilter from '../filters/LanguagesFilter';
+import LanguagesFilterContainer from '../filters/LanguagesFilterContainer';
 import CoverageFilter from '../filters/CoverageFilter';
 import DuplicationsFilter from '../filters/DuplicationsFilter';
 import MaintainabilityFilter from '../filters/MaintainabilityFilter';
@@ -39,10 +37,12 @@ import TagsFilter from '../filters/TagsFilter';
 import { translate } from '../../../helpers/l10n';
 import { RawQuery } from '../../../helpers/query';
 import { Facets } from '../types';
+import ClearAll from './ClearAll';
 
 interface Props {
   facets?: Facets;
-  isFavorite: boolean;
+  onClearAll: () => void;
+  onQueryChange: (change: RawQuery) => void;
   organization?: string;
   query: RawQuery;
   view: string;
@@ -50,37 +50,18 @@ interface Props {
 }
 
 export default function PageSidebar(props: Props) {
-  const { facets, query, isFavorite, organization, view, visualization } = props;
+  const { facets, onQueryChange, query, organization, view } = props;
   const isFiltered = Object.keys(query)
     .filter(key => !['view', 'visualization', 'sort'].includes(key))
     .some(key => query[key] != null);
   const isLeakView = view === 'leak';
-  const basePathName = organization ? `/organizations/${organization}/projects` : '/projects';
-  const pathname = basePathName + (isFavorite ? '/favorite' : '');
   const maxFacetValue = getMaxFacetValue(facets);
-  const facetProps = { isFavorite, maxFacetValue, organization, query };
-
-  let linkQuery: RawQuery | undefined = undefined;
-  if (view !== 'overall') {
-    linkQuery = { view };
-
-    if (view === 'visualizations') {
-      linkQuery.visualization = visualization;
-    }
-  }
+  const facetProps = { onQueryChange, maxFacetValue, organization, query };
 
   return (
     <div>
-      <FavoriteFilter query={linkQuery} organization={organization} />
-
       <div className="projects-facets-header clearfix">
-        {isFiltered && (
-          <div className="projects-facets-reset">
-            <Link to={{ pathname, query: linkQuery }} className="button button-red">
-              {translate('clear_all_filters')}
-            </Link>
-          </div>
-        )}
+        {isFiltered && <ClearAll onClearAll={props.onClearAll} />}
 
         <h3>{translate('filters')}</h3>
       </div>
@@ -156,7 +137,11 @@ export default function PageSidebar(props: Props) {
           value={query.new_lines}
         />
       ]}
-      <LanguagesFilter {...facetProps} facet={facets && facets.languages} value={query.languages} />
+      <LanguagesFilterContainer
+        {...facetProps}
+        facet={facets && facets.languages}
+        value={query.languages}
+      />
       <TagsFilter {...facetProps} facet={facets && facets.tags} value={query.tags} />
     </div>
   );

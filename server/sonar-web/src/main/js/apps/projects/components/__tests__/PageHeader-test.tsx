@@ -70,8 +70,10 @@ it('should render switch the default sorting option for anonymous users', () => 
 function shallowRender(props?: {}) {
   return shallow(
     <PageHeader
+      currentUser={{ isLoggedIn: false }}
       loading={false}
       onPerspectiveChange={jest.fn()}
+      onQueryChange={jest.fn()}
       onSortChange={jest.fn()}
       projects={[]}
       query={{ search: 'test' }}

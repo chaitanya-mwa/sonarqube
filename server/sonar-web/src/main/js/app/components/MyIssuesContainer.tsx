@@ -1,7 +1,7 @@
 /*
  * SonarQube
  * Copyright (C) 2009-2017 SonarSource SA
- * mailto:info AT sonarsource DOT com
+ * mailto:contact AT sonarsource DOT com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,19 +17,13 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import { keyBy } from 'lodash';
-import { RECEIVE_LANGUAGES } from './actions';
+import * as React from 'react';
+import Issues from '../../apps/issues/Issues';
 
-const reducer = (state = {}, action = {}) => {
-  if (action.type === RECEIVE_LANGUAGES) {
-    return keyBy(action.languages, 'key');
-  }
+interface Props {
+  location: { pathname: string; query: { [x: string]: string } };
+}
 
-  return state;
-};
-
-export default reducer;
-
-export const getLanguages = state => state;
-
-export const getLanguageByKey = (state, key) => state[key];
+export default function MyIssuesContainer(props: Props) {
+  return <Issues myIssues={true} location={props.location} />;
+}
