@@ -26,7 +26,7 @@ import org.sonar.api.server.ws.WebService;
 import org.sonar.api.utils.System2;
 import org.sonar.db.DbClient;
 import org.sonar.db.DbTester;
-import org.sonar.db.component.ComponentDto;
+import org.sonar.db.organization.OrganizationDto;
 import org.sonar.db.user.UserDto;
 import org.sonar.server.issue.ws.AvatarResolverImpl;
 import org.sonar.server.organization.DefaultOrganizationProvider;
@@ -34,6 +34,7 @@ import org.sonar.server.organization.TestDefaultOrganizationProvider;
 import org.sonar.server.tester.UserSessionRule;
 import org.sonar.server.ws.WsActionTester;
 import org.sonarqube.ws.Users.CurrentWsResponse;
+import org.sonarqube.ws.Users.CurrentWsResponse.Homepage;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +45,7 @@ import static org.sonar.db.permission.OrganizationPermission.SCAN;
 import static org.sonar.db.user.GroupTesting.newGroupDto;
 import static org.sonar.test.JsonAssert.assertJson;
 import static org.sonarqube.ws.Users.CurrentWsResponse.HomepageType.MY_PROJECTS;
+import static org.sonarqube.ws.Users.CurrentWsResponse.HomepageType.ORGANIZATION;
 
 public class CurrentActionTest {
   @Rule
@@ -81,7 +83,7 @@ public class CurrentActionTest {
         newArrayList("obiwan:github", "obiwan:bitbucket"), true);
 
     assertThat(response.getHomepage()).isNotNull();
-    assertThat(response.getHomepage()).extracting(CurrentWsResponse.Homepage::getType)
+    assertThat(response.getHomepage()).extracting(Homepage::getType)
       .containsExactly(MY_PROJECTS);
 
   }
@@ -244,6 +246,43 @@ public class CurrentActionTest {
     expectedException.expectMessage("Unknown organization 'not-existing-organization-uuid' for homepageValue");
 
     call();
+  }
+
+
+  @Test
+  public void find_default_homepage_when_users_does_not_have_one() throws Exception {
+
+    UserDto user = db.users().insertUser();
+    OrganizationDto organization = db.organizations().insert(u -> u.setUserId(user.getId()));
+    db.organizations().addMember(organization, user);
+    userSessionRule.logIn(user.getLogin());
+
+    CurrentWsResponse response = call();
+
+    Homepage homepage = response.getHomepage();
+    assertThat(homepage).isNotNull();
+    assertThat(homepage.getType()).isEqualTo(ORGANIZATION);
+    assertThat(homepage.getValue()).isEqualTo(organization.getKey());
+  }
+
+
+  @Test
+  public void find_right_default_homepage_when_users_does_not_have_one_and_have_multiple_organization() throws Exception {
+    UserDto user = db.users().insertUser();
+    OrganizationDto personalOrganization = db.organizations().insert(u -> u.setUserId(user.getId()));
+    db.organizations().addMember(personalOrganization, user);
+    OrganizationDto organization1 = db.organizations().insert();
+    db.organizations().addMember(organization1, user);
+    OrganizationDto organization2 = db.organizations().insert();
+    db.organizations().addMember(organization2, user);
+    userSessionRule.logIn(user.getLogin());
+
+    CurrentWsResponse response = call();
+
+    Homepage homepage = response.getHomepage();
+    assertThat(homepage).isNotNull();
+    assertThat(homepage.getType()).isEqualTo(ORGANIZATION);
+    assertThat(homepage.getValue()).isEqualTo(organization2.getKey());
   }
 
 

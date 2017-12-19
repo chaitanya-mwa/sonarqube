@@ -21,7 +21,9 @@ package org.sonar.server.user.ws;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.sonar.api.server.ws.Change;
 import org.sonar.api.server.ws.Request;
 import org.sonar.api.server.ws.Response;
@@ -42,10 +44,10 @@ import static com.google.common.base.Strings.emptyToNull;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.sonar.core.util.Protobuf.setNullable;
+import static org.sonar.db.Pagination.all;
+import static org.sonar.db.organization.OrganizationQuery.newOrganizationQueryBuilder;
 import static org.sonar.server.ws.WsUtils.writeProtobuf;
-import static org.sonarqube.ws.Users.CurrentWsResponse.HomepageType.MY_PROJECTS;
 import static org.sonarqube.ws.Users.CurrentWsResponse.HomepageType.ORGANIZATION;
 import static org.sonarqube.ws.Users.CurrentWsResponse.HomepageType.PROJECT;
 import static org.sonarqube.ws.Users.CurrentWsResponse.Permissions;
@@ -124,7 +126,7 @@ public class CurrentAction implements UsersWsAction {
 
   private CurrentWsResponse.Homepage findHomepageFor(DbSession dbSession, UserDto user) {
     if (user.getHomepageType() == null) {
-      return defaultHomepageOf();
+      return defaultHomepageOf(dbSession, user.getId());
     }
     String homepageValue = getHomepageValue(dbSession, user.getHomepageType(), user.getHomepageValue());
     CurrentWsResponse.Homepage.Builder homepage = CurrentWsResponse.Homepage.newBuilder()
@@ -150,11 +152,21 @@ public class CurrentAction implements UsersWsAction {
     return null;
   }
 
-  // Default WIP implementation to be done in SONAR-10185
-  private static CurrentWsResponse.Homepage defaultHomepageOf() {
-    return CurrentWsResponse.Homepage.newBuilder()
-      .setType(MY_PROJECTS)
-      .build();
+  private CurrentWsResponse.Homepage defaultHomepageOf(DbSession dbSession, Integer userId) {
+    List<OrganizationDto> organizations = dbClient.organizationDao().selectByQuery(dbSession, newOrganizationQueryBuilder().setMember(userId).build(), all());
+    return organizations.stream().filter(x -> !userId.equals(x.getUserId())).findFirst()
+      .map(this::currentWsResponseOf)
+      .orElse(currentWsResponseOf(organizations.stream().findFirst().orElse(null)));
+
+  }
+
+  private CurrentWsResponse.Homepage currentWsResponseOf(@Nullable OrganizationDto organizationDto) {
+    CurrentWsResponse.Homepage.Builder builder = CurrentWsResponse.Homepage.newBuilder();
+    if (organizationDto != null) {
+      builder.setType(ORGANIZATION);
+      builder.setValue(organizationDto.getKey());
+    }
+    return builder.build();
   }
 
 }
