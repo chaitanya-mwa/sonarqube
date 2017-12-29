@@ -19,10 +19,6 @@
  */
 package org.sonar.server.ws;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.sonarqube.ws.MediaTypes.JSON;
-import static org.sonarqube.ws.MediaTypes.XML;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -31,6 +27,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.sonar.api.server.ws.Response;
 import org.sonar.api.utils.text.JsonWriter;
 import org.sonar.api.utils.text.XmlWriter;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.sonarqube.ws.MediaTypes.JSON;
+import static org.sonarqube.ws.MediaTypes.XML;
 
 public class ServletResponse implements Response {
 
@@ -84,7 +84,7 @@ public class ServletResponse implements Response {
   @Override
   public JsonWriter newJsonWriter() {
     stream.setMediaType(JSON);
-    return JsonWriter.of(new OutputStreamWriter(stream.output(), UTF_8));
+    return JsonWriter.ofNonStreamable(new OutputStreamWriter(stream.output(), UTF_8));
   }
 
   @Override

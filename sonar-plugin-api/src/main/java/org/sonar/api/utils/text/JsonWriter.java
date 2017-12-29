@@ -20,10 +20,12 @@
 package org.sonar.api.utils.text;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Date;
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.apache.commons.io.IOUtils;
 import org.sonar.api.utils.DateUtils;
 
 /**
@@ -32,21 +34,25 @@ import org.sonar.api.utils.DateUtils;
  * <p>
  * <h3>How to use</h3>
  * <pre>
- *   try (JsonWriter jsonWriter = JsonWriter.of(writer)) {
- *     jsonWriter
- *       .beginObject()
- *       .prop("aBoolean", true)
- *       .prop("aInt", 123)
- *       .prop("aString", "foo")
- *       .beginObject().name("aList")
- *         .beginArray()
- *           .beginObject().prop("key", "ABC").endObject()
- *           .beginObject().prop("key", "DEF").endObject()
- *         .endArray()
- *       .endObject()
- *   }
+ *   JsonWriter jsonWriter = JsonWriter.of(writer)
+ *   jsonWriter
+ *     .beginObject()
+ *     .prop("aBoolean", true)
+ *     .prop("aInt", 123)
+ *     .prop("aString", "foo")
+ *     .beginObject().name("aList")
+ *       .beginArray()
+ *         .beginObject().prop("key", "ABC").endObject()
+ *         .beginObject().prop("key", "DEF").endObject()
+ *       .endArray()
+ *     .endObject();
+ *   jsonWriter.close;
  * </pre>
- * 
+ *
+ * <p>
+ * By default, JsonWriter writes directly into the writer provided as a parameter. To have a non streamable response, use JsonWriter.ofNonStreamable(writer).
+ * It is useful for example for a Web Service response, to reset the content when an exception is thrown.
+ * </p>
  * <p>
  * By default, null objects are not serialized. To enable {@code null} serialization,
  * use {@link #setSerializeNulls(boolean)}.
@@ -66,22 +72,35 @@ import org.sonar.api.utils.DateUtils;
 public class JsonWriter implements AutoCloseable {
 
   private final com.google.gson.stream.JsonWriter stream;
+  private final Writer effectiveWriter;
+  private final StringWriter stringWriter;
+  private final boolean streamable;
   private boolean serializeEmptyStrings;
 
-  private JsonWriter(Writer writer) {
-    this.stream = new com.google.gson.stream.JsonWriter(writer);
+  private JsonWriter(Writer writer, boolean streamable) {
+    this.stringWriter = new StringWriter();
+    this.stream = streamable ? new com.google.gson.stream.JsonWriter(writer) : new com.google.gson.stream.JsonWriter(stringWriter);
     this.stream.setSerializeNulls(false);
     this.stream.setLenient(false);
     this.serializeEmptyStrings = true;
+    this.streamable = streamable;
+    this.effectiveWriter = writer;
   }
 
   // for unit testing
   JsonWriter(com.google.gson.stream.JsonWriter stream) {
     this.stream = stream;
+    this.streamable = true;
+    this.stringWriter = new StringWriter();
+    this.effectiveWriter = new StringWriter();
   }
 
   public static JsonWriter of(Writer writer) {
-    return new JsonWriter(writer);
+    return new JsonWriter(writer, true);
+  }
+
+  public static JsonWriter ofNonStreamable(Writer writer) {
+    return new JsonWriter(writer, false);
   }
 
   public JsonWriter setSerializeNulls(boolean b) {
@@ -101,7 +120,7 @@ public class JsonWriter implements AutoCloseable {
    * Begins encoding a new array. Each call to this method must be paired with
    * a call to {@link #endArray}. Output is <code>[</code>.
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter beginArray() {
     try {
@@ -115,7 +134,7 @@ public class JsonWriter implements AutoCloseable {
   /**
    * Ends encoding the current array. Output is <code>]</code>.
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter endArray() {
     try {
@@ -130,7 +149,7 @@ public class JsonWriter implements AutoCloseable {
    * Begins encoding a new object. Each call to this method must be paired
    * with a call to {@link #endObject}. Output is <code>{</code>.
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter beginObject() {
     try {
@@ -144,7 +163,7 @@ public class JsonWriter implements AutoCloseable {
   /**
    * Ends encoding the current object. Output is <code>}</code>.
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter endObject() {
     try {
@@ -158,7 +177,7 @@ public class JsonWriter implements AutoCloseable {
   /**
    * Encodes the property name. Output is <code>"theName":</code>.
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter name(String name) {
     try {
@@ -172,7 +191,7 @@ public class JsonWriter implements AutoCloseable {
   /**
    * Encodes {@code value}. Output is <code>true</code> or <code>false</code>.
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter value(boolean value) {
     try {
@@ -184,7 +203,7 @@ public class JsonWriter implements AutoCloseable {
   }
 
   /**
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter value(double value) {
     try {
@@ -196,7 +215,7 @@ public class JsonWriter implements AutoCloseable {
   }
 
   /**
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter value(@Nullable String value) {
     try {
@@ -211,12 +230,12 @@ public class JsonWriter implements AutoCloseable {
    * Encodes an object that can be a :
    * <ul>
    * <li>primitive types: String, Number, Boolean</li>
-   * <li>java.util.Date: encoded as datetime (see {@link #valueDateTime(java.util.Date)}</li>
+   * <li>java.util.Date: encoded as datetime (see {@link #valueDateTime(Date)}</li>
    * <li>{@code Map<Object, Object>}. Method toString is called for the key.</li>
    * <li>Iterable</li>
    * </ul>
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter valueObject(@Nullable Object value) {
 
@@ -269,7 +288,7 @@ public class JsonWriter implements AutoCloseable {
    *   writer.beginArray().values(myValues).endArray();
    * </pre>
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter values(Iterable<String> values) {
     for (String value : values) {
@@ -279,7 +298,7 @@ public class JsonWriter implements AutoCloseable {
   }
 
   /**
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter valueDate(@Nullable Date value) {
     try {
@@ -300,7 +319,7 @@ public class JsonWriter implements AutoCloseable {
   }
 
   /**
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter value(long value) {
     try {
@@ -312,7 +331,7 @@ public class JsonWriter implements AutoCloseable {
   }
 
   /**
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter value(@Nullable Number value) {
     try {
@@ -326,7 +345,7 @@ public class JsonWriter implements AutoCloseable {
   /**
    * Encodes the property name and value. Output is for example <code>"theName":123</code>.
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter prop(String name, @Nullable Number value) {
     return name(name).value(value);
@@ -336,7 +355,7 @@ public class JsonWriter implements AutoCloseable {
    * Encodes the property name and date value (ISO format).
    * Output is for example <code>"theDate":"2013-01-24"</code>.
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter propDate(String name, @Nullable Date value) {
     return name(name).valueDate(value);
@@ -346,46 +365,50 @@ public class JsonWriter implements AutoCloseable {
    * Encodes the property name and datetime value (ISO format).
    * Output is for example <code>"theDate":"2013-01-24T13:12:45+01"</code>.
    *
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter propDateTime(String name, @Nullable Date value) {
     return name(name).valueDateTime(value);
   }
 
   /**
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter prop(String name, @Nullable String value) {
     return name(name).value(value);
   }
 
   /**
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter prop(String name, boolean value) {
     return name(name).value(value);
   }
 
   /**
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter prop(String name, long value) {
     return name(name).value(value);
   }
 
   /**
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   public JsonWriter prop(String name, double value) {
     return name(name).value(value);
   }
 
   /**
-   * @throws org.sonar.api.utils.text.WriterException on any failure
+   * @throws WriterException on any failure
    */
   @Override
   public void close() {
     try {
+      if (!streamable) {
+        IOUtils.write(stringWriter.toString(), effectiveWriter);
+      }
+      effectiveWriter.close();
       stream.close();
     } catch (Exception e) {
       throw rethrow(e);

@@ -52,7 +52,7 @@ public class WsUtils {
         msg.writeTo(output);
       } else {
         response.stream().setMediaType(JSON);
-        try (JsonWriter writer = JsonWriter.of(new OutputStreamWriter(output, UTF_8))) {
+        try (JsonWriter writer = JsonWriter.ofNonStreamable(new OutputStreamWriter(output, UTF_8))) {
           ProtobufJsonFormat.write(msg, writer);
         }
       }
